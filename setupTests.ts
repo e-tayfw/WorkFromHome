@@ -1,2 +1,1 @@
-import "@testing-library/jest-dom"; // For custom jest matchers
-
+require("@testing-library/jest-dom");
