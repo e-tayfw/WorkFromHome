@@ -1,4 +1,5 @@
 import "@/styles/globals.css";
+import React from "react";
 import type { AppProps } from "next/app";
 import dynamic from "next/dynamic";
 import { ToastContainer } from "react-toastify";
