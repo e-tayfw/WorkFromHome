@@ -1,9 +1,17 @@
-import { Auth } from "@/components/auth";
-import Schedule from "@/components/schedule";
+import { useState, useEffect } from 'react';
+import { Auth } from "@/components/Auth";
+import Schedule from "@/components/Schedule";
+
 const Home = () => {
+  const [userType, setUserType] = useState<string | null>(null);
+
+  useEffect(() => {
+    setUserType(localStorage.getItem("userType"));
+  }, []);
+
   return (
     <div>
-      <Auth />
+      {!userType && <Auth />} {/* Render Auth only if userType is null */}
     </div> 
   );
 }

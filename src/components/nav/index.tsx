@@ -1,0 +1,294 @@
+import { useRouter } from "next/navigation";
+import { useRouter as usePagesRouter } from "next/router";
+import { ReactNode, useCallback, useEffect, useState } from "react";
+import NextLink from "next/link";
+import Image from "next/image";
+import { useCheckMobileScreen } from "@/hooks/useIsMobile";
+import MobileNav from "./MobileNav";
+import { Body } from "@/components/TextStyles";
+import { motion } from "framer-motion";
+import Link from "next/link";
+import path from "path";
+
+export type NavLink = {
+  title: string;
+  path: string;
+  icon?: ReactNode;
+  imgUrl?: string;
+  clickAction?: () => void;
+  childPaths?: NavLink[];
+};
+
+
+export const navLinks: NavLink[] = [
+    {
+      title: "Schedule",
+      path: "/schedule",
+      childPaths: [
+        {
+          title: "My Schedule",
+          path: "/schedule",
+          imgUrl: "https://workfromhomebucket.s3.ap-southeast-2.amazonaws.com/Nav/my-schedule-simu.png",
+        },
+        {
+          title: "Team Schedule",
+          path: "/schedule",
+          imgUrl: "https://workfromhomebucket.s3.ap-southeast-2.amazonaws.com/Nav/team-schedule-simu.png",
+        },
+      ],
+    },
+  
+    {
+      title: "Requests",
+      path: "/request",
+      childPaths: [
+        {
+          title: "Make a Request",
+          path: "/request",
+          imgUrl:
+            "https://workfromhomebucket.s3.ap-southeast-2.amazonaws.com/Nav/new-request-simu.png",
+        },
+        {
+          title: "Past Requests",
+          path: "/request",
+          imgUrl:
+            "https://workfromhomebucket.s3.ap-southeast-2.amazonaws.com/Nav/view-request-simu.png",
+        },
+        {
+          title: "Approve Requests",
+          path: "/request",
+          imgUrl:
+            "https://workfromhomebucket.s3.ap-southeast-2.amazonaws.com/Nav/approve-request-simu.png",
+        },
+      ],
+    },
+  
+  ];
+
+const Nav = () => {
+  const isMobile = useCheckMobileScreen();
+  const router = useRouter();
+  const pagesRouter = usePagesRouter();
+
+  const [scrollPos, setScrollPos] = useState(0);
+  const [hoveredNavItem, setHoveredNavItem] = useState<string>("");
+  const [isHomePage, setIsHomePage] = useState(true);
+
+  const [showContent, setShowContent] = useState(false);
+
+  useEffect(() => {
+    let timeout: NodeJS.Timeout;
+    if (hoveredNavItem) {
+      timeout = setTimeout(() => {
+        setShowContent(true);
+      }, 300);
+    } else {
+      setShowContent(false);
+    }
+    return () => {
+      clearTimeout(timeout);
+    };
+  }, [hoveredNavItem]);
+
+  useEffect(() => {
+    const path = pagesRouter.pathname;
+
+    if (path === "/") {
+      setIsHomePage(true);
+    } else {
+      setIsHomePage(false);
+    }
+  }, [pagesRouter.pathname]);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollPos = window.scrollY;
+      const maxScroll =
+        document.documentElement.scrollHeight - window.innerHeight;
+      setScrollPos(Math.min(currentScrollPos / maxScroll, 1));
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  const handleMouseEnterNavItem = (path: string) => {
+    if (path === "/models" || path === "/shop" || path === "/owners") {
+      setHoveredNavItem(path);
+    }
+  };
+
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.2,
+      },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { y: -20, opacity: 0 },
+    visible: { y: 0, opacity: 1 },
+  };
+
+  const renderDropdownContent = useCallback(() => {
+    switch (hoveredNavItem) {
+      case "/models":
+        return (
+          <div className="flex w-full justify-center items-center gap-8">
+            <motion.div
+              key={hoveredNavItem}
+              initial="hidden"
+              animate={hoveredNavItem === "/models" ? "visible" : "hidden"}
+              variants={containerVariants}
+              className="border-r mr-[50px] border-gray-500 flex flex-row flex-wrap"
+            >
+              {navLinks[0].childPaths?.map((childPath, index) => (
+                <motion.a
+                  className="p-2.5 min-w-[100px] flex flex-col items-center"
+                  key={index + childPath.title}
+                  href={childPath.path}
+                  onClick={() => {
+                    setShowContent(false);
+                    setHoveredNavItem("");
+                  }}
+                  variants={itemVariants}
+                >
+                  <div className="w-[200px] h-[162px] rounded-xl overflow-hidden mx-12">
+                    <Image
+                      src={childPath.imgUrl as string}
+                      alt={childPath.title}
+                      className="object-none w-full h-full rounded-xl"
+                      width={252}
+                      height={162}
+                    />
+                  </div>
+                  <Body className="font-bold mt-2">{childPath.title}</Body>
+                </motion.a>
+              ))}
+            </motion.div>
+          </div>
+        );
+      case "/owners":
+        return (
+          <div className="flex w-full justify-center gap-8">
+            <motion.div
+              key={hoveredNavItem + "column-1"}
+              initial="hidden"
+              animate={hoveredNavItem === "/owners" ? "visible" : "hidden"}
+              variants={containerVariants}
+              className="ml-32 border-r pr-[50px] border-gray-500"
+            >
+              {navLinks[2].childPaths?.map((childPath, index) => (
+                <motion.a
+                  className="p-2.5 min-w-[50px] flex flex-col items-center"
+                  key={index + childPath.title}
+                  href={childPath.path}
+                  onClick={() => setHoveredNavItem("")}
+                  variants={itemVariants}
+                >
+                  <div className="w-[252px] h-[162px] rounded-xl mx-12">
+                    <Image
+                      src={childPath.imgUrl as string}
+                      alt={childPath.title}
+                      className="object-cover w-full h-full rounded-xl"
+                      width={252}
+                      height={162}
+                    />
+                  </div>
+                  <Body className="font-bold mt-2">{childPath.title}</Body>
+                </motion.a>
+              ))}
+            </motion.div>
+          </div>
+        );
+      default:
+        return null;
+    }
+  }, [hoveredNavItem]);
+
+  return (
+    <>
+      {/* Mobile Nav */}
+      <div
+        className={`flex md:hidden top-0 z-20 fixed py-6 px-4 justify-between w-full ${
+          scrollPos > 0.01 || !isHomePage ? "bg-white" : "bg-transparent"
+        } transition-colors duration-500 ease-in-out border-gray-300 ${
+          scrollPos > 0.01 || !isHomePage
+            ? "border-b border-gray-300"
+            : "border-none"
+        }`}
+      >
+        <MobileNav scrollPos={scrollPos} isHomePage={isHomePage} />
+      </div>
+
+      {/* Desktop Nav */}
+
+      <div className="hidden md:flex top-0 z-20 fixed flex-col w-full">
+        <div
+          className={`w-full flex  py-7 px-8 justify-between ${
+            scrollPos > 0.01 || !isHomePage ? "bg-white" : "bg-transparent"
+          } transition-colors duration-500 ease-in-out border-gray-300 ${
+            scrollPos > 0.01 || !isHomePage
+              ? "border-b border-gray-300"
+              : "border-none"
+          } `}
+        >
+          <div className="flex items-center">
+            <div
+              className={`w-[50px] z-30 transition-colors relative ${
+                hoveredNavItem || scrollPos > 0.01 || !isHomePage
+                  ? "text-black"
+                  : "text-white"
+              }`}
+              onClick={() => router.push("/")}
+              role="button"
+            >
+            </div>
+          </div>
+          <div className="flex relative items-center">
+            {navLinks.map((navLink, index) => (
+              <div
+                key={navLink.title + index}
+                onMouseEnter={() => {
+                  if (navLink.path !== "/learn") {
+                    handleMouseEnterNavItem(navLink.path);
+                  } else {
+                    setHoveredNavItem("");
+                  }
+                }}
+                className="group relative w-max z-30 px-2"
+              >
+                <Body
+                  className={`font-bold cursor-pointer p-2.5 rounded-lg transition-colors ${
+                    hoveredNavItem || scrollPos > 0.01 || !isHomePage
+                      ? "text-black"
+                      : "text-white"
+                  } `}
+                >
+                  {navLink.title}
+                  <span className="absolute -bottom-1 left-1/2 duration-500 transform -translate-x-1/2 w-0 transition-all h-1.5 bg-aion-primary-500 group-hover:w-3/4"></span>
+                </Body>
+              </div>
+            ))}
+          </div>
+
+          <div
+            className={`absolute z-20 flex w-full bg-white top-0 left-0 origin-top transition-all duration-1000 ${
+              hoveredNavItem ? "scale-y-100" : "scale-y-0"
+            } hover:scale-y-100`}
+            onMouseLeave={() => setHoveredNavItem("")}
+          >
+            <div className="flex w-full mt-[120px] mb-[24px] min-h-[240px]">
+              {showContent && renderDropdownContent()}
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+};
+
+export default Nav;

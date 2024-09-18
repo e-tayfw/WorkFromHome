@@ -1,26 +1,44 @@
 import { toast } from "react-toastify";
 import React, { useState } from "react";
+import { useRouter } from "next/router";
 export function Auth() {
   const userTypes = ["HR", "Director", "Manager", "Employee"];
   const [username, setUsername] = useState<string>("");
   const [userType, setUserType] = useState("");
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    if (name === "email") {
+    if (name === "username") {
       setUsername(value);
     }
   };
 
+  const router = useRouter();
+  const submitForm = async (username: string, userType: string) => {
+    return new Promise((resolve, reject) => {
+      setTimeout(() => {
+        resolve("success");
+      }, 2000);
+    });
+  };
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-
     if (username === "") {
       toast.error("Username must not be empty");
       return;
     }
-    localStorage.setItem("userType", "myValue");
+    if (userType === "") {
+      toast.error("User Type must be selected");
+      return;
+    }
 
-    // Handle form submission here
+    try {
+      await submitForm(username, userType);
+      localStorage.setItem("userType", userType);
+      router.push("/schedule");
+    } catch (error) {
+      toast.error("An error occurred during submission");
+    }
   };
   return (
     <div className="flex min-h-full flex-1 flex-col justify-center align-middle py-12 sm:px-6 lg:px-8">
@@ -34,17 +52,16 @@ export function Auth() {
           <form className="space-y-6 mt-10" action="#" onSubmit={handleSubmit}>
             <div>
               <label
-                htmlFor="email"
+                htmlFor="username"
                 className="block text-sm font-medium leading-6 text-black"
               >
                 Username
               </label>
               <div className="mt-2">
                 <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  autoComplete="email"
+                  id="username"
+                  name="username"
+                  type="text"
                   required
                   onChange={handleChange}
                   value={username}
