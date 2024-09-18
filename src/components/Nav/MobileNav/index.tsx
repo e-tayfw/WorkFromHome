@@ -60,7 +60,8 @@ export const mobileMenuLinks: NavLink[] = [
 const MobileMenu: FC<MobileMenuProps> = ({ scrollPos, isHomePage }) => {
   const [isOpen, setIsOpen] = useState(false);
   const router = useRouter();
-  // const [showNumber, setShowNumber] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [showNumber, setShowNumber] = useState(false);
 
   const containerVariants = {
     hidden: { opacity: 0, scale: 0.8 },
@@ -120,7 +121,12 @@ const MobileMenu: FC<MobileMenuProps> = ({ scrollPos, isHomePage }) => {
                   {link.childPaths ? (
                     <details className="w-full">
                       <summary
-                        className="font-bold text-3xl text-black cursor-pointer"
+                        className="font-bold text-3xl cursor-pointer"
+                        onClick={() => {
+                          if (link.title === "Owners") {
+                            setShowNumber((prevShowNumber) => !prevShowNumber);
+                          }
+                        }}
                       >
                         {link.title}
                       </summary>
@@ -147,7 +153,7 @@ const MobileMenu: FC<MobileMenuProps> = ({ scrollPos, isHomePage }) => {
                       <NextLink
                         href={link.path}
                         passHref
-                        className="font-bold text-3xl text-primary"
+                        className="font-bold text-3xl text-black"
                         onClick={() => setIsOpen(false)}
                       >
                         {link.title}
