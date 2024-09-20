@@ -1,4 +1,4 @@
-import { Display } from "../TextStyles";
+import { Display } from "@/components/TextStyles";
 import WFHCalendar from "@/components/schedule/Calendar";
 // import { useEffect, useState } from "react";
 const Schedule = () => {

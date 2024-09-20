@@ -3,7 +3,7 @@ import { useRouter as usePagesRouter } from "next/router";
 import { ReactNode, useCallback, useEffect, useState } from "react";
 import Image from "next/image";
 import { useCheckMobileScreen } from "@/hooks/useIsMobile";
-import MobileNav from "./MobileNav";
+import MobileNav from "@/components/nav/MobileNav";
 import { Body, BodyLarge } from "@/components/TextStyles";
 import { motion } from "framer-motion";
 export type NavLink = {
