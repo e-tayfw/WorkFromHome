@@ -57,7 +57,7 @@ export const mobileMenuLinks: NavLink[] = [
 
 ];
 
-const MobileMenu: FC<MobileMenuProps> = ({ scrollPos, isHomePage }) => {
+export const MobileMenu: FC<MobileMenuProps> = ({ scrollPos, isHomePage }) => {
   const [isOpen, setIsOpen] = useState(false);
   const router = useRouter();
   const [showNumber, setShowNumber] = useState(false);
@@ -120,12 +120,7 @@ const MobileMenu: FC<MobileMenuProps> = ({ scrollPos, isHomePage }) => {
                   {link.childPaths ? (
                     <details className="w-full">
                       <summary
-                        className="font-bold text-3xl cursor-pointer"
-                        onClick={() => {
-                          if (link.title === "Owners") {
-                            setShowNumber((prevShowNumber) => !prevShowNumber);
-                          }
-                        }}
+                        className="font-bold text-3xl text-black cursor-pointer"
                       >
                         {link.title}
                       </summary>
@@ -152,7 +147,7 @@ const MobileMenu: FC<MobileMenuProps> = ({ scrollPos, isHomePage }) => {
                       <NextLink
                         href={link.path}
                         passHref
-                        className="font-bold text-3xl text-black"
+                        className="font-bold text-3xl text-primary"
                         onClick={() => setIsOpen(false)}
                       >
                         {link.title}
@@ -169,4 +164,3 @@ const MobileMenu: FC<MobileMenuProps> = ({ scrollPos, isHomePage }) => {
   );
 };
 
-export default MobileMenu;
