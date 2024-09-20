@@ -3,7 +3,7 @@ import WFHCalendar from "@/components/schedule/Calendar";
 // import { useEffect, useState } from "react";
 const Schedule = () => {
   return (
-    <div className="flex flex-col items-start">
+    <div data-testid="schedule-component" className="flex flex-col items-start">
       <div className="flex flex-row relative mt-20 lg:mt-0 max-h-[500px] ">
         <div className="px-[16px] lg:px-[128px]">
           <div className="py-[10px] lg:py-[60px] text-[50px] lg:text-[80px] leading-[60px] lg:leading-[95px] font-bold ">
