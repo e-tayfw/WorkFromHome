@@ -57,7 +57,7 @@ export const mobileMenuLinks: NavLink[] = [
 
 ];
 
-const MobileMenu: FC<MobileMenuProps> = ({ scrollPos, isHomePage }) => {
+export const MobileMenu: FC<MobileMenuProps> = ({ scrollPos, isHomePage }) => {
   const [isOpen, setIsOpen] = useState(false);
   const router = useRouter();
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -170,4 +170,4 @@ const MobileMenu: FC<MobileMenuProps> = ({ scrollPos, isHomePage }) => {
   );
 };
 
-export default MobileMenu;
+// export default MobileMenu;

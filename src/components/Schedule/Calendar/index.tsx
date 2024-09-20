@@ -5,7 +5,7 @@ interface Schedule {
 }
 
 const schedule: Schedule = testSchedule[0].schedule;
-const WFHCalendar: React.FC = () => {
+export const WFHCalendar: React.FC = () => {
   const [currentView, setCurrentView] = useState('day');
 
   const toggleView = () => {
@@ -97,5 +97,3 @@ const WFHCalendar: React.FC = () => {
     </div>
   );
 };
-
-export default WFHCalendar;

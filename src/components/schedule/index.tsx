@@ -1,5 +1,5 @@
 import { Display } from "@/components/TextStyles";
-import WFHCalendar from "@/components/schedule/Calendar";
+import { WFHCalendar } from "@/components/schedule/Calendar";
 // import { useEffect, useState } from "react";
 const Schedule = () => {
   return (
