@@ -1,6 +1,6 @@
-import { Display, H1 } from "../TextStyles";
-import WFHCalendar from "@/components/Schedule/Calendar";
-import { useEffect, useState } from "react";
+import { Display } from "../TextStyles";
+import WFHCalendar from "@/components/schedule/Calendar";
+// import { useEffect, useState } from "react";
 const Schedule = () => {
   return (
     <div className="flex flex-col items-start">

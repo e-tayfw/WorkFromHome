@@ -17,7 +17,9 @@ export function Auth() {
   };
 
   const router = useRouter();
-  const submitForm = async (username: string, userType: string) => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const submitForm = async (_username: string, userType: string) => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     return new Promise((resolve, reject) => {
       setTimeout(() => {
         resolve("success");
