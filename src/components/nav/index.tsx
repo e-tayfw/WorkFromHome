@@ -3,7 +3,7 @@ import { useRouter as usePagesRouter } from "next/router";
 import { ReactNode, useCallback, useEffect, useState } from "react";
 import Image from "next/image";
 import { useCheckMobileScreen } from "@/hooks/useIsMobile";
-import MobileNav from "@/components/nav/MobileNav";
+import MobileMenu from "@/components/nav/MobileNav";
 import { Body, BodyLarge } from "@/components/TextStyles";
 import { motion } from "framer-motion";
 export type NavLink = {
@@ -227,7 +227,7 @@ const Nav = () => {
             : "border-none"
         }`}
       >
-        <MobileNav scrollPos={scrollPos} isHomePage={isHomePage} />
+        <MobileMenu scrollPos={scrollPos} isHomePage={isHomePage} />
       </div>
 
       {/* Desktop Nav */}
@@ -270,9 +270,7 @@ const Nav = () => {
           </div>
           <div className="flex items-center">
             <button className="sign-out-button" onClick={handleSignOut}>
-              <BodyLarge className="relative text-black">
-                Sign Out
-              </BodyLarge>
+              <BodyLarge className="relative text-black">Sign Out</BodyLarge>
             </button>
           </div>
           <div
