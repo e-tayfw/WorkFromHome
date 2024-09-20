@@ -62,6 +62,7 @@ export const navLinks: NavLink[] = [
 ];
 
 const Nav = () => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const isMobile = useCheckMobileScreen();
   const router = useRouter();
   const pagesRouter = usePagesRouter();
