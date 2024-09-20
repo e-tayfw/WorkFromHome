@@ -27,7 +27,7 @@ const Apply = () => {
             <Reason  />
         </div>
         <div >
-            <Body className="mt-4 ml-2 text-sm font-light text-primary">Your Work-From-Home requests are subjected to approval by your reporting manager</Body>
+            <Body className="mt-4 ml-2 text-xs font-light text-primary">*Your Work-From-Home requests are subjected to approval by your reporting manager</Body>
         </div>
         <div className="mt-4 ml-2">
             <Submit />

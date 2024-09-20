@@ -7,9 +7,8 @@ const Submit = () =>{
         <button type="button" 
                 className="text-white
                          !bg-primary
-                           focus:outline-none 
-                           focus:ring-4 
-                           focus:ring-blue-300 
+                           focus:ring-2
+                           focus:ring-accent
                            font-medium 
                            rounded-full 
                            text-sm 
