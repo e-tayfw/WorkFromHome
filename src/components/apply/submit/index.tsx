@@ -6,6 +6,7 @@ const Submit = () =>{
         <button type="button" 
                 className="text-white
                          !bg-primary
+
                            focus:ring-2
                            focus:ring-accent
                            font-medium 
@@ -14,6 +15,8 @@ const Submit = () =>{
                            px-5 
                            py-2.5 
                            text-center 
+                           w-full
+                           sm:w-auto
                            me-2 
                            mb-2">
                             Submit
