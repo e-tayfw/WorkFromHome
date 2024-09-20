@@ -13,7 +13,7 @@ class ScheduleController extends Controller
     {
 
         // Handle invalid Requestor_ID
-        if (empty($employee_id)) {
+        if (empty($staff_id)) {
             return response()->json(['message' => 'Invalid Requestor ID provided'], 400);
         }
 
