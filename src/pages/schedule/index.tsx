@@ -1,4 +1,4 @@
-import Schedule from "@/components/Schedule";
+import Schedule from "@/components/schedule";
 
 const SchedulePage = () => {
     return <Schedule />;

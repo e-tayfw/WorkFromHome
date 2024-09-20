@@ -5,13 +5,14 @@ const useCheckMobileScreen = () => {
 
   const [width, setWidth] = useState(isClient ? window.innerWidth : 0);
 
-  const handleWindowSizeChange = () => {
-    if (isClient) {
-      setWidth(window.innerWidth);
-    }
-  };
 
   useEffect(() => {
+    const handleWindowSizeChange = () => {
+      if (isClient) {
+        setWidth(window.innerWidth);
+      }
+    };
+
     if (isClient) {
       window.addEventListener("resize", handleWindowSizeChange);
 

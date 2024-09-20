@@ -119,6 +119,7 @@ const Nav = () => {
     }
   };
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -129,6 +130,7 @@ const Nav = () => {
     },
   };
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const itemVariants = {
     hidden: { y: -20, opacity: 0 },
     visible: { y: 0, opacity: 1 },
@@ -217,7 +219,7 @@ const Nav = () => {
       default:
         return null;
     }
-  }, [hoveredNavItem]);
+  }, [containerVariants, hoveredNavItem, itemVariants]);
 
   return (
     <>
