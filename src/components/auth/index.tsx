@@ -2,13 +2,17 @@ import { toast } from "react-toastify";
 import React, { useState } from "react";
 import { useRouter } from "next/router";
 export function Auth() {
-  const userTypes = ["HR", "Director", "Manager", "Employee"];
+  const userTypes = ["--select--", "HR", "Director", "Manager", "Employee"];
   const [username, setUsername] = useState<string>("");
   const [userType, setUserType] = useState("");
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
     const { name, value } = e.target;
     if (name === "username") {
       setUsername(value);
+    } else if (name === "userType") {
+      setUserType(value);
     }
   };
 
@@ -21,25 +25,22 @@ export function Auth() {
     });
   };
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (username === "") {
-      toast.error("Username must not be empty");
-      return;
-    }
-    if (userType === "") {
-      toast.error("User Type must be selected");
-      return;
-    }
 
-    try {
-      await submitForm(username, userType);
-      localStorage.setItem("userType", userType);
-      router.push("/schedule");
-    } catch (error) {
-      toast.error("An error occurred during submission");
+    if (username.trim() === "" || userType === "") {
+      toast.error("Please fill in all fields");
+    } else {
+      try {
+        submitForm(username, userType);
+        localStorage.setItem("userType", userType);
+        router.push("/schedule");
+      } catch (error) {
+        toast.error("An error occurred during submission");
+      }
     }
   };
+
   return (
     <div className="flex min-h-full flex-1 flex-col justify-center align-middle py-12 sm:px-6 lg:px-8">
       <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-[480px]">
@@ -74,10 +75,12 @@ export function Auth() {
               Select your User Type
               <span className="text-red-600">*</span>
               <select
+                name="userType"
                 value={userType}
-                onChange={(e) => setUserType(e.target.value)}
+                onChange={handleChange}
                 className="mt-1 block w-full py-2 px-3 border border-gray-300 rounded-md shadow-sm hover:border-aion-primary-500 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
               >
+                <option value="">--Select--</option>
                 {userTypes.map((uTypes) => (
                   <option key={uTypes} value={uTypes}>
                     {uTypes}

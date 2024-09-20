@@ -120,12 +120,7 @@ const MobileMenu: FC<MobileMenuProps> = ({ scrollPos, isHomePage }) => {
                   {link.childPaths ? (
                     <details className="w-full">
                       <summary
-                        className="font-bold text-3xl cursor-pointer"
-                        onClick={() => {
-                          if (link.title === "Owners") {
-                            setShowNumber((prevShowNumber) => !prevShowNumber);
-                          }
-                        }}
+                        className="font-bold text-3xl text-black cursor-pointer"
                       >
                         {link.title}
                       </summary>
@@ -152,7 +147,7 @@ const MobileMenu: FC<MobileMenuProps> = ({ scrollPos, isHomePage }) => {
                       <NextLink
                         href={link.path}
                         passHref
-                        className="font-bold text-3xl text-black"
+                        className="font-bold text-3xl text-primary"
                         onClick={() => setIsOpen(false)}
                       >
                         {link.title}

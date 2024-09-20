@@ -11,7 +11,7 @@ const Home = () => {
 
   return (
     <div>
-      {!userType && <Auth />} {/* Render Auth only if userType is null */}
+      {!userType && <Auth />} 
     </div> 
   );
 }

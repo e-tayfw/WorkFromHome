@@ -1,15 +1,11 @@
 import { useRouter } from "next/navigation";
 import { useRouter as usePagesRouter } from "next/router";
 import { ReactNode, useCallback, useEffect, useState } from "react";
-import NextLink from "next/link";
 import Image from "next/image";
 import { useCheckMobileScreen } from "@/hooks/useIsMobile";
 import MobileNav from "./MobileNav";
-import { Body } from "@/components/TextStyles";
+import { Body, BodyLarge } from "@/components/TextStyles";
 import { motion } from "framer-motion";
-import Link from "next/link";
-import path from "path";
-
 export type NavLink = {
   title: string;
   path: string;
@@ -19,51 +15,51 @@ export type NavLink = {
   childPaths?: NavLink[];
 };
 
-
 export const navLinks: NavLink[] = [
-    {
-      title: "Schedule",
-      path: "/schedule",
-      childPaths: [
-        {
-          title: "My Schedule",
-          path: "/schedule",
-          imgUrl: "https://workfromhomebucket.s3.ap-southeast-2.amazonaws.com/Nav/my-schedule-simu.png",
-        },
-        {
-          title: "Team Schedule",
-          path: "/schedule",
-          imgUrl: "https://workfromhomebucket.s3.ap-southeast-2.amazonaws.com/Nav/team-schedule-simu.png",
-        },
-      ],
-    },
-  
-    {
-      title: "Requests",
-      path: "/request",
-      childPaths: [
-        {
-          title: "Make a Request",
-          path: "/request",
-          imgUrl:
-            "https://workfromhomebucket.s3.ap-southeast-2.amazonaws.com/Nav/new-request-simu.png",
-        },
-        {
-          title: "Past Requests",
-          path: "/request",
-          imgUrl:
-            "https://workfromhomebucket.s3.ap-southeast-2.amazonaws.com/Nav/view-request-simu.png",
-        },
-        {
-          title: "Approve Requests",
-          path: "/request",
-          imgUrl:
-            "https://workfromhomebucket.s3.ap-southeast-2.amazonaws.com/Nav/approve-request-simu.png",
-        },
-      ],
-    },
-  
-  ];
+  {
+    title: "Schedule",
+    path: "/schedule",
+    childPaths: [
+      {
+        title: "My Schedule",
+        path: "/schedule",
+        imgUrl:
+          "https://workfromhomebucket.s3.ap-southeast-2.amazonaws.com/Nav/my-schedule-simu.png",
+      },
+      {
+        title: "Team Schedule",
+        path: "/schedule",
+        imgUrl:
+          "https://workfromhomebucket.s3.ap-southeast-2.amazonaws.com/Nav/team-schedule-simu.png",
+      },
+    ],
+  },
+
+  {
+    title: "Requests",
+    path: "/request",
+    childPaths: [
+      {
+        title: "Make a Request",
+        path: "/request",
+        imgUrl:
+          "https://workfromhomebucket.s3.ap-southeast-2.amazonaws.com/Nav/new-request-simu.png",
+      },
+      {
+        title: "Past Requests",
+        path: "/request",
+        imgUrl:
+          "https://workfromhomebucket.s3.ap-southeast-2.amazonaws.com/Nav/view-request-simu.png",
+      },
+      {
+        title: "Approve Requests",
+        path: "/request",
+        imgUrl:
+          "https://workfromhomebucket.s3.ap-southeast-2.amazonaws.com/Nav/approve-request-simu.png",
+      },
+    ],
+  },
+];
 
 const Nav = () => {
   const isMobile = useCheckMobileScreen();
@@ -75,6 +71,10 @@ const Nav = () => {
   const [isHomePage, setIsHomePage] = useState(true);
 
   const [showContent, setShowContent] = useState(false);
+  function handleSignOut(): void {
+    localStorage.removeItem("userType");
+    router.push("/");
+  }
 
   useEffect(() => {
     let timeout: NodeJS.Timeout;
@@ -113,7 +113,7 @@ const Nav = () => {
   }, []);
 
   const handleMouseEnterNavItem = (path: string) => {
-    if (path === "/models" || path === "/shop" || path === "/owners") {
+    if (path === "/schedule" || path === "/request") {
       setHoveredNavItem(path);
     }
   };
@@ -135,13 +135,13 @@ const Nav = () => {
 
   const renderDropdownContent = useCallback(() => {
     switch (hoveredNavItem) {
-      case "/models":
+      case "/schedule":
         return (
           <div className="flex w-full justify-center items-center gap-8">
             <motion.div
               key={hoveredNavItem}
               initial="hidden"
-              animate={hoveredNavItem === "/models" ? "visible" : "hidden"}
+              animate={hoveredNavItem === "/schedule" ? "visible" : "hidden"}
               variants={containerVariants}
               className="border-r mr-[50px] border-gray-500 flex flex-row flex-wrap"
             >
@@ -171,29 +171,32 @@ const Nav = () => {
             </motion.div>
           </div>
         );
-      case "/owners":
+      case "/request":
         return (
-          <div className="flex w-full justify-center gap-8">
+          <div className="flex w-full justify-center items-center gap-8">
             <motion.div
-              key={hoveredNavItem + "column-1"}
+              key={hoveredNavItem}
               initial="hidden"
-              animate={hoveredNavItem === "/owners" ? "visible" : "hidden"}
+              animate={hoveredNavItem === "/request" ? "visible" : "hidden"}
               variants={containerVariants}
-              className="ml-32 border-r pr-[50px] border-gray-500"
+              className="border-r mr-[50px] border-gray-500 flex flex-row flex-wrap"
             >
-              {navLinks[2].childPaths?.map((childPath, index) => (
+              {navLinks[1].childPaths?.map((childPath, index) => (
                 <motion.a
-                  className="p-2.5 min-w-[50px] flex flex-col items-center"
+                  className="p-2.5 min-w-[100px] flex flex-col items-center"
                   key={index + childPath.title}
                   href={childPath.path}
-                  onClick={() => setHoveredNavItem("")}
+                  onClick={() => {
+                    setShowContent(false);
+                    setHoveredNavItem("");
+                  }}
                   variants={itemVariants}
                 >
-                  <div className="w-[252px] h-[162px] rounded-xl mx-12">
+                  <div className="w-[200px] h-[162px] rounded-xl overflow-hidden mx-12">
                     <Image
                       src={childPath.imgUrl as string}
                       alt={childPath.title}
-                      className="object-cover w-full h-full rounded-xl"
+                      className="object-none w-full h-full rounded-xl"
                       width={252}
                       height={162}
                     />
@@ -236,18 +239,6 @@ const Nav = () => {
               : "border-none"
           } `}
         >
-          <div className="flex items-center">
-            <div
-              className={`w-[50px] z-30 transition-colors relative ${
-                hoveredNavItem || scrollPos > 0.01 || !isHomePage
-                  ? "text-black"
-                  : "text-white"
-              }`}
-              onClick={() => router.push("/")}
-              role="button"
-            >
-            </div>
-          </div>
           <div className="flex relative items-center">
             {navLinks.map((navLink, index) => (
               <div
@@ -269,12 +260,18 @@ const Nav = () => {
                   } `}
                 >
                   {navLink.title}
-                  <span className="absolute -bottom-1 left-1/2 duration-500 transform -translate-x-1/2 w-0 transition-all h-1.5 bg-aion-primary-500 group-hover:w-3/4"></span>
+                  <span className="absolute -bottom-1 left-1/2 duration-500 transform -translate-x-1/2 w-0 transition-all h-1.5 bg-primary group-hover:w-3/4"></span>
                 </Body>
               </div>
             ))}
           </div>
-
+          <div className="flex items-center">
+            <button className="sign-out-button" onClick={handleSignOut}>
+              <BodyLarge className="relative text-black">
+                Sign Out
+              </BodyLarge>
+            </button>
+          </div>
           <div
             className={`absolute z-20 flex w-full bg-white top-0 left-0 origin-top transition-all duration-1000 ${
               hoveredNavItem ? "scale-y-100" : "scale-y-0"

@@ -1,4 +1,5 @@
-import { Auth } from "@/components/Auth";
+import { Auth } from "@/components/Auth"; 
+
 import React from "react";
 
 const authpage: React.FC = () => {
