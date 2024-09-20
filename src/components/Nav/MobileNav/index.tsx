@@ -4,8 +4,8 @@ import { useRouter } from "next/router";
 import { FiMenu, FiX } from "react-icons/fi"; 
 import NextLink from "next/link";
 import { NavLink } from "..";
-import { Body } from "@/components/TextStyles";
-import Link from "next/link";
+// import { Body } from "@/components/TextStyles";
+// import Link from "next/link";
 
 export interface MobileMenuProps {
   scrollPos: number;
@@ -60,7 +60,7 @@ export const mobileMenuLinks: NavLink[] = [
 const MobileMenu: FC<MobileMenuProps> = ({ scrollPos, isHomePage }) => {
   const [isOpen, setIsOpen] = useState(false);
   const router = useRouter();
-  const [showNumber, setShowNumber] = useState(false);
+  // const [showNumber, setShowNumber] = useState(false);
 
   const containerVariants = {
     hidden: { opacity: 0, scale: 0.8 },
