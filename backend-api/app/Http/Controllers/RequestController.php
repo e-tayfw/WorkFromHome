@@ -27,7 +27,7 @@ class RequestController extends Controller
     // Fetch all requests by approverID
      public function getRequestsByApproverID($approver_id)
     {
-        $request = Requests::where(column: 'Requestor_ID', operator: $approver_id)->get();
+        $request = Requests::where(column: 'Approver_ID', operator: $approver_id)->get();
         if ($request) {
             return response()->json($request);
         } else {
