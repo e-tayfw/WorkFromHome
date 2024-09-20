@@ -1,6 +1,3 @@
-import type { Config } from "tailwindcss";
-
-
 const Selection = () => {
     return (
         <div className="flex">
@@ -32,4 +29,4 @@ const Selection = () => {
         </div>
     );
   };
-  export default Selection;
+  export {Selection};

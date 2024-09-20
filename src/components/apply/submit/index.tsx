@@ -1,6 +1,5 @@
 import React, { useEffect } from 'react';
 import 'flowbite/dist/flowbite.min.css';
-import type { Config } from "tailwindcss";
 
 const Submit = () =>{
     return( 
@@ -22,4 +21,4 @@ const Submit = () =>{
 
     );
 };
-export default Submit;
+export {Submit};

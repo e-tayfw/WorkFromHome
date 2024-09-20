@@ -1,5 +1,4 @@
 import React, { useEffect } from 'react';
-import type { Config } from "tailwindcss";
 import 'flowbite/dist/flowbite.min.css';
 
 const Datecomponent = () => {
@@ -52,4 +51,4 @@ const Datecomponent = () => {
   );
 };
 
-export default Datecomponent;
+export {Datecomponent};

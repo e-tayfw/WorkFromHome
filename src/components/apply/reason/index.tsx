@@ -1,6 +1,3 @@
-import type { Config } from "tailwindcss";
-
-
 const Reason = () => {
     return(
     <div>
@@ -11,5 +8,5 @@ const Reason = () => {
     </div>
     );
 };
-export default Reason;
+export {Reason};
 

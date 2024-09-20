@@ -1,9 +1,8 @@
-import Datecomponent from "@/components/request/datepicker";
-import Selection from "@/components/request/selection";
-import Reason from "@/components/request/reason";
-import Submit from "@/components/request/submit";
+import { Datecomponent } from "@/components/apply/datepicker";
+import { Selection } from "@/components/apply/selection";
+import { Reason } from "@/components/apply/reason";
+import { Submit } from "@/components/apply/submit";
 import { Body } from "@/components/TextStyles";
-import type { Config } from "tailwindcss";
 
 const Apply = () => {
   return (
@@ -36,4 +35,4 @@ const Apply = () => {
   );
 }
 
-export default Apply;
+export {Apply};
