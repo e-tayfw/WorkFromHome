@@ -346,20 +346,19 @@ const WFHCalendar: React.FC = () => {
 
                         return (
                           <div
-                            className={`flex flex-row lg:flex-col items-between mb-2 lg:items-center p-4 border border-gray-200 rounded-xl w-full lg:w-1/7 
-                          ${
+                          className={`flex flex-row lg:flex-col justify-between mb-2 items-center p-4 border border-gray-200 rounded-xl w-full lg:w-1/7 ${
                             getCurrentDate() === dateString
                               ? "bg-secondary text-black"
                               : "bg-primary text-white"
                           }`}
                           >
-                            <div className="flex flex-row lg:flex-col">
+                            <div className="flex flex-col lg:flex-row">
                               <H2 className="text-lg font-bold">
                                 {dateFormat(dateString)}
                               </H2>
                             </div>
                             <div
-                              className={`flex flex-row lg:flex-col h-24 justify-center items-center 
+                              className={`flex flex-col lg:flex-row h-24 justify-center items-center
       ${
         (
           testSchedule[0].schedule as {
