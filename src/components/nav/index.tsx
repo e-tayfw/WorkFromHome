@@ -159,16 +159,19 @@ const Nav = () => {
                   }}
                   variants={itemVariants}
                 >
-                  <div className="w-[200px] h-[162px] rounded-xl overflow-hidden mx-12">
+                  <div className="w-[300px] h-[162px] rounded-xl overflow-hidden mx-12">
                     <Image
                       src={childPath.imgUrl as string}
                       alt={childPath.title}
-                      className="object-none w-full h-full rounded-xl"
-                      width={252}
-                      height={162}
+                      className="w-full h-full rounded-xl"
+                      objectFit="cover"
+                      width={400}
+                      height={300}
                     />
                   </div>
-                  <Body className="font-bold mt-2">{childPath.title}</Body>
+                  <Body className="font-bold mt-2 text-black">
+                    {childPath.title}
+                  </Body>
                 </motion.a>
               ))}
             </motion.div>
@@ -195,16 +198,19 @@ const Nav = () => {
                   }}
                   variants={itemVariants}
                 >
-                  <div className="w-[200px] h-[162px] rounded-xl overflow-hidden mx-12">
+                  <div className="w-[300px] h-[162px] rounded-xl overflow-hidden mx-12">
                     <Image
                       src={childPath.imgUrl as string}
                       alt={childPath.title}
-                      className="object-none w-full h-full rounded-xl"
-                      width={252}
-                      height={162}
+                      className="w-full h-full rounded-xl"
+                      objectFit="cover"
+                      width={400}
+                      height={300}
                     />
                   </div>
-                  <Body className="font-bold mt-2">{childPath.title}</Body>
+                  <Body className="font-bold mt-2 text-black">
+                    {childPath.title}
+                  </Body>
                 </motion.a>
               ))}
             </motion.div>
@@ -268,13 +274,20 @@ const Nav = () => {
               </div>
             ))}
           </div>
-          <div className="flex items-center">
+          <div className="flex items-center z-30">
             <button className="sign-out-button" onClick={handleSignOut}>
-              <BodyLarge className="relative text-black">
+              <BodyLarge
+                className={`font-bold cursor-pointer p-2.5  rounded-lg transition-colors ${
+                  hoveredNavItem || scrollPos > 0.01 || !isHomePage
+                    ? "text-black"
+                    : "text-white"
+                } `}
+              >
                 Sign Out
               </BodyLarge>
             </button>
           </div>
+
           <div
             className={`absolute z-20 flex w-full bg-white top-0 left-0 origin-top transition-all duration-1000 ${
               hoveredNavItem ? "scale-y-100" : "scale-y-0"
