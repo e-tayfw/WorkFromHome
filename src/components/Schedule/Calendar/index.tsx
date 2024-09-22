@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { testSchedule } from "@/constants/schedule_test";
 import { Body, H2, H1 } from "@/components/TextStyles";
-
+import moment from "moment";
 interface Schedule {
   [date: string]: number | undefined;
 }
@@ -242,6 +242,20 @@ const WFHCalendar: React.FC = () => {
         .padStart(2, "0")}${currentDate.getFullYear().toString().slice(2)}`
     );
   };
+  const getWfhClass = (wfhStatus: number) => {
+    switch (wfhStatus) {
+      case 0:
+        return "bg-white text-primary";
+      case 1:
+        return "bg-gradient-to-t from-white to-secondary text-white";
+      case 2:
+        return "bg-gradient-to-b from-white to-secondary text-primary";
+      case 3:
+        return "bg-secondary text-white";
+      default:
+        return "";
+    }
+  };
 
   return (
     <div className="container mx-auto p-4">
@@ -275,8 +289,14 @@ const WFHCalendar: React.FC = () => {
               Next Day
             </button>
           </div>
-          <div className="flex flex-col items-center p-4 border border-gray-200 text-white bg-primary rounded-xl mb-4">
-            <Body>
+          <div
+            className={`flex flex-col items-center p-4 border border-gray-200 min-h-[400px] rounded-xl mb-4 ${getWfhClass(
+              (testSchedule[0].schedule as { [date: string]: number })[
+                selectedDate
+              ]
+            )}`}
+          >
+            <Body className="text-lg font-bold">
               {(testSchedule[0].schedule as { [date: string]: number })[
                 selectedDate
               ] === 0
@@ -322,7 +342,7 @@ const WFHCalendar: React.FC = () => {
                   <H2 className="text-lg font-bold mb-4">
                     Week {weekNumber} ({getWeekDates(weekNumber)})
                   </H2>
-                  <div className="flex flex-wrap justify-center">
+                  <div className="flex flex-col lg:flex-row justify-center lg:space-x-4 space-y-3">
                     {Array(7)
                       .fill(0)
                       .map((_, index) => {
@@ -344,71 +364,48 @@ const WFHCalendar: React.FC = () => {
                           .toString()
                           .slice(2)}`;
 
+                        const wfhStatus = (
+                          testSchedule[0].schedule as { [date: string]: number }
+                        )[dateString];
+
+                        const getWfhClass = () => {
+                          switch (wfhStatus) {
+                            case 0:
+                              return "bg-white text-primary";
+                            case 1:
+                              return "bg-gradient-to-t from-white to-secondary text-primary";
+                            case 2:
+                              return "bg-gradient-to-b from-white to-secondary text-primary";
+                            case 3:
+                              return "bg-secondary text-white";
+                            default:
+                              return "";
+                          }
+                        };
+                        const isToday = moment().format("DDMMYY") === dateString;
+
+
                         return (
                           <div
-                          className={`flex flex-row lg:flex-col justify-between mb-2 items-center p-4 border border-gray-200 rounded-xl w-full lg:w-1/7 ${
-                            getCurrentDate() === dateString
-                              ? "bg-secondary text-black"
-                              : "bg-primary text-white"
-                          }`}
+                            className={`flex flex-col justify-between items-center p-4 border border-gray-200 rounded-xl min-h-[100px] lg:min-h-[400px] w-full md:w-1/2 lg:w-1/7 xl:w-1/7 2xl:w-1/7 ${getWfhClass()}`}
                           >
-                            <div className="flex flex-col lg:flex-row">
+                            <div className="flex flex-col">
+                              {isToday && (
+                                <Body className="text-lg font-bold">
+                                  Today
+                                  </Body>
+                                  )}
                               <H2 className="text-lg font-bold">
                                 {dateFormat(dateString)}
                               </H2>
                             </div>
-                            <div
-                              className={`flex flex-col lg:flex-row h-24 justify-center items-center
-      ${
-        (
-          testSchedule[0].schedule as {
-            [date: string]: number;
-          }
-        )[dateString] === 0
-          ? "text-center"
-          : (
-              testSchedule[0].schedule as {
-                [date: string]: number;
-              }
-            )[dateString] === 1
-          ? "bg-secondary bg-gradient-to-b-from-secondary-to-transparent"
-          : (
-              testSchedule[0].schedule as {
-                [date: string]: number;
-              }
-            )[dateString] === 2
-          ? "bg-transparent bg-gradient-to-t-from-secondary-to-transparent"
-          : "bg-secondary"
-      }`}
-                            >
-                              <Body
-                                className={`text-lg font-bold ${
-                                  (
-                                    testSchedule[0].schedule as {
-                                      [date: string]: number;
-                                    }
-                                  )[dateString] === 0
-                                    ? ""
-                                    : "text-white"
-                                }`}
-                              >
-                                {(
-                                  testSchedule[0].schedule as {
-                                    [date: string]: number;
-                                  }
-                                )[dateString] === 0
+                            <div className="flex flex-col h-24 justify-center items-center">
+                              <Body className="text-lg font-bold">
+                                {wfhStatus === 0
                                   ? "No WFH"
-                                  : (
-                                      testSchedule[0].schedule as {
-                                        [date: string]: number;
-                                      }
-                                    )[dateString] === 1
+                                  : wfhStatus === 1
                                   ? "AM WFH"
-                                  : (
-                                      testSchedule[0].schedule as {
-                                        [date: string]: number;
-                                      }
-                                    )[dateString] === 2
+                                  : wfhStatus === 2
                                   ? "PM WFH"
                                   : "Full Day WFH"}
                               </Body>

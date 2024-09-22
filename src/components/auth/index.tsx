@@ -2,7 +2,7 @@ import { toast } from "react-toastify";
 import React, { useState } from "react";
 import { useRouter } from "next/router";
 export function Auth() {
-  const userTypes = ["--select--", "HR", "Director", "Manager", "Employee"];
+  const userTypes = [ "HR", "Director", "Manager", "Employee"];
   const [username, setUsername] = useState<string>("");
   const [userType, setUserType] = useState("");
   const handleChange = (
