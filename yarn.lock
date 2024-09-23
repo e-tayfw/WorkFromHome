@@ -1081,6 +1081,18 @@
   resolved "https://registry.npmjs.org/@eslint/js/-/js-8.57.0.tgz"
   integrity sha512-Ys+3g2TaW7gADOJzPt83SJtCDhMjndcDMFVQ/Tj9iA1BfJzFKD9mAUXT3OenpuPHbI6P/myECxRJrofUsDx/5g==
 
+"@fortawesome/fontawesome-common-types@6.6.0":
+  version "6.6.0"
+  resolved "https://registry.npmjs.org/@fortawesome/fontawesome-common-types/-/fontawesome-common-types-6.6.0.tgz"
+  integrity sha512-xyX0X9mc0kyz9plIyryrRbl7ngsA9jz77mCZJsUkLl+ZKs0KWObgaEBoSgQiYWAsSmjz/yjl0F++Got0Mdp4Rw==
+
+"@fortawesome/fontawesome-svg-core@~1 || ~6":
+  version "6.6.0"
+  resolved "https://registry.npmjs.org/@fortawesome/fontawesome-svg-core/-/fontawesome-svg-core-6.6.0.tgz"
+  integrity sha512-KHwPkCk6oRT4HADE7smhfsKudt9N/9lm6EJ5BVg0tD1yPA5hht837fB87F8pn15D8JfTqQOjhKTktwmLMiD7Kg==
+  dependencies:
+    "@fortawesome/fontawesome-common-types" "6.6.0"
+
 "@fortawesome/react-fontawesome@^0.2.2":
   version "0.2.2"
   resolved "https://registry.npmjs.org/@fortawesome/react-fontawesome/-/react-fontawesome-0.2.2.tgz"
@@ -1366,6 +1378,14 @@
     "@jridgewell/resolve-uri" "^3.1.0"
     "@jridgewell/sourcemap-codec" "^1.4.14"
 
+"@jridgewell/trace-mapping@0.3.9":
+  version "0.3.9"
+  resolved "https://registry.npmjs.org/@jridgewell/trace-mapping/-/trace-mapping-0.3.9.tgz"
+  integrity sha512-3Belt6tdc8bPgAtbcmdtNJlirVoTmEb5e2gC94PnkwEW9jI6CAHUeoG85tjWP5WquqfavoMtMwiG4P926ZKKuQ==
+  dependencies:
+    "@jridgewell/resolve-uri" "^3.0.3"
+    "@jridgewell/sourcemap-codec" "^1.4.10"
+
 "@next/env@14.2.12":
   version "14.2.12"
   resolved "https://registry.npmjs.org/@next/env/-/env-14.2.12.tgz"
@@ -1380,7 +1400,7 @@
 
 "@next/swc-darwin-arm64@14.2.12":
   version "14.2.12"
-  resolved "https://registry.yarnpkg.com/@next/swc-darwin-arm64/-/swc-darwin-arm64-14.2.12.tgz#263c68fd55538624a6236552d153a3487d601a33"
+  resolved "https://registry.npmjs.org/@next/swc-darwin-arm64/-/swc-darwin-arm64-14.2.12.tgz"
   integrity sha512-crHJ9UoinXeFbHYNok6VZqjKnd8rTd7K3Z2zpyzF1ch7vVNKmhjv/V7EHxep3ILoN8JB9AdRn/EtVVyG9AkCXw==
 
 "@next/swc-darwin-x64@14.2.12":
@@ -1390,37 +1410,37 @@
 
 "@next/swc-linux-arm64-gnu@14.2.12":
   version "14.2.12"
-  resolved "https://registry.yarnpkg.com/@next/swc-linux-arm64-gnu/-/swc-linux-arm64-gnu-14.2.12.tgz#56214b10cdb1c47d6f26ae2dd00bc9b32fd2a694"
+  resolved "https://registry.npmjs.org/@next/swc-linux-arm64-gnu/-/swc-linux-arm64-gnu-14.2.12.tgz"
   integrity sha512-qBy7OiXOqZrdp88QEl2H4fWalMGnSCrr1agT/AVDndlyw2YJQA89f3ttR/AkEIP9EkBXXeGl6cC72/EZT5r6rw==
 
 "@next/swc-linux-arm64-musl@14.2.12":
   version "14.2.12"
-  resolved "https://registry.yarnpkg.com/@next/swc-linux-arm64-musl/-/swc-linux-arm64-musl-14.2.12.tgz#017ccb35e94dd5336f38bdab90ccc7163467e0d1"
+  resolved "https://registry.npmjs.org/@next/swc-linux-arm64-musl/-/swc-linux-arm64-musl-14.2.12.tgz"
   integrity sha512-EfD9L7o9biaQxjwP1uWXnk3vYZi64NVcKUN83hpVkKocB7ogJfyH2r7o1pPnMtir6gHZiGCeHKagJ0yrNSLNHw==
 
 "@next/swc-linux-x64-gnu@14.2.12":
   version "14.2.12"
-  resolved "https://registry.yarnpkg.com/@next/swc-linux-x64-gnu/-/swc-linux-x64-gnu-14.2.12.tgz#b5df80780eceef6b44a0cedfe7234d34a60af1f9"
+  resolved "https://registry.npmjs.org/@next/swc-linux-x64-gnu/-/swc-linux-x64-gnu-14.2.12.tgz"
   integrity sha512-iQ+n2pxklJew9IpE47hE/VgjmljlHqtcD5UhZVeHICTPbLyrgPehaKf2wLRNjYH75udroBNCgrSSVSVpAbNoYw==
 
 "@next/swc-linux-x64-musl@14.2.12":
   version "14.2.12"
-  resolved "https://registry.yarnpkg.com/@next/swc-linux-x64-musl/-/swc-linux-x64-musl-14.2.12.tgz#553ad8dd26e8fce343f2b01d741dffc8bb909e37"
+  resolved "https://registry.npmjs.org/@next/swc-linux-x64-musl/-/swc-linux-x64-musl-14.2.12.tgz"
   integrity sha512-rFkUkNwcQ0ODn7cxvcVdpHlcOpYxMeyMfkJuzaT74xjAa5v4fxP4xDk5OoYmPi8QNLDs3UgZPMSBmpBuv9zKWA==
 
 "@next/swc-win32-arm64-msvc@14.2.12":
   version "14.2.12"
-  resolved "https://registry.yarnpkg.com/@next/swc-win32-arm64-msvc/-/swc-win32-arm64-msvc-14.2.12.tgz#cf9c3907f43b9a0cbe2f10a46f6c9f5de05ba9dc"
+  resolved "https://registry.npmjs.org/@next/swc-win32-arm64-msvc/-/swc-win32-arm64-msvc-14.2.12.tgz"
   integrity sha512-PQFYUvwtHs/u0K85SG4sAdDXYIPXpETf9mcEjWc0R4JmjgMKSDwIU/qfZdavtP6MPNiMjuKGXHCtyhR/M5zo8g==
 
 "@next/swc-win32-ia32-msvc@14.2.12":
   version "14.2.12"
-  resolved "https://registry.yarnpkg.com/@next/swc-win32-ia32-msvc/-/swc-win32-ia32-msvc-14.2.12.tgz#cad79313b383e95e6d53bdb631b47a26e63146e0"
+  resolved "https://registry.npmjs.org/@next/swc-win32-ia32-msvc/-/swc-win32-ia32-msvc-14.2.12.tgz"
   integrity sha512-FAj2hMlcbeCV546eU2tEv41dcJb4NeqFlSXU/xL/0ehXywHnNpaYajOUvn3P8wru5WyQe6cTZ8fvckj/2XN4Vw==
 
 "@next/swc-win32-x64-msvc@14.2.12":
   version "14.2.12"
-  resolved "https://registry.yarnpkg.com/@next/swc-win32-x64-msvc/-/swc-win32-x64-msvc-14.2.12.tgz#9d5b2f2733221ae85c3e5c6d4b6f8f1da32d5cae"
+  resolved "https://registry.npmjs.org/@next/swc-win32-x64-msvc/-/swc-win32-x64-msvc-14.2.12.tgz"
   integrity sha512-yu8QvV53sBzoIVRHsxCHqeuS8jYq6Lrmdh0briivuh+Brsp6xjg80MAozUsBTAV9KNmY08KlX0KYTWz1lbPzEg==
 
 "@nodelib/fs.scandir@2.1.5":
