@@ -1,14 +1,10 @@
-import React, { useEffect } from 'react';
-import 'flowbite/dist/flowbite.min.css';
+import React from 'react';
 
-const Submit = () =>{
+const Submit = ({ onSubmit, isDisabled }) => {
     return( 
-        <button type="button" 
-                className="text-white
-                         !bg-primary
-
-                           focus:ring-2
-                           focus:ring-accent
+        <button type="submit" 
+                className={`text-white
+                           ${isDisabled ? 'bg-gray-400 cursor-not-allowed' : '!bg-primary hover:ring-2 hover:ring-primary hover:text-primary hover:!bg-background'}
                            font-medium 
                            rounded-full 
                            text-sm 
@@ -18,10 +14,13 @@ const Submit = () =>{
                            w-full
                            sm:w-auto
                            me-2 
-                           mb-2">
-                            Submit
-                           </button>
-
+                           mb-2`}
+                onClick={onSubmit}
+                disabled={isDisabled}
+        >
+            Submit
+        </button>
     );
 };
-export {Submit};
+
+export { Submit };
