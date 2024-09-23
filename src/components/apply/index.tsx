@@ -5,14 +5,12 @@ import { Reason } from "@/components/apply/reason";
 import { Submit } from "@/components/apply/submit";
 import { Body } from "@/components/TextStyles";
 
-const Apply = () => {
-  // State to store form values
+const Apply = ({ onSubmitData }) => {
   const [selectedDate, setSelectedDate] = useState("");
   const [preferredArrangement, setPreferredArrangement] = useState("");
   const [reason, setReason] = useState("");
   const [isFormValid, setIsFormValid] = useState(false);
 
-  // Effect to check form validity
   useEffect(() => {
     setIsFormValid(
       selectedDate !== "" &&
@@ -21,12 +19,18 @@ const Apply = () => {
     );
   }, [selectedDate, preferredArrangement, reason]);
 
-  // Handle the form submission
   const handleSubmit = (event) => {
     event.preventDefault();
-    console.log("Date:", selectedDate);
-    console.log("Preferred Arrangement:", preferredArrangement);
-    console.log("Reason:", reason);
+    const submitData = {
+      user: 140078,
+      date: selectedDate,
+      arrangement: preferredArrangement,
+      reason: reason
+    };
+    console.log("Send Data:", submitData);
+    
+    // Pass the data to the parent component
+    onSubmitData(submitData);
 
     // Reset form fields
     setSelectedDate("");
