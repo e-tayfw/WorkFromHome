@@ -15,16 +15,19 @@ const config: Config = {
         primary: '#072040',
         secondary: '#a2b4cc',
         accent: '#819dc1',
-        // Dark mode colors
-        // 'dark-text': '#d0dbfc',
-        // 'dark-background': '#12141a',
-        // 'dark-primary': '#006a66',
-        // 'dark-secondary': '#ffffff',
-        // 'dark-accent': '#436be5',
-        }
         
+        // Dark mode colors, prefixed with 'dark-'
+        'dark-text': '#d0dbfc',
+        'dark-background': '#12141a',
+        'dark-primary': '#006a66',
+        'dark-secondary': '#ffffff',
+        'dark-accent': '#436be5',
       },
     },
-  plugins: [],
+  },
+  plugins: [
+    require('flowbite/plugin'),
+  ],
+  darkMode: 'class', // Enables dark mode with a 'dark' class on the root element
 };
 export default config;
