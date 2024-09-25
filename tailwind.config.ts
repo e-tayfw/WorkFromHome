@@ -11,7 +11,7 @@ const config: Config = {
       colors: {
         // Light mode colors
         text: '#090a0c',
-        background: '#fbfcfd',
+        background: '#f5f5f5',
         primary: '#072040',
         secondary: '#a2b4cc',
         accent: '#819dc1',

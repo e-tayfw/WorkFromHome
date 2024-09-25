@@ -6,7 +6,7 @@ import { useDispatch } from "react-redux";
 import { setAuthData } from "@/redux/slices/authSlice"
 
 export function Auth() {
-  const userTypes = ["--select--", "HR", "Director", "Manager", "Employee"];
+  const userTypes = [ "HR", "Director", "Manager", "Employee"];
   const [username, setUsername] = useState<string>("");
   const [userType, setUserType] = useState("");
   const dispatch = useDispatch();
