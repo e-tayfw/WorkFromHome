@@ -1,5 +1,7 @@
 import { useRouter } from "next/navigation";
 import { useRouter as usePagesRouter } from "next/router";
+import { useDispatch } from 'react-redux';
+import { logout } from '@/redux/slices/authSlice'; // Import the logout action from the authSlice
 import { ReactNode, useCallback, useEffect, useState } from "react";
 import Image from "next/image";
 import { useCheckMobileScreen } from "@/hooks/useIsMobile";
@@ -72,8 +74,12 @@ const Nav = () => {
   const [isHomePage, setIsHomePage] = useState(true);
 
   const [showContent, setShowContent] = useState(false);
+  const dispatch = useDispatch();
+  
   function handleSignOut(): void {
     localStorage.removeItem("userType");
+
+    dispatch(logout())
     router.push("/");
   }
 
