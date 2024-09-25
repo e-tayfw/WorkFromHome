@@ -35,4 +35,8 @@ class RequestController extends Controller
         }
     }   
 
+    public function createRequest($request_info)
+    {
+        
+    }
 }
