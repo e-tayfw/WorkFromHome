@@ -22,7 +22,6 @@ const config: Config = {
         // 'dark-secondary': '#ffffff',
         // 'dark-accent': '#436be5',
         }
-        
       },
     },
   },
