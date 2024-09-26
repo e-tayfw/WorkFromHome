@@ -1,9 +1,9 @@
 import { toast } from "react-toastify";
 import React, { useState } from "react";
 import { useRouter } from "next/router";
-import axios from "axios";
 import { useDispatch } from "react-redux";
 import { setAuthData } from "@/redux/slices/authSlice"
+import { getEmployeeDataByEmail } from "@/pages/api/employeeApi";
 
 export function Auth() {
   const userTypes = [ "HR", "Director", "Manager", "Employee"];
@@ -20,22 +20,6 @@ export function Auth() {
       setUsername(value);
     } else if (name === "userType") {
       setUserType(value);
-    }
-  };
-
-  const getEmployeeDataByEmail = async (username: string) => {
-    try {
-      const response = await axios.get(
-        `http://127.0.0.1:8085/api/employee/email/${username}`
-      );
-      if (response.status === 200) {
-        return response.data; // Return the employee data
-      } else {
-        throw new Error("Failed to retrieve employee data");
-      }
-    } catch (error) {
-      console.error(error);
-      throw new Error("An error occurred while fetching employee data.");
     }
   };
 

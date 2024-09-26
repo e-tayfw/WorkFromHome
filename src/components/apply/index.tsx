@@ -5,7 +5,18 @@ import { Reason } from "@/components/apply/reason";
 import { Submit } from "@/components/apply/submit";
 import { Body } from "@/components/TextStyles";
 
-const Apply = ({ onSubmitData }) => {
+interface SubmitData {
+  user: number;
+  date: string;
+  arrangement: string;
+  reason: string;
+}
+
+interface ApplyProps {
+  onSubmitData: (data: SubmitData) => void;
+}
+
+const Apply: React.FC<ApplyProps> = ({ onSubmitData }) => {
   const [selectedDate, setSelectedDate] = useState("");
   const [preferredArrangement, setPreferredArrangement] = useState("");
   const [reason, setReason] = useState("");
@@ -13,22 +24,20 @@ const Apply = ({ onSubmitData }) => {
 
   useEffect(() => {
     setIsFormValid(
-      selectedDate !== "" &&
-      preferredArrangement !== "" &&
-      reason.trim() !== ""
+      selectedDate !== "" && preferredArrangement !== "" && reason.trim() !== ""
     );
   }, [selectedDate, preferredArrangement, reason]);
 
-  const handleSubmit = (event) => {
+  const handleSubmit = (event: { preventDefault: () => void; }) => {
     event.preventDefault();
     const submitData = {
       user: 140078,
       date: selectedDate,
       arrangement: preferredArrangement,
-      reason: reason
+      reason: reason,
     };
     console.log("Send Data:", submitData);
-    
+
     // Pass the data to the parent component
     onSubmitData(submitData);
 
@@ -42,10 +51,15 @@ const Apply = ({ onSubmitData }) => {
     <div className="flex justify-center items-start min-h-screen">
       <div className="flex flex-col max-w-lg w-full p-4 sm:max-w-md">
         <div>
-          <Body className="text-sm font-light text-primary">Select a date *</Body>
+          <Body className="text-sm font-light text-primary">
+            Select a date *
+          </Body>
         </div>
         <div className="mt-2 ml-2">
-          <Datecomponent onDateChange={setSelectedDate} selectedDate={selectedDate} />
+          <Datecomponent
+            onDateChange={setSelectedDate}
+            selectedDate={selectedDate}
+          />
         </div>
 
         <div>
@@ -54,7 +68,10 @@ const Apply = ({ onSubmitData }) => {
           </Body>
         </div>
         <div className="mt-2 ml-2 ">
-          <Selection onSelectionChange={setPreferredArrangement} selectedValue={preferredArrangement} />
+          <Selection
+            onSelectionChange={setPreferredArrangement}
+            selectedValue={preferredArrangement}
+          />
         </div>
 
         <div>
