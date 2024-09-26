@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
-import { Auth } from "@/components/auth";
-// import Schedule from "@/components/schedule";
+import { useState, useEffect } from 'react';
+import { Auth } from "@/components/Auth";
+import Schedule from "@/components/Schedule";
 
 const Home = () => {
   const [userType, setUserType] = useState<string | null>(null);
@@ -9,7 +9,11 @@ const Home = () => {
     setUserType(localStorage.getItem("userType"));
   }, []);
 
-  return <div>{!userType && <Auth />}</div>;
-};
+  return (
+    <div>
+      {!userType && <Auth />} 
+    </div> 
+  );
+}
 
 export default Home;
