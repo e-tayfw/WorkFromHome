@@ -6,7 +6,7 @@ use App\Models\Requests;
 use App\Models\Employee;
 use Carbon\Carbon;
 
-use Log;
+use Illuminate\Support\Facades\Log;
 
 class ScheduleController extends Controller
 {
@@ -49,7 +49,7 @@ class ScheduleController extends Controller
             $date->setTimezone('UTC');
 
             // Format date as "ddmmyy"
-            $formattedDate = $date->format('Y-m-d H:i:s');
+            $formattedDate = $date->format('dmy');
 
             // Check if the date exists in the requests array
             $request = collect($requests)->firstWhere('Date_Requested', $date->format('Y-m-d'));
@@ -141,7 +141,7 @@ class ScheduleController extends Controller
                 $date->setTimezone('UTC');
 
                 // Format date as "ddmmyy"
-                $formattedDate = $date->format('Y-m-d H:i:s');
+                $formattedDate = $date->format('dmy');
 
                 // Check if there is an approved request for this team member on this date
                 $request = $approvedRequests->where('Requestor_ID', $member_id)
@@ -226,7 +226,7 @@ class ScheduleController extends Controller
                 $date->setTimezone('UTC');
 
                 // Format date as "ddmmyy"
-                $formattedDate = $date->format('Y-m-d H:i:s');
+                $formattedDate = $date->format('dmy');
 
                 // Check if there is an approved request for this team member on this date
                 $request = $approvedRequests->where('Requestor_ID', $member_id)
