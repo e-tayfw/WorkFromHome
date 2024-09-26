@@ -18,7 +18,7 @@ const Datecomponent = ({ selectedDate, onDateChange }) => {
           const datepicker = new Datepicker(datepickerElement, {
             minDate: minDate,
             maxDate: maxDate,
-            format: 'dd/mm/yyyy',
+            format: 'yyyy-mm-dd',
             clearBtn: true,
           });
 

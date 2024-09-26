@@ -22,7 +22,7 @@ const Apply = ({ onSubmitData }) => {
   const handleSubmit = (event) => {
     event.preventDefault();
     const submitData = {
-      user: 140078,
+      staffid: 140078,
       date: selectedDate,
       arrangement: preferredArrangement,
       reason: reason
