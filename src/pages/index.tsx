@@ -8,7 +8,11 @@ const Home = () => {
     setUserType(localStorage.getItem("userType"));
   }, []);
 
-  return <div>{!userType && <Auth />}</div>;
-};
+  return (
+    <div>
+      {!userType && <Auth />} 
+    </div> 
+  );
+}
 
 export default Home;

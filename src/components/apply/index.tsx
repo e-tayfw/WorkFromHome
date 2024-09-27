@@ -31,7 +31,7 @@ const Apply: React.FC<ApplyProps> = ({ onSubmitData }) => {
   const handleSubmit = (event: { preventDefault: () => void; }) => {
     event.preventDefault();
     const submitData = {
-      user: 140078,
+      staffid: 140078,
       date: selectedDate,
       arrangement: preferredArrangement,
       reason: reason,

@@ -5,7 +5,7 @@ import { logout } from '@/redux/slices/authSlice'; // Import the logout action f
 import { ReactNode, useCallback, useEffect, useState } from "react";
 import Image from "next/image";
 import { useCheckMobileScreen } from "@/hooks/useIsMobile";
-import { MobileMenu } from "@/components/nav/MobileNav";
+import { MobileMenu } from "@/components/Nav/MobileNav";
 import { Body, BodyLarge } from "@/components/TextStyles";
 import { motion } from "framer-motion";
 export type NavLink = {
