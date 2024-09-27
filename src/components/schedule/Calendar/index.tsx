@@ -12,7 +12,7 @@ interface ScheduleEntry {
 }
 
 interface Schedule {
-  [date: string]: number | undefined;
+  [date: string]: number | undefined
 }
 
 type ScheduleData = ScheduleEntry[]; // Array of ScheduleEntry
