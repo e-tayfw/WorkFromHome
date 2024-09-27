@@ -1,10 +1,17 @@
 import { toast } from "react-toastify";
 import React, { useState } from "react";
 import { useRouter } from "next/router";
+import { useDispatch } from "react-redux";
+import { setAuthData } from "@/redux/slices/authSlice"
+import { getEmployeeDataByEmail } from "@/pages/api/employeeApi";
+
 export function Auth() {
   const userTypes = [ "HR", "Director", "Manager", "Employee"];
   const [username, setUsername] = useState<string>("");
   const [userType, setUserType] = useState("");
+  const dispatch = useDispatch();
+  const router = useRouter();
+
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
@@ -16,18 +23,17 @@ export function Auth() {
     }
   };
 
-  const router = useRouter();
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const submitForm = async (_username: string, userType: string) => {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     return new Promise((resolve, reject) => {
       setTimeout(() => {
         resolve("success");
-      }, 2000);
+      }, 4000);
     });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (username.trim() === "" || userType === "") {
@@ -35,7 +41,25 @@ export function Auth() {
     } else {
       try {
         submitForm(username, userType);
+
+        // Step 1: Retrieve employee data using email
+        const employeeData = await getEmployeeDataByEmail(username);
+        console.log(employeeData);
+
+        // Step 2: Extract the Staff_ID from the retrieved employee data
+        const staffId = employeeData.Staff_ID;
+
+        // Step 3: Dispatch the employee data to Redux store
+        dispatch(
+          setAuthData({
+            email: employeeData.Email, // Chandra.Kong@allinone.com.sg
+            roleType: userType,
+            staffId: staffId.toString(),
+          })
+        );
+        
         localStorage.setItem("userType", userType);
+
         router.push("/schedule");
       } catch (error) {
         toast.error("An error occurred during submission");
