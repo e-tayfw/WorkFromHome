@@ -5,7 +5,7 @@ interface RequestEntryProps {
   requestId: string;
   requestorId: string;
   approverId: string;
-  status: string;
+  status: string | undefined; // Allow status to be possibly undefined
   dateRequested: string;
   requestBatch: string;
   dateOfRequest: string;
@@ -16,7 +16,7 @@ const RequestEntry: React.FC<RequestEntryProps> = ({
   requestId,
   requestorId,
   approverId,
-  status,
+  status = 'unknown', // Default to 'unknown' if status is undefined
   dateRequested,
   requestBatch,
   dateOfRequest,
@@ -24,7 +24,7 @@ const RequestEntry: React.FC<RequestEntryProps> = ({
 }) => {
   // Define status-specific styles for WFH requests
   const statusColor = () => {
-    switch (status.toLowerCase()) {
+    switch (status?.toLowerCase()) { // Use optional chaining to avoid errors
       case 'approved':
         return 'bg-teal-100 text-teal-700'; // Softer teal for approved
       case 'pending':
@@ -43,7 +43,7 @@ const RequestEntry: React.FC<RequestEntryProps> = ({
 
   // Determine the button action based on the status
   const getActionButton = () => {
-    switch (status.toLowerCase()) {
+    switch (status?.toLowerCase()) { // Use optional chaining here as well
       case 'approved':
         return (
           <button className="bg-red-100 hover:bg-red-200 text-red-700 font-semibold py-1 px-4 rounded-md transition duration-200 ease-in-out">
