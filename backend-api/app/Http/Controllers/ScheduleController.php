@@ -19,20 +19,15 @@ class ScheduleController extends Controller
             return response()->json(['message' => 'Invalid Requestor ID provided'], 400);
         }
 
-        $requests = Requests::where(column: 'Requestor_ID', operator: $staff_id)
+        $requests = Requests::where('Requestor_ID', $staff_id)
             ->where('Status', 'Approved')
-            ->get();;
+            ->get();
+        
         // Handle empty results
         // if ($requests->isEmpty()) {
         //     continue;
         // }
 
-        // Handle invalid Requestor_ID
-        if (empty($staff_id)) {
-            return response()->json([
-                'error' => 'Invalid Requestor ID provided.'
-            ], 400); // Bad request
-        }
         // Current date
         $currentDate = Carbon::now();
 
@@ -53,7 +48,6 @@ class ScheduleController extends Controller
 
             // Check if the date exists in the requests array
             $request = collect($requests)->firstWhere('Date_Requested', $date->format('Y-m-d'));
-
             if ($request) {
                 // Map Duration to value
                 switch ($request['Duration'] ?? '') {
@@ -80,7 +74,7 @@ class ScheduleController extends Controller
         }
 
         if ($schedule) {
-            return response()->json(['schedule' => $schedule]);
+            return response()->json(['schedule' => $schedule], 200);
         } else {
             return response()->json(['message' => 'schedule could not be found'], 500);
         }

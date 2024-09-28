@@ -22,8 +22,7 @@ CREATE TABLE "public"."RequestLog" (
     "Employee_ID" int8 NOT NULL,
     "Date" date NOT NULL,
     "Remarks" varchar,
-    CONSTRAINT "RequestLog_Requst_ID_fkey" FOREIGN KEY ("Request_ID") REFERENCES "public"."Request"("Request_ID"),
+    CONSTRAINT "RequestLog_Request_ID_fkey" FOREIGN KEY ("Request_ID") REFERENCES "public"."Request"("Request_ID"),
     CONSTRAINT "RequestLog_Employee_ID_fkey" FOREIGN KEY ("Employee_ID") REFERENCES "public"."Employee"("Staff_ID"),
     PRIMARY KEY ("Log_ID")
 );
-
