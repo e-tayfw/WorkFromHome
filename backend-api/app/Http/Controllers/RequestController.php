@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Employee;
 use App\Models\Requests;
 use App\Models\RequestLog;
-
+use Illuminate\Http\Request;
 
 class RequestController extends Controller
 {
@@ -37,15 +37,13 @@ class RequestController extends Controller
         }
     }   
 
-    public function createRequest($request_info)
+    public function createRequest(Request $request)
     {   
         // Decode json input and give assign to variables based on key
-        $decoded_request = json_decode($request_info);
-
-        $staff_id = $decoded_request->staffid;
-        $selectedDate = $decoded_request->date;
-        $arrangement = $decoded_request->preferredArrangement;
-        $reason = $decoded_request->reason;
+        $staff_id = $request->input('staffid');
+        $selectedDate = $request->input('date');
+        $arrangement = $request->input('preferredArrangement');
+        $reason = $request->input('reason');
 
         // Fetch employee row using staff_id
         $employee = Employee::where("Staff_ID", $staff_id)->first();
@@ -79,7 +77,7 @@ class RequestController extends Controller
                     if ($newRequest->save()) {
                         // Create new Request Log row
                         $newRequestLog = new RequestLog();
-                        $newRequestLog->Requst_ID = $newRequest->Request_ID;
+                        $newRequestLog->Request_ID = $newRequest->Request_ID;
                         $newRequestLog->Previous_State = "-";
                         $newRequestLog->New_State = "Pending";
                         $newRequestLog->Employee_ID = $staff_id;
