@@ -1,12 +1,54 @@
+/* eslint-disable react/jsx-key */
 import React, { useState, useEffect } from "react";
-import { testSchedule } from "@/constants/schedule_test";
 import { Body, H2, H1 } from "@/components/TextStyles";
+import { generateOwnSchedule } from "@/pages/api/scheduleApi";
 import moment from "moment";
-interface Schedule {
-  [date: string]: number | undefined;
+
+import { useSelector } from "react-redux";
+import { RootState } from "@/redux/store";
+
+// Define the structure of the schedule
+interface ScheduleEntry {
+  schedule: { [date: string]: number | undefined };
 }
 
+interface Schedule {
+  [date: string]: number | undefined
+}
+
+type ScheduleData = ScheduleEntry[]; // Array of ScheduleEntry
+
 export const WFHCalendar: React.FC = () => {
+  const [schedule, setSchedule] = useState<ScheduleData | null>(null); // To store fetched schedule data
+  // Step 1: Access the staffId from the Redux store
+  const staffId = useSelector((state: RootState) => state.auth.staffId);
+  console.log(staffId);
+
+  // Function to fetch the schedule and update state
+  const fetchSchedule = async () => {
+    if (staffId) {
+      // Make sure staffId exists before fetching
+      try {
+        const fetchedSchedule = await generateOwnSchedule(Number(staffId));
+        console.log("Fetched schedule data:", fetchedSchedule); // Log the fetched data
+        setSchedule([fetchedSchedule]); // Update the schedule state with the fetched data
+      } catch (error) {
+        console.error("Error fetching schedule:", error);
+      }
+    } else {
+      console.error("No staffId found in Redux store");
+    }
+  };
+
+  // Fetch schedule in useEffect after re-render
+  useEffect(() => {
+    if (staffId) {
+      fetchSchedule();
+      console.log(fetchSchedule())
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // The effect will run only when staffId changes and is not null
+
   const getCurrentDate = () => {
     const today = new Date();
     return `${today.getDate().toString().padStart(2, "0")}${(
@@ -16,10 +58,10 @@ export const WFHCalendar: React.FC = () => {
       .padStart(2, "0")}${today.getFullYear().toString().slice(2)}`;
   };
   const isNextDisabled = () => {
-    const lastDate = Object.keys(testSchedule[0].schedule).pop();
-    if (!lastDate) {
-      return false;
-    }
+    const lastDate = schedule?.[0]?.schedule
+      ? Object.keys(schedule[0].schedule).pop()
+      : null;
+    if (!lastDate) return false;
     const currentDate = new Date(
       parseInt(selectedDate.slice(4)),
       parseInt(selectedDate.slice(2, 4)) - 1,
@@ -35,10 +77,11 @@ export const WFHCalendar: React.FC = () => {
   };
 
   const isPrevDisabled = () => {
-    const firstDate = Object.keys(testSchedule[0].schedule).shift();
-    if (!firstDate) {
-      return false;
-    }
+    const firstDate = schedule?.[0]?.schedule
+      ? Object.keys(schedule[0].schedule).shift()
+      : null;
+    if (!firstDate) return false;
+
     const currentDate = new Date(
       parseInt(selectedDate.slice(4)),
       parseInt(selectedDate.slice(2, 4)) - 1,
@@ -54,10 +97,11 @@ export const WFHCalendar: React.FC = () => {
   };
 
   const isNextWeekDisabled = () => {
-    const lastDate = Object.keys(testSchedule[0].schedule).pop();
-    if (!lastDate) {
-      return false;
-    }
+    const lastDate = schedule?.[0]?.schedule
+      ? Object.keys(schedule[0].schedule).pop()
+      : null;
+    if (!lastDate) return false;
+
     const currentDate = new Date(
       parseInt(selectedDate.slice(4)),
       parseInt(selectedDate.slice(2, 4)) - 1,
@@ -76,7 +120,10 @@ export const WFHCalendar: React.FC = () => {
   };
 
   const isPrevWeekDisabled = () => {
-    const firstDate = Object.keys(testSchedule[0].schedule).shift();
+    const firstDate = schedule?.[0]?.schedule
+      ? Object.keys(schedule[0].schedule).shift()
+      : null;
+
     const currentDate = new Date(
       parseInt(selectedDate.slice(4)),
       parseInt(selectedDate.slice(2, 4)) - 1,
@@ -196,22 +243,31 @@ export const WFHCalendar: React.FC = () => {
   };
 
   const groupScheduleByWeek = () => {
+    if (
+      !schedule || !schedule[0].schedule
+    ) {
+      console.log("No schedule found");
+      return schedule
+    }
     const weeksObj: { [key: string]: Schedule } = {};
-    Object.keys(testSchedule[0].schedule).forEach((date: string) => {
+    Object.keys(schedule[0].schedule).forEach((date: string) => {
       const weekNumber = getWeekNumber(date).toString();
       if (!weeksObj[weekNumber]) {
         weeksObj[weekNumber] = {};
       }
       weeksObj[weekNumber][date] = (
-        testSchedule[0].schedule as { [key: string]: number }
+        schedule[0].schedule as { [key: string]: number }
       )[date];
     });
     setWeeks(weeksObj);
   };
 
   useEffect(() => {
-    groupScheduleByWeek();
-  }, []);
+     if (schedule && schedule[0] && schedule[0].schedule) {
+       groupScheduleByWeek(); // Only call this when schedule is available
+     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [schedule]);
 
   const handleNextDay = () => {
     const currentDate = new Date(
@@ -291,23 +347,15 @@ export const WFHCalendar: React.FC = () => {
           </div>
           <div
             className={`flex flex-col items-center p-4 border border-gray-200 min-h-[400px] rounded-xl mb-4 ${getWfhClass(
-              (testSchedule[0].schedule as { [date: string]: number })[
-                selectedDate
-              ]
+              schedule?.[0]?.schedule?.[selectedDate] ?? 0 // Use optional chaining to safely access schedule
             )}`}
           >
             <Body className="text-lg font-bold">
-              {(testSchedule[0].schedule as { [date: string]: number })[
-                selectedDate
-              ] === 0
+              {schedule?.[0]?.schedule?.[selectedDate] == 0
                 ? "No WFH"
-                : (testSchedule[0].schedule as { [date: string]: number })[
-                    selectedDate
-                  ] === 1
+                : schedule?.[0]?.schedule?.[selectedDate] == 1
                 ? "AM WFH"
-                : (testSchedule[0].schedule as { [date: string]: number })[
-                    selectedDate
-                  ] === 2
+                : schedule?.[0]?.schedule?.[selectedDate] == 2
                 ? "PM WFH"
                 : "Full Day WFH"}
             </Body>
@@ -364,9 +412,8 @@ export const WFHCalendar: React.FC = () => {
                           .toString()
                           .slice(2)}`;
 
-                        const wfhStatus = (
-                          testSchedule[0].schedule as { [date: string]: number }
-                        )[dateString];
+                        const wfhStatus =
+                          schedule?.[0]?.schedule?.[dateString] ?? 0;
 
                         const getWfhClass = () => {
                           switch (wfhStatus) {
@@ -382,8 +429,8 @@ export const WFHCalendar: React.FC = () => {
                               return "";
                           }
                         };
-                        const isToday = moment().format("DDMMYY") === dateString;
-
+                        const isToday =
+                          moment().format("DDMMYY") === dateString;
 
                         return (
                           <div
@@ -391,10 +438,8 @@ export const WFHCalendar: React.FC = () => {
                           >
                             <div className="flex flex-col">
                               {isToday && (
-                                <Body className="text-lg font-bold">
-                                  Today
-                                  </Body>
-                                  )}
+                                <Body className="text-lg font-bold">Today</Body>
+                              )}
                               <H2 className="text-lg font-bold">
                                 {dateFormat(dateString)}
                               </H2>
