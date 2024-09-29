@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import 'flowbite/dist/flowbite.min.css';
+import { Datepicker as FlowbiteDatepicker, DatepickerOptions } from 'flowbite-datepicker';
 
 interface DateComponentProps {
   selectedDate: string;
@@ -13,7 +14,7 @@ const Datecomponent: React.FC<DateComponentProps> = ({
   useEffect(() => {
     if (typeof window !== "undefined") {
       import("flowbite-datepicker")
-        .then((module) => {
+        .then((module: typeof import('flowbite-datepicker')) => {
           const { Datepicker } = module;
 
           const today = new Date();
@@ -22,19 +23,20 @@ const Datecomponent: React.FC<DateComponentProps> = ({
           const maxDate = new Date(today);
           maxDate.setMonth(today.getMonth() + 3);
 
-          const datepickerElement =
-            document.getElementById("datepicker-format");
+          const datepickerElement = document.getElementById("datepicker-format") as HTMLInputElement | null;
           if (datepickerElement) {
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            const datepicker = new Datepicker(datepickerElement, {
+            const datepickerOptions: DatepickerOptions = {
               minDate: minDate,
               maxDate: maxDate,
               format: "dd/mm/yyyy",
               clearBtn: true,
-            });
+            };
+            
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            const datepicker: FlowbiteDatepicker = new Datepicker(datepickerElement, datepickerOptions);
 
             // Use the changeDate event of the datepicker
-            datepickerElement.addEventListener("changeDate", (event) => {
+            datepickerElement.addEventListener("changeDate", (event: Event) => {
               const target = event.target as HTMLInputElement;
               if (target && target.value) {
                 onDateChange(target.value);
@@ -42,7 +44,7 @@ const Datecomponent: React.FC<DateComponentProps> = ({
             });
           }
         })
-        .catch((error) => {
+        .catch((error: Error) => {
           console.error("Error loading Flowbite Datepicker:", error);
         });
     }
@@ -67,7 +69,7 @@ const Datecomponent: React.FC<DateComponentProps> = ({
         className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:!ring-primary focus:!border-primary block w-full sm:w-auto ps-10 p-2.5"
         placeholder="Select date"
         value={selectedDate}
-        onChange={(e) => onDateChange(e.target.value)}
+        onChange={(e: React.ChangeEvent<HTMLInputElement>) => onDateChange(e.target.value)}
       />
     </div>
   );

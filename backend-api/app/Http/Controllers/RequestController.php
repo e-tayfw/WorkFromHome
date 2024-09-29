@@ -36,15 +36,14 @@ class RequestController extends Controller
             return response()->json(['message' => 'Request not found'], 404);
         }
     }   
-
-
     public function createRequest(Request $request)
     {   
         // Decode json input and give assign to variables based on key
         $staff_id = $request->input('staffid');
         $selectedDate = $request->input('date');
-        $arrangement = $request->input('preferredArrangement');
+        $arrangement = $request->input('arrangement');
         $reason = $request->input('reason');
+
         // Fetch employee row using staff_id
         $employee = Employee::where("Staff_ID", $staff_id)->first();
 

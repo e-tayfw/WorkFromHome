@@ -5,10 +5,12 @@ import { Reason } from "@/components/apply/reason";
 import { Submit } from "@/components/apply/submit";
 import { Body } from "@/components/TextStyles";
 
+type ArrangementType = 'AM' | 'PM' | 'FD' | '';
+
 interface SubmitData {
-  user: number;
+  staffid: number;
   date: string;
-  arrangement: string;
+  arrangement: ArrangementType;
   reason: string;
 }
 
@@ -17,10 +19,10 @@ interface ApplyProps {
 }
 
 const Apply: React.FC<ApplyProps> = ({ onSubmitData }) => {
-  const [selectedDate, setSelectedDate] = useState("");
-  const [preferredArrangement, setPreferredArrangement] = useState("");
-  const [reason, setReason] = useState("");
-  const [isFormValid, setIsFormValid] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<string>("");
+  const [preferredArrangement, setPreferredArrangement] = useState<ArrangementType>("AM");
+  const [reason, setReason] = useState<string>("");
+  const [isFormValid, setIsFormValid] = useState<boolean>(false);
 
   useEffect(() => {
     setIsFormValid(
@@ -28,9 +30,9 @@ const Apply: React.FC<ApplyProps> = ({ onSubmitData }) => {
     );
   }, [selectedDate, preferredArrangement, reason]);
 
-  const handleSubmit = (event: { preventDefault: () => void; }) => {
+  const handleSubmit = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     event.preventDefault();
-    const submitData = {
+    const submitData: SubmitData = {
       staffid: 140078,
       date: selectedDate,
       arrangement: preferredArrangement,
@@ -43,7 +45,7 @@ const Apply: React.FC<ApplyProps> = ({ onSubmitData }) => {
 
     // Reset form fields
     setSelectedDate("");
-    setPreferredArrangement("");
+    setPreferredArrangement("AM");
     setReason("");
   };
 
@@ -57,7 +59,7 @@ const Apply: React.FC<ApplyProps> = ({ onSubmitData }) => {
         </div>
         <div className="mt-2 ml-2">
           <Datecomponent
-            onDateChange={setSelectedDate}
+            onDateChange={(date: string) => setSelectedDate(date)}
             selectedDate={selectedDate}
           />
         </div>
@@ -69,7 +71,7 @@ const Apply: React.FC<ApplyProps> = ({ onSubmitData }) => {
         </div>
         <div className="mt-2 ml-2 ">
           <Selection
-            onSelectionChange={setPreferredArrangement}
+            onSelectionChange={(value: ArrangementType) => setPreferredArrangement(value)}
             selectedValue={preferredArrangement}
           />
         </div>
@@ -78,7 +80,7 @@ const Apply: React.FC<ApplyProps> = ({ onSubmitData }) => {
           <Body className="mt-8 text-sm font-light text-primary">Reason *</Body>
         </div>
         <div className="mt-2 ml-2">
-          <Reason onReasonChange={setReason} reasonText={reason} />
+          <Reason onReasonChange={(text: string) => setReason(text)} reasonText={reason} />
         </div>
         <div>
           <Body className="mt-4 ml-2 text-xs font-light text-primary">
