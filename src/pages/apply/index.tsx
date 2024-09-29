@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Apply } from "@/components/apply";
-import { Popup } from "@/components/apply";
+import { Popup } from "@/components/apply/popup";
 import axios from 'axios'
 
 interface SubmitData {
