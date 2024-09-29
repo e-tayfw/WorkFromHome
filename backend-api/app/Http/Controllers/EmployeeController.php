@@ -6,7 +6,7 @@ use App\Models\Employee;
 use Illuminate\Http\Request;
 
 class EmployeeController extends Controller
-{   
+{
     // Fetch All
     public function getAllEmployees()
     {
@@ -16,6 +16,11 @@ class EmployeeController extends Controller
     // Fetch by Staff_ID
     public function getEmployeeById($staff_id)
     {
+        // Validate that the staff_id is a valid integer
+        if (!is_numeric($staff_id) || intval($staff_id) <= 0) {
+            return response()->json(['message' => 'Invalid ID'], 422);
+        }
+
         $employee = Employee::where('Staff_ID', $staff_id)->first();
 
         if ($employee) {
@@ -28,8 +33,14 @@ class EmployeeController extends Controller
     // Fetch by email
     public function getEmployeeByEmail($email)
     {
+        // Validate the email format
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            return response()->json(['message' => 'Invalid email format'], 422);
+        }
+    
+        // Query the employee by the email
         $employee = Employee::where('Email', $email)->first();
-
+    
         if ($employee) {
             return response()->json($employee);
         } else {
@@ -42,15 +53,15 @@ class EmployeeController extends Controller
     {
         // Retrieve unique departments from the Employee table
         $uniqueDepartments = Employee::select('Dept')->distinct()->pluck('Dept');
-    
+
         // Check if the requested department exists in the list of unique departments
         if (!$uniqueDepartments->contains($department)) {
-            return response()->json(['message' => 'Department not found'], 404); 
+            return response()->json(['message' => 'Department not found'], 404);
         }
-    
+
         // Proceed to fetch employees in the department
         $employees = Employee::where('Dept', $department)->get();
-    
+
         if ($employees->isEmpty()) {
             return response()->json(['message' => 'No employees found in this department'], 404);
         } else {
@@ -68,7 +79,7 @@ class EmployeeController extends Controller
         if (!$manager) {
             return response()->json(['message' => 'Reporting manager not found'], 404);
         }
-        
+
         if ($employees->isEmpty()) {
             return response()->json(['message' => 'No employee reports to this person'], 404);
         } else {
@@ -116,5 +127,4 @@ class EmployeeController extends Controller
 
         return response()->json($result);
     }
-
 }

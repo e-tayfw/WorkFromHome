@@ -1,6 +1,5 @@
-import { useState, useEffect } from 'react';
-import { Auth } from "@/components/Auth";
-import Schedule from "@/components/Schedule";
+import { useState, useEffect } from "react";
+import { Auth } from "@/components/auth";
 
 const Home = () => {
   const [userType, setUserType] = useState<string | null>(null);

@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Employee;
 use App\Models\Requests;
 use App\Models\RequestLog;
+use App\Models\Employee;
 use Illuminate\Http\Request;
 
 class RequestController extends Controller
@@ -37,6 +37,7 @@ class RequestController extends Controller
         }
     }   
 
+
     public function createRequest(Request $request)
     {   
         // Decode json input and give assign to variables based on key
@@ -44,9 +45,9 @@ class RequestController extends Controller
         $selectedDate = $request->input('date');
         $arrangement = $request->input('preferredArrangement');
         $reason = $request->input('reason');
-
         // Fetch employee row using staff_id
         $employee = Employee::where("Staff_ID", $staff_id)->first();
+
 
         if ($employee) {
 
@@ -106,4 +107,5 @@ class RequestController extends Controller
             }
         }
     }
+
 }

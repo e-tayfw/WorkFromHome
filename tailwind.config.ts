@@ -16,15 +16,16 @@ const config: Config = {
         primary: '#072040',
         secondary: '#a2b4cc',
         accent: '#819dc1',
-        // Dark mode colors
+        
+        // Dark mode colors, prefixed with 'dark-'
         // 'dark-text': '#d0dbfc',
         // 'dark-background': '#12141a',
         // 'dark-primary': '#006a66',
         // 'dark-secondary': '#ffffff',
         // 'dark-accent': '#436be5',
-        }
       },
     },
+  };
   plugins: [
     require('flowbite/plugin')
   ],

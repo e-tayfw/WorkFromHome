@@ -1,5 +1,7 @@
 import { useRouter } from "next/navigation";
 import { useRouter as usePagesRouter } from "next/router";
+import { useDispatch } from 'react-redux';
+import { logout } from '@/redux/slices/authSlice'; // Import the logout action from the authSlice
 import { ReactNode, useCallback, useEffect, useState } from "react";
 import Image from "next/image";
 import { useCheckMobileScreen } from "@/hooks/useIsMobile";
@@ -41,13 +43,13 @@ export const navLinks: NavLink[] = [
     childPaths: [
       {
         title: "Make a Request",
-        path: "/request",
+        path: "/apply",
         imgUrl:
           "https://workfromhomebucket.s3.ap-southeast-2.amazonaws.com/Nav/new-request-simu.png",
       },
       {
         title: "Past Requests",
-        path: "/request",
+        path: "/history",
         imgUrl:
           "https://workfromhomebucket.s3.ap-southeast-2.amazonaws.com/Nav/view-request-simu.png",
       },
@@ -72,8 +74,12 @@ const Nav = () => {
   const [isHomePage, setIsHomePage] = useState(true);
 
   const [showContent, setShowContent] = useState(false);
+  const dispatch = useDispatch();
+  
   function handleSignOut(): void {
     localStorage.removeItem("userType");
+
+    dispatch(logout())
     router.push("/");
   }
 

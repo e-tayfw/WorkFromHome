@@ -7,7 +7,8 @@
 -- Generation Time: 2024-09-28 15:36:22.9150
 -- -------------------------------------------------------------
 
-DROP TABLE IF EXISTS "public"."Request" CASCADE;
+
+DROP TABLE IF EXISTS "public"."Request";
 -- This script only contains the table creation statements and does not fully represent the table in the database. Do not use it as a backup.
 
 -- Sequence and defined type

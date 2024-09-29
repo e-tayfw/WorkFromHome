@@ -1,11 +1,16 @@
 import "@/styles/globals.css";
 import React from "react";
 import type { AppProps } from "next/app";
+import { Provider } from 'react-redux';
+import { store, persistor } from "@/redux/store"; 
 import dynamic from "next/dynamic";
 import 'react-toastify/dist/ReactToastify.css';
 import { ToastContainer } from "react-toastify";
 import { ReactNode, useState, useEffect } from "react";
-import Nav from "@/components/Nav";
+import Nav from "@/components/nav";
+import { PersistGate } from "redux-persist/integration/react";
+
+
 export default function App({ Component, pageProps }: AppProps) {
   const [userType, setUserType] = useState<string | null>(null);
 
@@ -35,12 +40,16 @@ export default function App({ Component, pageProps }: AppProps) {
   );
 
   return (
-    <div className={`h-full w-full`}>
-      <SiteContainer>
-        <ToastContainer />
-        {userType && <Nav />}
-        <Component {...pageProps} />
-      </SiteContainer>
-    </div>
+    <Provider store={store}>
+      <PersistGate loading={null} persistor={persistor}>
+        <div className={`h-full w-full`}>
+          <SiteContainer>
+            <ToastContainer />
+            {userType && <Nav />}
+            <Component {...pageProps} />
+          </SiteContainer>
+        </div>
+      </PersistGate>
+    </Provider>
   );
 }
