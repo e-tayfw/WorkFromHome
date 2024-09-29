@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { Datepicker } from 'flowbite';
 import 'flowbite/dist/flowbite.min.css';
 
 interface DateComponentProps {

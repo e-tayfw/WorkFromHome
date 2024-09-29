@@ -13,13 +13,11 @@ const Selection: React.FC<SelectionProps> = ({ onSelectionChange, selectedValue 
     useEffect(() => {
       setLocalSelectedValue(selectedValue);
     }, [selectedValue]);
-
-    useEffect(() => {
-      onSelectionChange(localSelectedValue);
-    }, [localSelectedValue, onSelectionChange]);
   
     const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
-      setLocalSelectedValue(event.target.value as SelectionValue);
+      const newValue = event.target.value as SelectionValue;
+      setLocalSelectedValue(newValue);
+      onSelectionChange(newValue);
     };
 
     return (

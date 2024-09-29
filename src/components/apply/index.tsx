@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { Datecomponent } from "@/components/apply/datepicker";
 import { Selection } from "@/components/apply/selection";
 import { Reason } from "@/components/apply/reason";
@@ -20,7 +20,7 @@ interface ApplyProps {
 
 const Apply: React.FC<ApplyProps> = ({ onSubmitData }) => {
   const [selectedDate, setSelectedDate] = useState("");
-  const [preferredArrangement, setPreferredArrangement] = useState("");
+  const [preferredArrangement, setPreferredArrangement] = useState<ArrangementType>("");
   const [reason, setReason] = useState("");
   const [isFormValid, setIsFormValid] = useState(false);
 
@@ -30,7 +30,19 @@ const Apply: React.FC<ApplyProps> = ({ onSubmitData }) => {
     );
   }, [selectedDate, preferredArrangement, reason]);
 
-  const handleSubmit = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+  const handleDateChange = useCallback((date: string) => {
+    setSelectedDate(date);
+  }, []);
+
+  const handleArrangementChange = useCallback((value: ArrangementType) => {
+    setPreferredArrangement(value);
+  }, []);
+
+  const handleReasonChange = useCallback((text: string) => {
+    setReason(text);
+  }, []);
+
+  const handleSubmit = useCallback((event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     event.preventDefault();
     const submitData: SubmitData = {
       staffid: 140078,
@@ -40,14 +52,13 @@ const Apply: React.FC<ApplyProps> = ({ onSubmitData }) => {
     };
     console.log("Send Data:", submitData);
 
-    // Pass the data to the parent component
     onSubmitData(submitData);
 
     // Reset form fields
     setSelectedDate("");
     setPreferredArrangement("");
     setReason("");
-  };
+  }, [selectedDate, preferredArrangement, reason, onSubmitData]);
 
   return (
     <div className="flex justify-center items-start min-h-screen">
@@ -59,7 +70,7 @@ const Apply: React.FC<ApplyProps> = ({ onSubmitData }) => {
         </div>
         <div className="mt-2 ml-2">
           <Datecomponent
-            onDateChange={(date: string) => setSelectedDate(date)}
+            onDateChange={handleDateChange}
             selectedDate={selectedDate}
           />
         </div>
@@ -71,7 +82,7 @@ const Apply: React.FC<ApplyProps> = ({ onSubmitData }) => {
         </div>
         <div className="mt-2 ml-2 ">
           <Selection
-            onSelectionChange={(value: ArrangementType) => setPreferredArrangement(value)}
+            onSelectionChange={handleArrangementChange}
             selectedValue={preferredArrangement}
           />
         </div>
@@ -80,7 +91,7 @@ const Apply: React.FC<ApplyProps> = ({ onSubmitData }) => {
           <Body className="mt-8 text-sm font-light text-primary">Reason *</Body>
         </div>
         <div className="mt-2 ml-2">
-          <Reason onReasonChange={(text: string) => setReason(text)} reasonText={reason} />
+          <Reason onReasonChange={handleReasonChange} reasonText={reason} />
         </div>
         <div>
           <Body className="mt-4 ml-2 text-xs font-light text-primary">

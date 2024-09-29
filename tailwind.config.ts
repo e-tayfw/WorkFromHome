@@ -24,8 +24,8 @@ const config: Config = {
         // 'dark-secondary': '#ffffff',
         // 'dark-accent': '#436be5',
       },
-    },
-  };
+    }  // Remove the semicolon here
+  },
   plugins: [
     require('flowbite/plugin')
   ],
