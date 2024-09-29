@@ -19,10 +19,10 @@ interface ApplyProps {
 }
 
 const Apply: React.FC<ApplyProps> = ({ onSubmitData }) => {
-  const [selectedDate, setSelectedDate] = useState<string>("");
-  const [preferredArrangement, setPreferredArrangement] = useState<ArrangementType>("AM");
-  const [reason, setReason] = useState<string>("");
-  const [isFormValid, setIsFormValid] = useState<boolean>(false);
+  const [selectedDate, setSelectedDate] = useState("");
+  const [preferredArrangement, setPreferredArrangement] = useState("");
+  const [reason, setReason] = useState("");
+  const [isFormValid, setIsFormValid] = useState(false);
 
   useEffect(() => {
     setIsFormValid(
@@ -45,7 +45,7 @@ const Apply: React.FC<ApplyProps> = ({ onSubmitData }) => {
 
     // Reset form fields
     setSelectedDate("");
-    setPreferredArrangement("AM");
+    setPreferredArrangement("");
     setReason("");
   };
 
