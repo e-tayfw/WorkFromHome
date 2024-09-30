@@ -43,6 +43,7 @@ const Apply: React.FC = ({}) => {
     setReason(text);
   }, []);
 
+  //remove later
   const simulateApiCall = (data: SubmitData): Promise<{ success: boolean; message: string }> => {
     return new Promise((resolve) => {
       setTimeout(() => {
@@ -62,6 +63,7 @@ const Apply: React.FC = ({}) => {
     setApiResponse(null);
 
     const submitData: SubmitData = {
+      // Test StaffID, change to getlocalstorage later
       staffid: 140078,
       date: selectedDate,
       arrangement: preferredArrangement,
@@ -69,9 +71,38 @@ const Apply: React.FC = ({}) => {
     };
 
     try {
+      //remove later
       const response = await simulateApiCall(submitData);
+
+      /*
+      const createRequest = async() => {
+        try {
+          const response = await axios.post("http://127.0.0.1:8085/api/request", submitData, {
+            headers:{
+              'Content-Type' : 'application/json',
+            }
+          });
+          console.log(response.data);
+
+          const apiResponse = {
+            success: response.data.success,
+            messsage: response.data.message
+          };
+
+          setApiResponse(apiResponse)
+        
+        
+        } catch(e) {
+          console.error(e)
+        }
+      }
+      */
+      
+      //remove later
       setApiResponse(response);
       
+
+      //change later
       if (response.success) {
         setSubmittedData(submitData);
 
@@ -80,7 +111,6 @@ const Apply: React.FC = ({}) => {
         setPreferredArrangement("");
         setReason("");
       }
-
       // Show the modal after the API call completes
       setIsModalOpen(true);
     } catch (err) {
