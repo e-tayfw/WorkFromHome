@@ -71,6 +71,7 @@ const Apply: React.FC = ({}) => {
     };
 
     try {
+
       //remove later
       const response = await simulateApiCall(submitData);
 
@@ -108,6 +109,7 @@ const Apply: React.FC = ({}) => {
           setIsLoading(false);
         }
 
+        await createRequest();
 
       */
       
@@ -120,7 +122,7 @@ const Apply: React.FC = ({}) => {
       if (response.success) {
         setSubmittedData(submitData);
 
-        // Reset form fields on success
+      // Reset form fields on success
         setSelectedDate("");
         setPreferredArrangement("");
         setReason("");
