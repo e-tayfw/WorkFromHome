@@ -84,25 +84,39 @@ const Apply: React.FC = ({}) => {
           });
           console.log(response.data);
 
-          const apiResponse = {
-            success: response.data.success,
-            messsage: response.data.message
-          };
+          setApiResponse({
+              success: response.data.success,
+              message: response.data.message
+            });
+          
+          setSubmittedData(submitData);
+          
+          // Reset form fields on success
+          if (response.data.success) {
+            setSelectedDate("");
+            setPreferredArrangement("");
+            setReason("");
+          } 
+          // Show the modal after the API call completes
+          setIsModalOpen(true);
 
-          setApiResponse(apiResponse)
-        
-        
         } catch(e) {
-          console.error(e)
+          console.error("Error in API call:", e);
+          setApiResponse({ success: false, message: "An unexpected error occurred. Please try again." });
+        
+        } finally {
+          setIsLoading(false);
         }
-      }
+
+
       */
       
       //remove later
       setApiResponse(response);
       
 
-      //change later
+      ////////////////////////////////remove later
+      //if (apiResponse.success){
       if (response.success) {
         setSubmittedData(submitData);
 
