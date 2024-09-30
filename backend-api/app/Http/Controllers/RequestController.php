@@ -54,8 +54,9 @@ class RequestController extends Controller
             $existingRequest = Requests::where([["Requestor_ID", '=', $staff_id],["Date_Requested",'=', $selectedDate]])->first();
             if($existingRequest){
                 return response()->json([
-                    'message' => 'Request for the same date already exists',
-                    'status' => "failure"
+                    'message' => 'A request for the same date already exists',
+                    'date' => $selectedDate,
+                    'success' => false
                 ]);
             }
             else{
@@ -88,8 +89,8 @@ class RequestController extends Controller
                         if ($newRequestLog->save()) {
                             // Return success response with created Request and RequestLog details
                             return response()->json([
-                                'message' => 'Request and RequestLog created successfully',
-                                'status' => 'success',
+                                'message' => 'Rows for Request and RequestLog have been successfully created',
+                                'success' => true,
                                 'date' => $selectedDate,
                                 "arrangement" => $arrangement,
                                 "reportingManager" => $reporting_manager

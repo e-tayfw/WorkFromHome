@@ -69,6 +69,7 @@ const Datecomponent: React.FC<DateComponentProps> = ({
         placeholder="Select date"
         value={selectedDate}
         onChange={(e) => onDateChange(e.target.value)}
+        readOnly
       />
     </div>
   );
