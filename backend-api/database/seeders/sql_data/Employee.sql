@@ -11,19 +11,19 @@
 -- This script only contains the table creation statements and does not fully represent the table in the database. Do not use it as a backup.
 
 -- Table Definition
-CREATE TABLE IF NOT EXISTS "public"."Employee" (
-    "Staff_ID" int8 NOT NULL,
-    "Staff_FName" varchar NOT NULL,
-    "Staff_LName" varchar NOT NULL,
-    "Dept" varchar NOT NULL,
-    "Position" varchar NOT NULL,
-    "Country" varchar NOT NULL,
-    "Email" varchar NOT NULL,
-    "Reporting_Manager" int8 NOT NULL,
-    "Role" int8 NOT NULL,
-    CONSTRAINT "Employee_Reporting_Manager_fkey" FOREIGN KEY ("Reporting_Manager") REFERENCES "public"."Employee"("Staff_ID"),
-    PRIMARY KEY ("Staff_ID")
-);
+-- CREATE TABLE IF NOT EXISTS "public"."Employee" (
+--     "Staff_ID" int8 NOT NULL,
+--     "Staff_FName" varchar NOT NULL,
+--     "Staff_LName" varchar NOT NULL,
+--     "Dept" varchar NOT NULL,
+--     "Position" varchar NOT NULL,
+--     "Country" varchar NOT NULL,
+--     "Email" varchar NOT NULL,
+--     "Reporting_Manager" int8 NOT NULL,
+--     "Role" int8 NOT NULL,
+--     CONSTRAINT "Employee_Reporting_Manager_fkey" FOREIGN KEY ("Reporting_Manager") REFERENCES "public"."Employee"("Staff_ID"),
+--     PRIMARY KEY ("Staff_ID")
+-- );
 
 -- Comments
 -- COMMENT ON TABLE "public"."Employee" IS 'Employees of the company';
