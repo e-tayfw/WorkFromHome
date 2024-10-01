@@ -22,7 +22,7 @@ class CreateRequestLogTable extends Migration
 
         Schema::create('RequestLog', function (Blueprint $table) {
             $table->bigIncrements('Log_ID'); // Auto-incrementing ID
-            $table->bigInteger('Requst_ID')->unsigned(); // Foreign key to Request
+            $table->bigInteger('Request_ID')->unsigned(); // Foreign key to Request
             $table->enum('Previous_State', ['Pending', 'Approved', 'Rejected', 'Withdrawn', 'Withdraw Pending', 'Withdraw Rejected']); // Enum for previous state
             $table->enum('New_State', ['Pending', 'Approved', 'Rejected', 'Withdrawn', 'Withdraw Pending', 'Withdraw Rejected']); // Enum for new state
             $table->bigInteger('Employee_ID')->unsigned(); // Foreign key to Employee
@@ -30,7 +30,7 @@ class CreateRequestLogTable extends Migration
             $table->string('Remarks')->nullable(); // Optional remarks
 
             // Foreign key constraints
-            $table->foreign('Requst_ID')->references('Request_ID')->on('Request')->onDelete('cascade');
+            $table->foreign('Request_ID')->references('Request_ID')->on('Request')->onDelete('cascade');
             $table->foreign('Employee_ID')->references('Staff_ID')->on('Employee')->onDelete('cascade');
         });
     }
