@@ -81,6 +81,11 @@ export const RequestTable: React.FC = () => {
     fetchRequests();
   }, []);
 
+  // Reset current page to 1 whenever the filter changes
+  useEffect(() => {
+    setCurrentPage(1); // Reset to page 1 when filterStatus changes
+  }, [filterStatus]);
+
   // Sort requests
   const sortedRequests = useMemo(() => {
     let sortableRequests = [...requests];
@@ -226,8 +231,7 @@ export const RequestTable: React.FC = () => {
           Page {currentPage} of {totalPages}
         </span>
         <button
-          className="bg-primary text-white py-2
-                    px-4 rounded-md disabled:bg-gray-400 disabled:cursor-not-allowed"
+          className="bg-primary text-white py-2 px-4 rounded-md disabled:bg-gray-400 disabled:cursor-not-allowed"
           disabled={currentPage === totalPages || totalPages === 0}
           onClick={() => setCurrentPage(currentPage + 1)}
         >
@@ -253,4 +257,3 @@ export const RequestTable: React.FC = () => {
 };
 
 export default RequestTable;
-
