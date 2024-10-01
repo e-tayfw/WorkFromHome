@@ -216,26 +216,41 @@ export const RequestTable: React.FC = () => {
       {/* Pagination Controls */}
       <div className="flex justify-center items-center mt-4 space-x-4">
         <button
-          className="bg-primary text-white py-2 px-4 rounded-md"
+          className="bg-primary text-white py-2 px-4 rounded-md disabled:bg-gray-400 disabled:cursor-not-allowed"
           disabled={currentPage === 1}
           onClick={() => setCurrentPage(currentPage - 1)}
-          >
-            Previous
-          </button>
-          <span className="text-primary font-semibold">
-            Page {currentPage} of {totalPages}
-          </span>
-          <button
-            className="bg-primary text-white py-2 px-4 rounded-md"
-            disabled={currentPage === totalPages}
-            onClick={() => setCurrentPage(currentPage + 1)}
-          >
-            Next
-          </button>
-        </div>
+        >
+          Previous
+        </button>
+        <span className="text-primary font-semibold">
+          Page {currentPage} of {totalPages}
+        </span>
+        <button
+          className="bg-primary text-white py-2
+                    px-4 rounded-md disabled:bg-gray-400 disabled:cursor-not-allowed"
+          disabled={currentPage === totalPages || totalPages === 0}
+          onClick={() => setCurrentPage(currentPage + 1)}
+        >
+          Next
+        </button>
       </div>
-    );
-  };
-  
-  export default RequestTable;
-            
+
+      {/* Display loading spinner if data is loading */}
+      {loading && (
+        <div className="flex items-center justify-center mt-6">
+          <BodyLarge className="text-primary">Loading...</BodyLarge>
+        </div>
+      )}
+
+      {/* Error message display */}
+      {error && (
+        <div className="flex items-center justify-center mt-6">
+          <BodyLarge className="text-red-500">{error}</BodyLarge>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default RequestTable;
+
