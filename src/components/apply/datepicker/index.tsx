@@ -7,10 +7,7 @@ interface DateComponentProps {
   onDateChange: (date: string) => void;
 }
 
-const Datecomponent: React.FC<DateComponentProps> = ({
-  selectedDate,
-  onDateChange,
-}) => {
+const Datecomponent: React.FC<DateComponentProps> = ({ selectedDate, onDateChange,}) => {
   useEffect(() => {
     if (typeof window !== "undefined") {
       import("flowbite-datepicker")

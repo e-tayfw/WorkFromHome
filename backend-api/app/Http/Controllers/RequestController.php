@@ -79,7 +79,7 @@ class RequestController extends Controller
                         // Create new Request Log row
                         $newRequestLog = new RequestLog();
                         $newRequestLog->Request_ID = $newRequest->Request_ID;
-                        $newRequestLog->Previous_State = "-";
+                        $newRequestLog->Previous_State = 'Pending';
                         $newRequestLog->New_State = "Pending";
                         $newRequestLog->Employee_ID = $staff_id;
                         $newRequestLog->Date = date("Y-m-d");
