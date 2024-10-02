@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { Body, H2, H1 } from "@/components/TextStyles";
+import { Body, H2, H1, BodySmall } from "@/components/TextStyles";
 import moment from "moment";
 import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
 import { team_schedule_test } from "@/constants/team_schedule_test";
+import { EyeIcon } from "@/components/Svgs/eye";
 import { dateFormat } from "@/utils/date-format";
+import { CloseIcon } from "@/components/Svgs/close";
 
 // Define the structure of the schedule
 interface TeamMember {
@@ -27,14 +29,15 @@ export const TeamCalendar: React.FC = () => {
   const [currentView, setCurrentView] = useState<"day" | "week">("day");
 
   const [weeks, setWeeks] = useState<{ [key: string]: Schedule }>({});
-
   const [selectedDate, setSelectedDate] = useState<string>(
     moment().format("YYYY-MM-DD")
   );
   const [currentWeek, setCurrentWeek] = useState<number>(
     moment(selectedDate).week()
   );
-
+  const [selectedWeeklyDate, setSelectedWeeklyDate] = useState<string>(
+    moment().format("DDMMYY")
+  );
   const isNextDisabled = () => {
     if (!schedule) return false;
     const dates = Object.values(schedule)
@@ -60,7 +63,7 @@ export const TeamCalendar: React.FC = () => {
 
     return currentDate.isSameOrBefore(firstDateObject, "day");
   };
-
+  const [modalOpen, setModalOpen] = useState(false);
   const isNextWeekDisabled = () => {
     if (!schedule) return false;
     const dates = Object.values(schedule)
@@ -114,7 +117,6 @@ export const TeamCalendar: React.FC = () => {
 
   const groupScheduleByWeek = () => {
     if (!schedule) {
-      console.log("No schedule found");
       return;
     }
     const weeksObj: { [key: string]: Schedule } = {};
@@ -153,7 +155,9 @@ export const TeamCalendar: React.FC = () => {
   const getTeamSchedule = (date: string) => {
     const formattedDate = moment(date).format("DDMMYY");
 
-    const wfhUsers: string[] = [];
+    const amwfhUsers: string[] = [];
+    const pmwfhUsers: string[] = [];
+    const fulldaywfhUsers: string[] = [];
     let amCount = 0;
     let pmCount = 0;
     let fullDayCount = 0;
@@ -165,13 +169,13 @@ export const TeamCalendar: React.FC = () => {
         if (wfhStatus !== undefined) {
           if (wfhStatus === 1) {
             amCount++;
-            wfhUsers.push(userId);
+            amwfhUsers.push(userId);
           } else if (wfhStatus === 2) {
             pmCount++;
-            wfhUsers.push(userId);
+            pmwfhUsers.push(userId);
           } else if (wfhStatus === 3) {
             fullDayCount++;
-            wfhUsers.push(userId);
+            fulldaywfhUsers.push(userId);
           } else if (wfhStatus === 0) {
             totalStrength++;
           }
@@ -180,7 +184,9 @@ export const TeamCalendar: React.FC = () => {
     }
 
     return {
-      wfhUsers,
+      amwfhUsers,
+      pmwfhUsers,
+      fulldaywfhUsers,
       amCount,
       pmCount,
       fullDayCount,
@@ -222,16 +228,47 @@ export const TeamCalendar: React.FC = () => {
               Next Day
             </button>
           </div>
+          {modalOpen && (
+            <div className="fixed inset-0 bg-gray-900 bg-opacity-50 flex justify-center items-center">
+              <div className="bg-white p-4 rounded-xl">
+                <div className="flex justify-end">
+                  <button onClick={() => setModalOpen(false)}>
+                    <CloseIcon />
+                  </button>
+                </div>
+                <div className="flex flex-col items-center">
+                  <Body className="text-lg font-bold">
+                    {getTeamSchedule(selectedDate).amwfhUsers.length > 0
+                      ? `Staff on AM WFH: ${getTeamSchedule(
+                          selectedDate
+                        ).amwfhUsers.join(", ")}`
+                      : "No Users on AM WFH"}
+                  </Body>
+                  <Body className="text-lg font-bold">
+                    {getTeamSchedule(selectedDate).pmwfhUsers.length > 0
+                      ? `Staff on PM WFH: ${getTeamSchedule(
+                          selectedDate
+                        ).pmwfhUsers.join(", ")}`
+                      : "No Users on PM WFH"}
+                  </Body>
+                  <Body className="text-lg font-bold">
+                    {getTeamSchedule(selectedDate).fulldaywfhUsers.length > 0
+                      ? `Staff on Full Day WFH: ${getTeamSchedule(
+                          selectedDate
+                        ).fulldaywfhUsers.join(", ")}`
+                      : "No Users on Full Day WFH"}
+                  </Body>
+                </div>
+              </div>
+            </div>
+          )}
           <div
             className={`flex flex-col items-center p-4 border border-gray-200 min-h-[400px] rounded-xl mb-4 }`}
           >
-            <Body className="text-lg font-bold">
-              {getTeamSchedule(selectedDate).wfhUsers.length > 0
-                ? `Staff on WFH: ${getTeamSchedule(selectedDate).wfhUsers.join(
-                    ", "
-                  )}`
-                : "No WFH Users"}
-            </Body>
+            <EyeIcon onClick={() => setModalOpen(true)} />
+            <BodySmall className="font-bold">
+              Click the eye icon to view WFH users
+            </BodySmall>
             <Body className="text-lg">
               AM WFH: {getTeamSchedule(selectedDate).amCount}
             </Body>
@@ -258,9 +295,7 @@ export const TeamCalendar: React.FC = () => {
             >
               Prev Week
             </button>
-            <H2 className="text-lg font-bold">
-              {getWeekDates(currentWeek)}
-            </H2>
+            <H2 className="text-lg font-bold">{getWeekDates(currentWeek)}</H2>
             <button
               className={`bg-primary hover:bg-secondary text-white font-bold py-2 px-4 rounded-xl ${
                 isNextWeekDisabled() ? "opacity-50 cursor-not-allowed" : ""
@@ -272,45 +307,106 @@ export const TeamCalendar: React.FC = () => {
             </button>
           </div>
           {weeks[currentWeek.toString()] ? (
-            <div className="week-schedule">
+            <div className="week-schedule flex flex-col lg:flex-row justify-center lg:space-x-4 space-y-3">
               {Object.keys(weeks[currentWeek.toString()])
-                .sort((a, b) =>
-                  moment(a, "DDMMYY").diff(moment(b, "DDMMYY"))
-                )
+                .sort((a, b) => moment(a, "DDMMYY").diff(moment(b, "DDMMYY")))
                 .map((date) => (
                   <div
                     key={date}
-                    className="p-4 border border-gray-200 rounded-xl mb-4"
+                    className="flex flex-col justify-between items-center p-4 border border-gray-200 rounded-xl min-h-[100px] lg:min-h-[400px] w-full md:w-1/2 lg:w-1/7 xl:w-1/7 2xl:w-1/7"
                   >
+                    {modalOpen && (
+                      <div className="fixed inset-0 bg-gray-900 bg-opacity-50 flex justify-center items-center">
+                        <div className="bg-white p-4 rounded-xl">
+                          <div className="flex justify-end">
+                            <button onClick={() => setModalOpen(false)}>
+                              <CloseIcon />
+                            </button>
+                          </div>
+                          <div className="flex flex-col items-center">
+                            <Body className="text-lg font-bold">
+                              {getTeamSchedule(selectedWeeklyDate).amwfhUsers
+                                .length > 0
+                                ? `Staff on AM WFH: ${getTeamSchedule(
+                                    moment(selectedWeeklyDate, "DDMMYY").format(
+                                      "YYYY-MM-DD"
+                                    )
+                                  ).amwfhUsers.join(", ")}`
+                                : "No Users on AM WFH"}
+                            </Body>
+                            <Body className="text-lg font-bold">
+                              {getTeamSchedule(
+                                moment(selectedWeeklyDate, "DDMMYY").format(
+                                  "YYYY-MM-DD"
+                                )
+                              ).pmwfhUsers.length > 0
+                                ? `Staff on PM WFH: ${getTeamSchedule(
+                                    moment(selectedWeeklyDate, "DDMMYY").format(
+                                      "YYYY-MM-DD"
+                                    )
+                                  ).pmwfhUsers.join(", ")}`
+                                : "No Users on PM WFH"}
+                            </Body>
+                            <Body className="text-lg font-bold">
+                              {getTeamSchedule(
+                                moment(selectedWeeklyDate, "DDMMYY").format(
+                                  "YYYY-MM-DD"
+                                )
+                              ).fulldaywfhUsers.length > 0
+                                ? `Staff on Full Day WFH: ${getTeamSchedule(
+                                    moment(selectedWeeklyDate, "DDMMYY").format(
+                                      "YYYY-MM-DD"
+                                    )
+                                  ).fulldaywfhUsers.join(", ")}`
+                                : "No Users on Full Day WFH"}
+                            </Body>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                     <H2>{moment(date, "DDMMYY").format("DD/MM/YY")}</H2>
-                    {/* Display data for date */}
-                    <Body className="text-lg font-bold">
-                      {getTeamSchedule(moment(date, "DDMMYY").format("YYYY-MM-DD"))
-                        .wfhUsers.length > 0
-                        ? `Staff on WFH: ${getTeamSchedule(
-                            moment(date, "DDMMYY").format("YYYY-MM-DD")
-                          ).wfhUsers.join(", ")}`
-                        : "No WFH Users"}
+                    <button>
+                      <EyeIcon
+                        onClick={() => {
+                          setModalOpen(true);
+                          setSelectedWeeklyDate(date);
+                        }}
+                      />
+                    </button>
+                    <BodySmall className="font-bold">
+                      Click the eye icon to view WFH users
+                    </BodySmall>
+                    <Body className="text-lg">
+                      AM WFH:{" "}
+                      {
+                        getTeamSchedule(
+                          moment(date, "DDMMYY").format("YYYY-MM-DD")
+                        ).amCount
+                      }
                     </Body>
                     <Body className="text-lg">
-                      AM WFH: {getTeamSchedule(
-                        moment(date, "DDMMYY").format("YYYY-MM-DD")
-                      ).amCount}
+                      PM WFH:{" "}
+                      {
+                        getTeamSchedule(
+                          moment(date, "DDMMYY").format("YYYY-MM-DD")
+                        ).pmCount
+                      }
                     </Body>
                     <Body className="text-lg">
-                      PM WFH: {getTeamSchedule(
-                        moment(date, "DDMMYY").format("YYYY-MM-DD")
-                      ).pmCount}
+                      Full Day WFH:{" "}
+                      {
+                        getTeamSchedule(
+                          moment(date, "DDMMYY").format("YYYY-MM-DD")
+                        ).fullDayCount
+                      }
                     </Body>
                     <Body className="text-lg">
-                      Full Day WFH: {getTeamSchedule(
-                        moment(date, "DDMMYY").format("YYYY-MM-DD")
-                      ).fullDayCount}
-                    </Body>
-                    <Body className="text-lg">
-                      Total Strength: {getTeamSchedule(
-                        moment(date, "DDMMYY").format("YYYY-MM-DD")
-                      ).totalStrength}
+                      Total Strength:{" "}
+                      {
+                        getTeamSchedule(
+                          moment(date, "DDMMYY").format("YYYY-MM-DD")
+                        ).totalStrength
+                      }
                     </Body>
                   </div>
                 ))}
