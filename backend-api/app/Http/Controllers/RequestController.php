@@ -68,7 +68,7 @@ class RequestController extends Controller
                 $newRequest-> save();
 
                 // Create new Request Log row
-                $newRequestLog = new 
+                // $newRequestLog = new 
             }
         }
     }
