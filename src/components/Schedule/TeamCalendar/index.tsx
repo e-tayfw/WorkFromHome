@@ -8,16 +8,17 @@ import { dateFormat } from "@/utils/date-format";
 
 // Define the structure of the schedule
 interface TeamMember {
-  [userId: string]: number | undefined;
+  [date: string]: number | undefined;
 }
 
 interface ScheduleData {
-  [teamScheduleId: string]: TeamMember;
+  [userId: string]: TeamMember;
 }
+
 interface Schedule {
-    [date: string]: number | undefined
-  }
-  
+  [date: string]: number;
+}
+
 export const TeamCalendar: React.FC = () => {
   const [schedule, setSchedule] = useState<ScheduleData | null>(
     team_schedule_test
@@ -25,246 +26,132 @@ export const TeamCalendar: React.FC = () => {
   const staffId = useSelector((state: RootState) => state.auth.staffId);
   const [currentView, setCurrentView] = useState<"day" | "week">("day");
 
-  const [weeks, setWeeks] = useState<{ [key: number]: Schedule }>({});
+  const [weeks, setWeeks] = useState<{ [key: string]: Schedule }>({});
 
-  const getCurrentDate = () => {
-    const today = new Date();
-    return `${today.getDate().toString().padStart(2, "0")}${(
-      today.getMonth() + 1
-    )
-      .toString()
-      .padStart(2, "0")}${today.getFullYear().toString().slice(2)}`;
-  };
+  const [selectedDate, setSelectedDate] = useState<string>(
+    moment().format("YYYY-MM-DD")
+  );
+  const [currentWeek, setCurrentWeek] = useState<number>(
+    moment(selectedDate).week()
+  );
+
   const isNextDisabled = () => {
-    const lastDate = schedule?.[0]?.schedule
-      ? Object.keys(schedule[0].schedule).pop()
-      : null;
+    if (!schedule) return false;
+    const dates = Object.values(schedule)
+      .flatMap((userSchedule) => Object.keys(userSchedule))
+      .sort();
+    const lastDate = dates.pop();
     if (!lastDate) return false;
-    const currentDate = new Date(
-      parseInt(selectedDate.slice(4)),
-      parseInt(selectedDate.slice(2, 4)) - 1,
-      parseInt(selectedDate.slice(0, 2))
-    );
-    const lastDateObject = new Date(
-      parseInt(lastDate.slice(4)),
-      parseInt(lastDate.slice(2, 4)) - 1,
-      parseInt(lastDate.slice(0, 2))
-    );
+    const currentDate = moment(selectedDate);
+    const lastDateObject = moment(lastDate, "DDMMYY");
 
-    return currentDate.getTime() >= lastDateObject.getTime();
+    return currentDate.isSameOrAfter(lastDateObject, "day");
   };
 
   const isPrevDisabled = () => {
-    const firstDate = schedule?.[0]?.schedule
-      ? Object.keys(schedule[0].schedule).shift()
-      : null;
+    if (!schedule) return false;
+    const dates = Object.values(schedule)
+      .flatMap((userSchedule) => Object.keys(userSchedule))
+      .sort();
+    const firstDate = dates.shift();
     if (!firstDate) return false;
+    const currentDate = moment(selectedDate);
+    const firstDateObject = moment(firstDate, "DDMMYY");
 
-    const currentDate = new Date(
-      parseInt(selectedDate.slice(4)),
-      parseInt(selectedDate.slice(2, 4)) - 1,
-      parseInt(selectedDate.slice(0, 2))
-    );
-    const firstDateObject = new Date(
-      parseInt(firstDate.slice(4)),
-      parseInt(firstDate.slice(2, 4)) - 1,
-      parseInt(firstDate.slice(0, 2))
-    );
-
-    return currentDate.getTime() <= firstDateObject.getTime();
+    return currentDate.isSameOrBefore(firstDateObject, "day");
   };
 
   const isNextWeekDisabled = () => {
-    const lastDate = schedule?.[0]?.schedule
-      ? Object.keys(schedule[0].schedule).pop()
-      : null;
+    if (!schedule) return false;
+    const dates = Object.values(schedule)
+      .flatMap((userSchedule) => Object.keys(userSchedule))
+      .sort();
+    const lastDate = dates.pop();
     if (!lastDate) return false;
 
-    const currentDate = new Date(
-      parseInt(selectedDate.slice(4)),
-      parseInt(selectedDate.slice(2, 4)) - 1,
-      parseInt(selectedDate.slice(0, 2))
-    );
-    const lastDateObject = new Date(
-      parseInt(lastDate.slice(4)),
-      parseInt(lastDate.slice(2, 4)) - 1,
-      parseInt(lastDate.slice(0, 2))
-    );
-    const nextWeekDate = new Date(
-      currentDate.getTime() + 7 * 24 * 60 * 60 * 1000
-    );
+    const currentDate = moment(selectedDate);
+    const lastDateObject = moment(lastDate, "DDMMYY");
+    const nextWeekDate = currentDate.clone().add(7, "days");
 
-    return nextWeekDate.getTime() > lastDateObject.getTime();
+    return nextWeekDate.isAfter(lastDateObject, "day");
   };
 
   const isPrevWeekDisabled = () => {
-    const firstDate = schedule?.[0]?.schedule
-      ? Object.keys(schedule[0].schedule).shift()
-      : null;
+    if (!schedule) return false;
+    const dates = Object.values(schedule)
+      .flatMap((userSchedule) => Object.keys(userSchedule))
+      .sort();
+    const firstDate = dates.shift();
+    if (!firstDate) return false;
 
-    const currentDate = new Date(
-      parseInt(selectedDate.slice(4)),
-      parseInt(selectedDate.slice(2, 4)) - 1,
-      parseInt(selectedDate.slice(0, 2))
-    );
-    const firstDateObject = firstDate
-      ? new Date(
-          parseInt(firstDate.slice(4)),
-          parseInt(firstDate.slice(2, 4)) - 1,
-          parseInt(firstDate.slice(0, 2))
-        )
-      : null;
-    const prevWeekDate = new Date(
-      currentDate.getTime() - 7 * 24 * 60 * 60 * 1000
-    );
+    const currentDate = moment(selectedDate);
+    const firstDateObject = moment(firstDate, "DDMMYY");
+    const prevWeekDate = currentDate.clone().subtract(7, "days");
 
-    return (
-      firstDateObject !== null &&
-      prevWeekDate.getTime() < firstDateObject.getTime()
-    );
+    return prevWeekDate.isBefore(firstDateObject, "day");
   };
-  const getWeekDates = (weekNumber: string) => {
-    const firstDayOfWeek = new Date(
-      parseInt(selectedDate.slice(4)),
-      parseInt(selectedDate.slice(2, 4)) - 1,
-      parseInt(selectedDate.slice(0, 2)) -
-        3 +
-        (parseInt(weekNumber) - currentWeek) * 7
-    );
-    const lastDayOfWeek = new Date(
-      parseInt(selectedDate.slice(4)),
-      parseInt(selectedDate.slice(2, 4)) - 1,
-      parseInt(selectedDate.slice(0, 2)) +
-        3 +
-        (parseInt(weekNumber) - currentWeek) * 7
-    );
 
-    return `${dateFormat(
-      `${firstDayOfWeek.getDate().toString().padStart(2, "0")}${(
-        firstDayOfWeek.getMonth() + 1
-      )
-        .toString()
-        .padStart(2, "0")}${firstDayOfWeek.getFullYear().toString().slice(2)}`
-    )} - ${dateFormat(
-      `${lastDayOfWeek.getDate().toString().padStart(2, "0")}${(
-        lastDayOfWeek.getMonth() + 1
-      )
-        .toString()
-        .padStart(2, "0")}${lastDayOfWeek.getFullYear().toString().slice(2)}`
-    )}`;
+  const getWeekDates = (weekNumber: number) => {
+    const weekStart = moment().week(weekNumber).startOf("week");
+    const weekEnd = moment().week(weekNumber).endOf("week");
+
+    return `${weekStart.format("DD/MM/YY")} - ${weekEnd.format("DD/MM/YY")}`;
   };
-  const getWeekNumber = (date: string) => {
-    const dateParts = date.match(/(\d{2})(\d{2})(\d{2})/);
-    if (!dateParts) {
-      return 0;
-    }
-    const day = parseInt(dateParts[1]);
-    const month = parseInt(dateParts[2]) - 1;
-    const year = parseInt(dateParts[3]);
-    const dateObject = new Date(year, month, day);
-    return Math.ceil(
-      ((+dateObject - +new Date(dateObject.getFullYear(), 0, 1)) / 86400000 +
-        dateObject.getDay() +
-        1) /
-        7
-    );
-  };
+
   const handleNextWeek = () => {
-    setCurrentWeek(currentWeek + 1);
-    const newDate = new Date(
-      parseInt(selectedDate.slice(4)),
-      parseInt(selectedDate.slice(2, 4)) - 1,
-      parseInt(selectedDate.slice(0, 2)) + 7
-    );
-    setSelectedDate(
-      `${newDate.getDate().toString().padStart(2, "0")}${(
-        newDate.getMonth() + 1
-      )
-        .toString()
-        .padStart(2, "0")}${newDate.getFullYear().toString().slice(2)}`
-    );
+    const newWeek = currentWeek + 1;
+    setCurrentWeek(newWeek);
+    const newDate = moment(selectedDate).add(7, "days");
+    setSelectedDate(newDate.format("YYYY-MM-DD"));
   };
 
   const handlePrevWeek = () => {
-    setCurrentWeek(currentWeek - 1);
-    const newDate = new Date(
-      parseInt(selectedDate.slice(4)),
-      parseInt(selectedDate.slice(2, 4)) - 1,
-      parseInt(selectedDate.slice(0, 2)) - 7
-    );
-    setSelectedDate(
-      `${newDate.getDate().toString().padStart(2, "0")}${(
-        newDate.getMonth() + 1
-      )
-        .toString()
-        .padStart(2, "0")}${newDate.getFullYear().toString().slice(2)}`
-    );
+    const newWeek = currentWeek - 1;
+    setCurrentWeek(newWeek);
+    const newDate = moment(selectedDate).subtract(7, "days");
+    setSelectedDate(newDate.format("YYYY-MM-DD"));
   };
-  const getCurrentWeekNumber = () => {
-    const today = new Date();
-    return getWeekNumber(
-      `${today.getDate().toString().padStart(2, "0")}${(today.getMonth() + 1)
-        .toString()
-        .padStart(2, "0")}${today.getFullYear().toString().slice(2)}`
-    );
-  };
-  const [currentWeek, setCurrentWeek] = useState<number>(
-    getCurrentWeekNumber()
-  );
+
   const groupScheduleByWeek = () => {
-    if (
-      !schedule || 
-      !schedule[0].schedule
-    ) {
+    if (!schedule) {
       console.log("No schedule found");
-      return {};
+      return;
     }
     const weeksObj: { [key: string]: Schedule } = {};
-    Object.keys(schedule[0].schedule).forEach((date: string) => {
-      const weekNumber = getWeekNumber(date).toString();
-      if (!weeksObj[weekNumber]) {
-        weeksObj[weekNumber] = {};
-      }
-      weeksObj[weekNumber][date] = (
-        schedule[0] as { [key: string]: number }
-      )[date];
+
+    Object.entries(schedule).forEach(([userId, userSchedule]) => {
+      Object.keys(userSchedule).forEach((date: string) => {
+        const weekNumber = moment(date, "DDMMYY").week().toString();
+        if (!weeksObj[weekNumber]) {
+          weeksObj[weekNumber] = {};
+        }
+        if (!weeksObj[weekNumber][date]) {
+          weeksObj[weekNumber][date] = 0;
+        }
+        weeksObj[weekNumber][date] += userSchedule[date] || 0;
+      });
     });
     setWeeks(weeksObj);
   };
 
-
   useEffect(() => {
-    if (schedule && schedule[0] && schedule[0].schedule) {
-      groupScheduleByWeek(); // Only call this when schedule is available
+    if (schedule) {
+      groupScheduleByWeek();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [schedule]);
 
   const handlePrevDay = () => {
-    const currentDate = new Date(selectedDate);
-    const prevDate = new Date(currentDate.getTime() - 24 * 60 * 60 * 1000);
-    setSelectedDate(
-      `${prevDate.getFullYear()}-${(prevDate.getMonth() + 1)
-        .toString()
-        .padStart(2, "0")}-${prevDate.getDate().toString().padStart(2, "0")}`
-    );
+    const prevDate = moment(selectedDate).subtract(1, "days");
+    setSelectedDate(prevDate.format("YYYY-MM-DD"));
   };
 
   const handleNextDay = () => {
-    const currentDate = new Date(selectedDate);
-    const nextDate = new Date(currentDate.getTime() + 24 * 60 * 60 * 1000);
-    setSelectedDate(
-      `${nextDate.getFullYear()}-${(nextDate.getMonth() + 1)
-        .toString()
-        .padStart(2, "0")}-${nextDate.getDate().toString().padStart(2, "0")}`
-    );
+    const nextDate = moment(selectedDate).add(1, "days");
+    setSelectedDate(nextDate.format("YYYY-MM-DD"));
   };
+
   const getTeamSchedule = (date: string) => {
-    const formattedDate = date.replace(/-/g, ""); // Remove dashes
-    const rearrangedDate =
-      formattedDate.substring(6, 8) +
-      formattedDate.substring(4, 6) +
-      formattedDate.substring(2, 4); // Rearrange to DDMMYYYY
+    const formattedDate = moment(date).format("DDMMYY");
 
     const wfhUsers: string[] = [];
     let amCount = 0;
@@ -274,7 +161,7 @@ export const TeamCalendar: React.FC = () => {
 
     if (schedule) {
       Object.entries(schedule).forEach(([userId, userSchedule]) => {
-        const wfhStatus = userSchedule[rearrangedDate];
+        const wfhStatus = userSchedule[formattedDate];
         if (wfhStatus !== undefined) {
           if (wfhStatus === 1) {
             amCount++;
@@ -300,7 +187,6 @@ export const TeamCalendar: React.FC = () => {
       totalStrength,
     };
   };
-  const [selectedDate, setSelectedDate] = useState<string>("2024-10-01");
 
   return (
     <div className="container mx-auto p-4">
@@ -323,7 +209,9 @@ export const TeamCalendar: React.FC = () => {
             >
               Prev Day
             </button>
-            <H2 className="text-lg font-bold">{selectedDate}</H2>
+            <H2 className="text-lg font-bold">
+              {moment(selectedDate).format("DD/MM/YY")}
+            </H2>
             <button
               className={`bg-primary hover:bg-secondary text-white font-bold py-2 px-4 rounded-xl ${
                 isNextDisabled() ? "opacity-50 cursor-not-allowed" : ""
@@ -358,7 +246,7 @@ export const TeamCalendar: React.FC = () => {
             </Body>
           </div>
         </div>
-      ) :  (
+      ) : (
         <div>
           <div className="flex justify-between mb-4">
             <button
@@ -371,7 +259,7 @@ export const TeamCalendar: React.FC = () => {
               Prev Week
             </button>
             <H2 className="text-lg font-bold">
-              {getWeekDates(currentWeek.toString())}
+              {getWeekDates(currentWeek)}
             </H2>
             <button
               className={`bg-primary hover:bg-secondary text-white font-bold py-2 px-4 rounded-xl ${
@@ -383,31 +271,55 @@ export const TeamCalendar: React.FC = () => {
               Next Week
             </button>
           </div>
-          <div
-            className={`flex flex-col items-center p-4 border border-gray-200 min-h-[400px] rounded-xl mb-4 }`}
-          >
-            <Body className="text-lg font-bold">
-              {getTeamSchedule(selectedDate).wfhUsers.length > 0
-                ? `Staff on WFH: ${getTeamSchedule(selectedDate).wfhUsers.join(
-                    ", "
-                  )}`
-                : "No WFH Users"}
-            </Body>
-            <Body className="text-lg">
-              AM WFH: {getTeamSchedule(selectedDate).amCount}
-            </Body>
-            <Body className="text-lg">
-              PM WFH: {getTeamSchedule(selectedDate).pmCount}
-            </Body>
-            <Body className="text-lg">
-              Full Day WFH: {getTeamSchedule(selectedDate).fullDayCount}
-            </Body>
-            <Body className="text-lg">
-              Total Strength: {getTeamSchedule(selectedDate).totalStrength}
-            </Body>
-          </div>
+          {weeks[currentWeek.toString()] ? (
+            <div className="week-schedule">
+              {Object.keys(weeks[currentWeek.toString()])
+                .sort((a, b) =>
+                  moment(a, "DDMMYY").diff(moment(b, "DDMMYY"))
+                )
+                .map((date) => (
+                  <div
+                    key={date}
+                    className="p-4 border border-gray-200 rounded-xl mb-4"
+                  >
+                    <H2>{moment(date, "DDMMYY").format("DD/MM/YY")}</H2>
+                    {/* Display data for date */}
+                    <Body className="text-lg font-bold">
+                      {getTeamSchedule(moment(date, "DDMMYY").format("YYYY-MM-DD"))
+                        .wfhUsers.length > 0
+                        ? `Staff on WFH: ${getTeamSchedule(
+                            moment(date, "DDMMYY").format("YYYY-MM-DD")
+                          ).wfhUsers.join(", ")}`
+                        : "No WFH Users"}
+                    </Body>
+                    <Body className="text-lg">
+                      AM WFH: {getTeamSchedule(
+                        moment(date, "DDMMYY").format("YYYY-MM-DD")
+                      ).amCount}
+                    </Body>
+                    <Body className="text-lg">
+                      PM WFH: {getTeamSchedule(
+                        moment(date, "DDMMYY").format("YYYY-MM-DD")
+                      ).pmCount}
+                    </Body>
+                    <Body className="text-lg">
+                      Full Day WFH: {getTeamSchedule(
+                        moment(date, "DDMMYY").format("YYYY-MM-DD")
+                      ).fullDayCount}
+                    </Body>
+                    <Body className="text-lg">
+                      Total Strength: {getTeamSchedule(
+                        moment(date, "DDMMYY").format("YYYY-MM-DD")
+                      ).totalStrength}
+                    </Body>
+                  </div>
+                ))}
+            </div>
+          ) : (
+            <div>No data for this week.</div>
+          )}
         </div>
       )}
     </div>
-    );
-}
+  );
+};
