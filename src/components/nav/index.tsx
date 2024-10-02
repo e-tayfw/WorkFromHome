@@ -30,7 +30,7 @@ export const navLinks: NavLink[] = [
       },
       {
         title: "Team Schedule",
-        path: "/schedule",
+        path: "/schedule?team=team",
         imgUrl:
           "https://workfromhomebucket.s3.ap-southeast-2.amazonaws.com/Nav/team-schedule-simu.png",
       },
