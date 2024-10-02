@@ -15,6 +15,44 @@ class RequestController extends Controller
         return response()->json(Requests::all());
     }
 
+    // Fetch propoertion of people in team that is working from home
+    public function getProportionOfTeam($approver_id) {
+        // query database for the people with that approver
+        $request = Requests::where(column: 'Approver_ID', operator: $approver_id)->get();
+        $team_size = Employee::where('Reporting_Manager', $approver_id)->count();
+        if ($team_size != 0) {
+            $proportion = 1/$team_size;
+        } else {
+            return response()->json(['message' => 'This person managers 0 people.'], 404);
+        }
+        
+        if ($request) {
+            // create a dictionary of different dates and check how many people are working from home for that date
+            $date_dictionary = [];
+            // for loop to iterate through date_dictionary to find different dates and see how many people are working from home for that date
+            foreach ($request as $req) {
+                $date = $req->Date_Requested;
+                $arrangement = $req->Duration;
+
+                if (!isset($date_dictionary[$date])) {
+                    $date_dictionary[$date] = ['AM' => 0, 'PM' => 0, 'FD' => 0];
+                }
+
+                if ($arrangement === 'AM') {
+                    $date_dictionary[$date]['AM'] += $proportion;
+                } else if ($arrangement === "PM") {
+                    $date_dictionary[$date]['PM'] += $proportion;
+                } else if ($arrangement === "FD") {
+                    $date_dictionary[$date]["FD"] += $proportion;
+                }
+            }
+
+            return response()->json($date_dictionary);
+        } else {
+            return response()->json(['message' => 'Request not found'], 404);
+        }
+    }
+
     // Fetch all requests by requestorID
      public function getRequestsByRequestorID($requestor_id)
     {
@@ -36,6 +74,8 @@ class RequestController extends Controller
             return response()->json(['message' => 'Request not found'], 404);
         }
     }   
+
+    // Create Request
     public function createRequest(Request $request)
     {   
         // Decode json input and give assign to variables based on key
@@ -107,4 +147,6 @@ class RequestController extends Controller
             }
         }
     }
+
+    
 }
