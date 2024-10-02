@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { useSelector } from 'react-redux';
 import { H1, BodyLarge } from '@/components/TextStyles';
 import RequestEntry from '@/components/history/entry';
 import axios from 'axios';
-import Swal from 'sweetalert2'; 
+import Swal from 'sweetalert2';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSort, faSortUp, faSortDown } from '@fortawesome/free-solid-svg-icons';
 
@@ -29,6 +30,9 @@ export const RequestTable: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState<number>(1); // For pagination
 
+  // Retrieve staffId (which is employeeId) from Redux store
+  const employeeId = useSelector((state: any) => state.auth.staffId);
+
   // Fetch requests using Axios and SweetAlert2 loader
   useEffect(() => {
     const fetchRequests = async () => {
@@ -42,9 +46,6 @@ export const RequestTable: React.FC = () => {
       });
 
       try {
-        // Retrieve employeeId from localStorage
-        const employeeId = localStorage.getItem("employeeId");
-
         if (!employeeId) {
           throw new Error("No employee ID found in session.");
         }
@@ -79,7 +80,7 @@ export const RequestTable: React.FC = () => {
     };
 
     fetchRequests();
-  }, []);
+  }, [employeeId]);
 
   // Reset current page to 1 whenever the filter changes
   useEffect(() => {
