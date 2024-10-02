@@ -5,8 +5,8 @@ interface RequestEntryProps {
   requestId: string;
   requestorId: string;
   approverId: string;
-  status: string | undefined; // Allow status to be possibly undefined
-  dateRequested: string; // Updated to use dateRequested for the withdraw check
+  status: string | undefined;
+  dateRequested: string; 
   requestBatch: string;
   dateOfRequest: string;
   duration: string;
@@ -72,15 +72,20 @@ const RequestEntry: React.FC<RequestEntryProps> = ({
         return null; // Do not show the button outside the two-week range
       case 'pending':
         return (
-          <button className="bg-blue-100 hover:bg-blue-200 text-blue-700 font-semibold py-1 px-4 rounded-md transition duration-200 ease-in-out">
-            Edit
-          </button>
+          <>
+            <button className="bg-blue-100 hover:bg-blue-200 text-blue-700 font-semibold py-1 px-4 rounded-md transition duration-200 ease-in-out mr-2">
+              Edit
+            </button>
+            <button className="bg-red-100 hover:bg-red-200 text-red-700 font-semibold py-1 px-4 rounded-md transition duration-200 ease-in-out">
+              Withdraw
+            </button>
+          </>
         );
       case 'withdrawn':
       case 'rejected':
       case 'withdraw pending':
       case 'withdraw rejected':
-        return null; // No button for these statuses
+        return null;
       default:
         return null;
     }
@@ -102,7 +107,7 @@ const RequestEntry: React.FC<RequestEntryProps> = ({
         <Body>{status}</Body>
       </td>
       <td className="px-4 py-2">
-        {/* Render the action button based on status */}
+        {/* Render the action buttons based on status */}
         {getActionButton()}
       </td>
     </tr>

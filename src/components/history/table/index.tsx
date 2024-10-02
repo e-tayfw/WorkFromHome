@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { H1, BodyLarge } from '@/components/TextStyles'; // Correct import path for TextStyles
-import RequestEntry from '@/components/history/entry'; // Correct import path for RequestEntry
-import axios from 'axios'; // Axios for API calls
-import Swal from 'sweetalert2'; // SweetAlert2 for loader
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'; // FontAwesome icons
-import { faSort, faSortUp, faSortDown } from '@fortawesome/free-solid-svg-icons'; // Icons
+import { H1, BodyLarge } from '@/components/TextStyles';
+import RequestEntry from '@/components/history/entry';
+import axios from 'axios';
+import Swal from 'sweetalert2'; 
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faSort, faSortUp, faSortDown } from '@fortawesome/free-solid-svg-icons';
 
 // Interface for request data
 interface Request {
@@ -37,7 +37,7 @@ export const RequestTable: React.FC = () => {
         html: 'Please wait while we fetch your requests',
         allowOutsideClick: false,
         didOpen: () => {
-          Swal.showLoading(); // Show loading spinner
+          Swal.showLoading();
         },
       });
 
@@ -65,7 +65,7 @@ export const RequestTable: React.FC = () => {
         
         setRequests(mappedRequests);
         setLoading(false);
-        Swal.close(); // Close the SweetAlert2 loading spinner
+        Swal.close();
       } catch (err) {
         console.error('Error fetching requests:', err);
         setError('Failed to load requests');
@@ -74,7 +74,7 @@ export const RequestTable: React.FC = () => {
           icon: 'error',
           title: 'Oops...',
           text: 'Failed to load requests, please try again!',
-        }); // Show error modal
+        });
       }
     };
 
