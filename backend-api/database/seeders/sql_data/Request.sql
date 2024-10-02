@@ -7,31 +7,31 @@
 -- Generation Time: 2024-09-28 15:36:22.9150
 -- -------------------------------------------------------------
 
-DROP TABLE IF EXISTS "public"."Request" CASCADE;
+-- DROP TABLE IF EXISTS "public"."Request" CASCADE;
 -- This script only contains the table creation statements and does not fully represent the table in the database. Do not use it as a backup.
 
 -- Sequence and defined type
-CREATE SEQUENCE IF NOT EXISTS "Request_Request_ID_seq";
+-- CREATE SEQUENCE IF NOT EXISTS "Request_Request_ID_seq";
 
 -- Table Definition
-CREATE TABLE "public"."Request" (
-    "Request_ID" int8 NOT NULL DEFAULT nextval('"Request_Request_ID_seq"'::regclass),
-    "Requestor_ID" int8 NOT NULL,
-    "Approver_ID" int8 NOT NULL,
-    "Status" varchar(255) NOT NULL,
-    "Date_Requested" date NOT NULL,
-    "Request_Batch" int8,
-    "Date_Of_Request" date NOT NULL,
-    "Duration" varchar(255) NOT NULL,
-    "created_at" timestamp(0),
-    "updated_at" timestamp(0),
-    CONSTRAINT "request_requestor_id_foreign" FOREIGN KEY ("Requestor_ID") REFERENCES "public"."Employee"("Staff_ID"),
-    CONSTRAINT "request_approver_id_foreign" FOREIGN KEY ("Approver_ID") REFERENCES "public"."Employee"("Staff_ID"),
-    PRIMARY KEY ("Request_ID")
-);
+-- CREATE TABLE "public"."Request" (
+--     "Request_ID" int8 NOT NULL DEFAULT nextval('"Request_Request_ID_seq"'::regclass),
+--     "Requestor_ID" int8 NOT NULL,
+--     "Approver_ID" int8 NOT NULL,
+--     "Status" varchar(255) NOT NULL,
+--     "Date_Requested" date NOT NULL,
+--     "Request_Batch" int8,
+--     "Date_Of_Request" date NOT NULL,
+--     "Duration" varchar(255) NOT NULL,
+--     "created_at" timestamp(0),
+--     "updated_at" timestamp(0),
+--     CONSTRAINT "request_requestor_id_foreign" FOREIGN KEY ("Requestor_ID") REFERENCES "public"."Employee"("Staff_ID"),
+--     CONSTRAINT "request_approver_id_foreign" FOREIGN KEY ("Approver_ID") REFERENCES "public"."Employee"("Staff_ID"),
+--     PRIMARY KEY ("Request_ID")
+-- );
 
 -- Comments
-COMMENT ON TABLE "public"."Request" IS 'Track all requests made by employees';
+-- COMMENT ON TABLE "public"."Request" IS 'Track all requests made by employees';
 
 INSERT INTO "public"."Request" ("Request_ID", "Requestor_ID", "Approver_ID", "Status", "Date_Requested", "Request_Batch", "Date_Of_Request", "Duration", "created_at", "updated_at") VALUES
 (1, 140078, 140894, 'Pending', '2024-09-27', NULL, '2024-09-27', 'FD', '2024-09-27 02:37:59', '2024-09-27 02:37:59'),

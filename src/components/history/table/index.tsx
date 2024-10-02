@@ -87,6 +87,11 @@ export const RequestTable: React.FC = () => {
     setCurrentPage(1); // Reset to page 1 when filterStatus changes
   }, [filterStatus]);
 
+  // Reset current page to 1 whenever the filter changes
+  useEffect(() => {
+    setCurrentPage(1); // Reset to page 1 when filterStatus changes
+  }, [filterStatus]);
+
   // Sort requests
   const sortedRequests = useMemo(() => {
     let sortableRequests = [...requests];
