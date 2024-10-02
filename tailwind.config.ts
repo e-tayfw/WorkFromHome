@@ -24,11 +24,12 @@ const config: Config = {
         // 'dark-secondary': '#ffffff',
         // 'dark-accent': '#436be5',
       },
-    },
+    }  // Remove the semicolon here
   },
   plugins: [
-    require('flowbite/plugin'),
+    require('flowbite/plugin')
   ],
   darkMode: 'class', // Enables dark mode with a 'dark' class on the root element
 };
+
 export default config;
