@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { H1, BodyLarge } from '@/components/TextStyles'; // Correct import path for TextStyles
-import RequestEntry from '@/components/history/entry'; // Correct import path for RequestEntry
-import axios from 'axios'; // Axios for API calls
-import Swal from 'sweetalert2'; // SweetAlert2 for loader
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'; // FontAwesome icons
-import { faSort, faSortUp, faSortDown } from '@fortawesome/free-solid-svg-icons'; // Icons
+import { useSelector } from 'react-redux';
+import { H1, BodyLarge } from '@/components/TextStyles';
+import RequestEntry from '@/components/history/entry';
+import axios from 'axios';
+import Swal from 'sweetalert2';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faSort, faSortUp, faSortDown } from '@fortawesome/free-solid-svg-icons';
 
 // Interface for request data
 interface Request {
@@ -29,6 +30,9 @@ export const RequestTable: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState<number>(1); // For pagination
 
+  // Retrieve staffId (which is employeeId) from Redux store
+  const employeeId = useSelector((state: any) => state.auth.staffId);
+
   // Fetch requests using Axios and SweetAlert2 loader
   useEffect(() => {
     const fetchRequests = async () => {
@@ -37,14 +41,11 @@ export const RequestTable: React.FC = () => {
         html: 'Please wait while we fetch your requests',
         allowOutsideClick: false,
         didOpen: () => {
-          Swal.showLoading(); // Show loading spinner
+          Swal.showLoading();
         },
       });
 
       try {
-        // Retrieve employeeId from localStorage
-        const employeeId = localStorage.getItem("employeeId");
-
         if (!employeeId) {
           throw new Error("No employee ID found in session.");
         }
@@ -65,7 +66,7 @@ export const RequestTable: React.FC = () => {
         
         setRequests(mappedRequests);
         setLoading(false);
-        Swal.close(); // Close the SweetAlert2 loading spinner
+        Swal.close();
       } catch (err) {
         console.error('Error fetching requests:', err);
         setError('Failed to load requests');
@@ -74,12 +75,22 @@ export const RequestTable: React.FC = () => {
           icon: 'error',
           title: 'Oops...',
           text: 'Failed to load requests, please try again!',
-        }); // Show error modal
+        });
       }
     };
 
     fetchRequests();
-  }, []);
+  }, [employeeId]);
+
+  // Reset current page to 1 whenever the filter changes
+  useEffect(() => {
+    setCurrentPage(1); // Reset to page 1 when filterStatus changes
+  }, [filterStatus]);
+
+  // Reset current page to 1 whenever the filter changes
+  useEffect(() => {
+    setCurrentPage(1); // Reset to page 1 when filterStatus changes
+  }, [filterStatus]);
 
   // Sort requests
   const sortedRequests = useMemo(() => {
@@ -216,26 +227,39 @@ export const RequestTable: React.FC = () => {
       {/* Pagination Controls */}
       <div className="flex justify-center items-center mt-4 space-x-4">
         <button
-          className="bg-primary text-white py-2 px-4 rounded-md"
+          className="bg-primary text-white py-2 px-4 rounded-md disabled:bg-gray-400 disabled:cursor-not-allowed"
           disabled={currentPage === 1}
           onClick={() => setCurrentPage(currentPage - 1)}
-          >
-            Previous
-          </button>
-          <span className="text-primary font-semibold">
-            Page {currentPage} of {totalPages}
-          </span>
-          <button
-            className="bg-primary text-white py-2 px-4 rounded-md"
-            disabled={currentPage === totalPages}
-            onClick={() => setCurrentPage(currentPage + 1)}
-          >
-            Next
-          </button>
-        </div>
+        >
+          Previous
+        </button>
+        <span className="text-primary font-semibold">
+          Page {currentPage} of {totalPages}
+        </span>
+        <button
+          className="bg-primary text-white py-2 px-4 rounded-md disabled:bg-gray-400 disabled:cursor-not-allowed"
+          disabled={currentPage === totalPages || totalPages === 0}
+          onClick={() => setCurrentPage(currentPage + 1)}
+        >
+          Next
+        </button>
       </div>
-    );
-  };
-  
-  export default RequestTable;
-            
+
+      {/* Display loading spinner if data is loading */}
+      {loading && (
+        <div className="flex items-center justify-center mt-6">
+          <BodyLarge className="text-primary">Loading...</BodyLarge>
+        </div>
+      )}
+
+      {/* Error message display */}
+      {error && (
+        <div className="flex items-center justify-center mt-6">
+          <BodyLarge className="text-red-500">{error}</BodyLarge>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default RequestTable;

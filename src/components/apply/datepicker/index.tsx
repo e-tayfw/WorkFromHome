@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
-import { Datepicker } from 'flowbite';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import { Datepicker } from "flowbite";
 import 'flowbite/dist/flowbite.min.css';
 
 interface DateComponentProps {
@@ -72,4 +73,4 @@ const Datecomponent: React.FC<DateComponentProps> = ({ selectedDate, onDateChang
   );
 };
 
-export { Datecomponent };
+export { Datecomponent }
