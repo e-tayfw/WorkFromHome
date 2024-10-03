@@ -7,6 +7,7 @@ import { team_schedule_test } from "@/constants/team_schedule_test";
 import { EyeIcon } from "@/components/Svgs/eye";
 import { dateFormat } from "@/utils/date-format";
 import { CloseIcon } from "@/components/Svgs/close";
+import { generateTeamSchedule } from "@/pages/api/scheduleApi";
 
 // Define the structure of the schedule
 interface TeamMember {
@@ -23,9 +24,35 @@ interface Schedule {
 
 export const TeamCalendar: React.FC = () => {
   const [schedule, setSchedule] = useState<ScheduleData | null>(
-    team_schedule_test
+    null
   );
   const staffId = useSelector((state: RootState) => state.auth.staffId);
+  
+  // Function to fetch the schedule and update state
+  const fetchSchedule = async () => {
+    console.log("Staff:", staffId);
+    if (staffId) {
+      // Make sure staffId exists before fetching
+      try {
+        const fetchedSchedule = await generateTeamSchedule(Number(staffId));
+        console.log("Fetched schedule data:", fetchedSchedule); // Log the fetched data
+        setSchedule(fetchedSchedule); // Update the schedule state with the fetched data
+      } catch (error) {
+        console.error("Error fetching schedule:", error);
+      }
+    } else {
+      console.error("No staffId found in Redux store");
+    }
+  };
+
+  // Fetch schedule in useEffect after re-render
+  useEffect(() => {
+    if (staffId) {
+      fetchSchedule();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // The effect will run only when staffId changes and is not null
+
   const [currentView, setCurrentView] = useState<"day" | "week">("day");
 
   const [weeks, setWeeks] = useState<{ [key: string]: Schedule }>({});

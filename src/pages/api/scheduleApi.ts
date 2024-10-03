@@ -27,7 +27,7 @@ export const generateOwnSchedule = async (staffId: number) => {
 export const generateTeamSchedule = async (staffId: number) => {
   try {
     const response = await fetch(
-      `http://127.0.0.1:8085/api/generateOwnSchedule/${staffId}`,
+      `http://127.0.0.1:8085/api/request/approverID/${staffId}`,
       {
         method: "GET", // Fetch defaults to GET, so this is optional
       }
