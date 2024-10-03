@@ -6,6 +6,7 @@ use App\Models\Requests;
 use App\Models\RequestLog;
 use App\Models\Employee;
 use Illuminate\Http\Request;
+use DateTime;
 
 class RequestController extends Controller
 {
@@ -50,6 +51,54 @@ class RequestController extends Controller
             return response()->json($date_dictionary);
         } else {
             return response()->json(['message' => 'Request not found'], 404);
+        }
+    }
+
+    // Fetch propoertion of people in team that is working from home on a specific date
+    public function getProportionOfTeamOnDate($approver_id, $date) {
+        if (!preg_match('/^\d{4}-(0?[1-9]|1[0-2])-(0?[1-9]|[12]\d|3[01])$/', $date)) {
+            return response()->json(['message' => 'The format of date is not correct, sample format 2024-10-03', 'received format' => $date], 400);
+        }
+        $formattedDate = (new DateTime($date))->format('Y-m-d');
+        
+        // query database for the people with that approver
+        $request = Requests::where(column: 'Approver_ID', operator: $approver_id)->get();
+        $team_size = Employee::where('Reporting_Manager', $approver_id)->count();
+        if ($team_size != 0) {
+            $proportion = 1/$team_size;
+        } else {
+            return response()->json(['message' => 'This person managers 0 people.'], 404);
+        }
+        
+        if ($request) {
+            // create a dictionary of different dates and check how many people are working from home for that date
+            $date_dictionary = [];
+            // for loop to iterate through date_dictionary to find different dates and see how many people are working from home for that date
+            foreach ($request as $req) {
+                $dateOfReq = $req->Date_Requested;
+                $formattedDateOfReq = (new DateTime($dateOfReq))->format('Y-m-d');
+                error_log('Date of Request: ' . $formattedDateOfReq . ' | Date passed: ' . $formattedDate);
+                if ($formattedDate == $formattedDateOfReq) {
+                    // how to print the values of $dateOfReq and $date
+                    $arrangement = $req->Duration;
+
+                    if (!isset($date_dictionary[$date])) {
+                        $date_dictionary[$date] = ['AM' => 0, 'PM' => 0, 'FD' => 0];
+                    }
+
+                    if ($arrangement === 'AM') {
+                        $date_dictionary[$date]['AM'] += $proportion;
+                    } else if ($arrangement === "PM") {
+                        $date_dictionary[$date]['PM'] += $proportion;
+                    } else if ($arrangement === "FD") {
+                        $date_dictionary[$date]["FD"] += $proportion;
+                    }
+                }
+            }
+
+            return response()->json($date_dictionary);
+        } else {
+            return response()->json(['message' => 'Request not found', "dateofreq" => $dateOfReq, ], 404);
         }
     }
 

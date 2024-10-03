@@ -26,6 +26,7 @@ Route::get(uri: '/request/requestorId/{employee_id}', action: [RequestController
 Route::get(uri: '/request/approverID/{employee_id}', action: [RequestController::class, 'getRequestsByApproverID']);
 Route::post(uri: '/request', action: [RequestController::class, 'createRequest']);
 Route::get(uri: '/request/proportionOfTeam/{approver_id}', action: [RequestController::class, 'getProportionOfTeam']);
+Route::get(uri: '/request/proportionOfTeam/date/{approver_id}/{date}', action: [RequestController::class, 'getProportionOfTeamOnDate']);
 
 // Schedule
 Route::get(uri: '/generateOwnSchedule/{staff_id}', action: [ScheduleController::class, 'generateOwnSchedule']);
