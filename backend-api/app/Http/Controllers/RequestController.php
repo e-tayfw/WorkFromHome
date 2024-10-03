@@ -100,7 +100,7 @@ class RequestController extends Controller
 
             return response()->json($date_dictionary);
         } else {
-            return response()->json(['message' => 'Request not found', "dateofreq" => $dateOfReq,], 404);
+            return response()->json(['message' => 'Request not found'], 404);
         }
     }
 
