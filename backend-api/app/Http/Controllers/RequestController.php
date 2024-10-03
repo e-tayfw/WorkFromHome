@@ -217,7 +217,12 @@ class RequestController extends Controller
         // Fetch employee row using staff_id
         $requestDB = Requests::where("Request_ID", $request_id)->first();
 
-        // Checking for correct status
+        // check for batch = null
+        if($request_batch !== null) {
+            return response()-> json(['message'=>'Request is batch request, unable to approve this request by itself'], 400);
+        }
+
+        // check for correct status
         if ($status !== 'Approved') {
             return response()->json(['message' => 'You are not trying to approve request, this endpoint was to approve requests'], 400);
         }
@@ -326,6 +331,11 @@ class RequestController extends Controller
         // Checking for correct status
         if ($status !== 'Rejected') {
             return response()->json(['message' => 'You are not trying to reject request, this endpoint was to reject requests'], 400);
+        }
+
+        // check for batch = null
+        if($request_batch !== null) {
+            return response()-> json(['message'=>'Request is batch request, unable to approve this request by itself'], 400);
         }
 
         // check for reason provided
