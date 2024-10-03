@@ -77,7 +77,6 @@ class RequestController extends Controller
             foreach ($request as $req) {
                 $dateOfReq = $req->Date_Requested;
                 $formattedDateOfReq = (new DateTime($dateOfReq))->format('Y-m-d');
-                error_log('Date of Request: ' . $formattedDateOfReq . ' | Date passed: ' . $formattedDate);
                 if ($formattedDate == $formattedDateOfReq) {
                     // how to print the values of $dateOfReq and $date
                     $arrangement = $req->Duration;
@@ -197,5 +196,96 @@ class RequestController extends Controller
         }
     }
 
-    
+    // Approve Request
+    public function approveRequest(Request $request) {   
+        // Decode json input and give assign to variables based on key
+        $request_id = $request->input('Request_ID');
+        $requestor_id = $request->input('Requestor_ID');
+        $approver_id = $request->input('Approver_ID');
+        $status = $request->input('Status');
+        $date_requested = $request->input('Date_Requested');
+        $request_batch = $request->input('Request_Batch');
+        $date_of_request = $request->input('Date_Of_Request');
+        $duration = $request->input('Duration');
+        $created_at = $request->input('created_at');
+        $updated_at = $request->input('updated_at');
+
+        // Fetch employee row using staff_id
+        $requestDB = Requests::where("Request_ID", $request_id)->first();
+
+        // Checking for correct status
+        if ($status !== 'Approved') {
+            return response()->json(['message' => 'You are not trying to approve request, this endpoint was to approve requests'], 400);
+        }
+
+        // Approve request
+        $requestDB->Status = 'Pending';
+        $requestDB->save();
+
+        return response() -> json($requestDB);
+    }
+
+    // Reject Request
+    public function rejectRequest(Request $request) {   
+        // Decode json input and give assign to variables based on key
+        $request_id = $request->input('Request_ID');
+        $requestor_id = $request->input('Requestor_ID');
+        $approver_id = $request->input('Approver_ID');
+        $status = $request->input('Status');
+        $date_requested = $request->input('Date_Requested');
+        $request_batch = $request->input('Request_Batch');
+        $date_of_request = $request->input('Date_Of_Request');
+        $duration = $request->input('Duration');
+        $created_at = $request->input('created_at');
+        $updated_at = $request->input('updated_at');
+        $reason = $request->input('reason');
+
+        // Fetch employee row using staff_id
+        $requestDB = Requests::where("Request_ID", $request_id)->first();
+        error_log('Request: ' . $requestDB);
+
+        // Checking for correct status
+        if ($status !== 'Rejected') {
+            return response()->json(['message' => 'You are not trying to reject request, this endpoint was to reject requests'], 400);
+        }
+        
+        // check for reason provided
+        if ($reason == "") {
+            return response() -> json(['message' => "Reason was not provided"], 400);
+        }
+
+        // check if the requst is already rejected
+        if ($requestDB->Status == "Rejected") {
+            return response() -> json(['message' => "Request was already rejected"], 400);
+        }
+
+        // check if the person rejecting the request is the approver
+        if ($requestDB -> Approver_ID !== $approver_id) {
+            return response() -> json(['message' => "You are not allowed to reject this request"], 400);
+        }
+
+        // Insert any other functional checks before rejection can be done
+
+        // Change state of the ticket to rejected
+        $requestDB->Status = 'Rejected';
+        $requestDB->save();
+        return response() ->json($requestDB);
+        // Add to request log table
+        $newRequestLog = new RequestLog();
+        $newRequestLog->Request_ID = $requestDB->Request_ID;
+        $newRequestLog->Previous_State = $requestDB->Status;
+        $newRequestLog->New_State = $status;
+        $newRequestLog->Employee_ID = $requestDB->Approver_ID;
+        $newRequestLog->Date = date("Y-m-d");
+        $newRequestLog->Remarks = $reason;
+        // Save the Request Log
+        if ($newRequestLog->save()) {
+            // If request log saves successfully
+            return response() -> json($requestDB, 200);
+        } else {
+            // Handle error saving RequestLog
+            return response()->json(['message' => 'Failed to create RequestLog'], 500);
+        }
+        
+    }
 }

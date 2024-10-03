@@ -35,5 +35,7 @@ Route::get(uri: '/generateTeamScheduleByManager/{reportingManager}', action: [Sc
 Route::get(uri: '/generateDepartmentSchedule/{dept}', action: [ScheduleController::class, 'generateDepartmentSchedule']);
 
 // Request Approval
+Route::post(uri: '/approveRequest', action: [RequestController::class, 'approveRequest']);
 
 // Request Rejection
+Route::post(uri: '/rejectRequest', action: [RequestController::class, 'rejectRequest']);
