@@ -49,13 +49,13 @@ const ActionHandler: React.FC<ActionHandlerProps> = ({
       title: 'Are you sure?',
       text: `The proportion of staff working from home once accepted will be ${(
         proportionAfterApproval! * 100
-      ).toFixed(2)}%`,
+      ).toFixed(1)}%`,
       icon: 'warning',
       showCancelButton: true,
       confirmButtonText: 'Confirm',
       cancelButtonText: 'Cancel',
-      confirmButtonColor: '#28a745',  // Green confirm button
-      cancelButtonColor: '#dc3545',   // Red cancel button
+      confirmButtonColor: '#072040',
+      cancelButtonColor: '#a2b4cc',
     }).then((result) => {
       if (result.isConfirmed) {
         const currentDate = getFormattedTimestamp(); // Use the new timestamp format
@@ -95,8 +95,8 @@ const ActionHandler: React.FC<ActionHandlerProps> = ({
       showCancelButton: true,
       confirmButtonText: 'Confirm',
       cancelButtonText: 'Cancel',
-      confirmButtonColor: '#28a745',  // Green confirm button
-      cancelButtonColor: '#dc3545',   // Red cancel button
+      confirmButtonColor: '#072040',
+      cancelButtonColor: '#a2b4cc',
       inputValidator: (value) => {
         if (!value) {
           return 'You need to provide a reason!';

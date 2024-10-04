@@ -153,10 +153,7 @@ const handleDurationClick = (date: string, duration: 'AM' | 'PM' | 'FD') => {
       title: `Requests for ${duration} on ${date}`,
       html: content,
       icon: 'info',
-      customClass: {
-        confirmButton: 'bg-primary text-white py-2 px-4 rounded-md',
-      },
-      buttonsStyling: false, 
+      confirmButtonColor: '#072040',
     });
   };
 
