@@ -21,7 +21,7 @@ class RequestController extends Controller
     public function getProportionOfTeam($approver_id)
     {
         // query database for the people with that approver
-        $request = Requests::where(column: 'Approver_ID', status: "Approved", operator: $approver_id)->get();
+        $request = Requests::where([['Approver_ID', $approver_id],['Status', 'Approved']])->get();
         $team_size = Employee::where('Reporting_Manager', $approver_id)->count();
         if ($team_size != 0) {
             $proportion = 1 / $team_size;
@@ -65,7 +65,7 @@ class RequestController extends Controller
         $formattedDate = (new DateTime($date))->format('Y-m-d');
 
         // query database for the people with that approver
-        $request = Requests::where(column: 'Approver_ID', status: "Approved", operator: $approver_id)->get();
+        $request = Requests::where([['Approver_ID', $approver_id],['Status', 'Approved']])->get();
         $team_size = Employee::where('Reporting_Manager', $approver_id)->count();
         if ($team_size != 0) {
             $proportion = 1 / $team_size;
