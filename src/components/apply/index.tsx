@@ -4,7 +4,9 @@ import { Selection } from "@/components/apply/selection";
 import { Reason } from "@/components/apply/reason";
 import { Submit } from "@/components/apply/submit";
 import { Modal } from "@/components/apply/modal";
-import { Body } from "@/components/TextStyles";
+import { H1, BodyLarge, Body, Display } from "@/components/TextStyles";
+import Swal from 'sweetalert2';
+import { useSelector } from "react-redux";
 
 type ArrangementType = 'AM' | 'PM' | 'FD' | '';
 
@@ -24,6 +26,7 @@ const Apply: React.FC = ({}) => {
   const [submittedData, setSubmittedData] = useState<SubmitData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [apiResponse, setApiResponse] = useState<{ success: boolean; message: string } | null>(null);
+  const staffid = useSelector((state:any) => state.auth.staffId);
 
   useEffect(() => {
     setIsFormValid(
@@ -62,9 +65,9 @@ const Apply: React.FC = ({}) => {
     setIsLoading(true);
     setApiResponse(null);
 
+
     const submitData: SubmitData = {
-      // Test StaffID, change to getlocalstorage later
-      staffid: 140078,
+      staffid: staffid,
       date: selectedDate,
       arrangement: preferredArrangement,
       reason: reason,
@@ -126,7 +129,10 @@ const Apply: React.FC = ({}) => {
         setSelectedDate("");
         setPreferredArrangement("");
         setReason("");
+
       }
+      console.log(submitData)
+
       // Show the modal after the API call completes
       setIsModalOpen(true);
     } catch (err) {
@@ -142,8 +148,11 @@ const Apply: React.FC = ({}) => {
   };
 
   return (
-    <div className="flex justify-center items-start min-h-screen">
-      <div className="flex flex-col max-w-lg w-full p-4 sm:max-w-md">
+    <div className="container flex justify-center items-start sm:mt-28 mt-24">
+      <div className="flex flex-col max-w-lg p-4 sm:max-w-md">
+            <div className="text-[50px] lg:text-[55px] leading-[60px] lg:leading-[80px] font-bold lg:mb-0 mb-4">
+                <p>Work-From-Home</p>
+            </div>
         <div>
           <Body className="text-sm font-light text-primary">
             Select a date 

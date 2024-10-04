@@ -5,7 +5,7 @@ import axios from 'axios'
 const ApplyPage: React.FC = ({}) => {
   return (
     <div>
-      <Apply onSubmitData />
+      <Apply />
     </div>
   );
 };
