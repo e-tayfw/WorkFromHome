@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Body } from '@/components/TextStyles';
 import axios from 'axios';
 import ActionHandler from '@/components/approve/actionHandler'; // Import ActionHandler
+import { Oval } from 'react-loader-spinner'; // Import the spinner
 
 interface ApproveEntryProps {
   requestId: number;
@@ -104,7 +105,18 @@ const ApproveEntry: React.FC<ApproveEntryProps> = ({
       </td>
       <td className="px-4 py-2">
         {isLoading ? (
-          <Body className="text-text">Loading...</Body>
+          <div className="flex justify-center items-center">
+            <Oval
+              height={30}
+              width={30}
+              color="#072040"
+              visible={true}
+              ariaLabel="oval-loading"
+              secondaryColor="#a2b4cc"
+              strokeWidth={6}
+              strokeWidthSecondary={6}
+            />
+          </div>
         ) : (
           <ActionHandler
             requestId={requestId}

@@ -136,8 +136,8 @@ const CalendarView: React.FC = () => {
     return { style };
   };
 
-// Handle event click to show details of requests for the selected time period (AM/PM/FD)
-const handleDurationClick = (date: string, duration: 'AM' | 'PM' | 'FD') => {
+  // Handle event click to show details of requests for the selected time period (AM/PM/FD)
+  const handleDurationClick = (date: string, duration: 'AM' | 'PM' | 'FD') => {
     const requests = requestsByDay[date][duration];
     
     // Add spacing between requests in the modal content
@@ -163,13 +163,20 @@ const handleDurationClick = (date: string, duration: 'AM' | 'PM' | 'FD') => {
     const pmRequests = requestsByDay[date].PM;
     const fdRequests = requestsByDay[date].FD;
 
+    // Filter requests by 'Approved' status
+    const amApproved = amRequests.filter((req: any) => req.status.toLowerCase() === 'approved').length;
+    const pmApproved = pmRequests.filter((req: any) => req.status.toLowerCase() === 'approved').length;
+    const fdApproved = fdRequests.filter((req: any) => req.status.toLowerCase() === 'approved').length;
+
+    // Filter requests by 'Pending' status
     const amPending = amRequests.filter((req: any) => req.status.toLowerCase() === 'pending').length;
     const pmPending = pmRequests.filter((req: any) => req.status.toLowerCase() === 'pending').length;
     const fdPending = fdRequests.filter((req: any) => req.status.toLowerCase() === 'pending').length;
 
-    const amEvent = amRequests.length
+    // Create events for AM, PM, and FD
+    const amEvent = amApproved > 0 || amPending > 0
       ? {
-          title: `AM: ${amRequests.length} (pending: ${amPending})`,
+          title: `AM: ${amApproved} (pending: ${amPending})`,
           start: new Date(date),
           end: new Date(date),
           dateKey: date,
@@ -177,9 +184,9 @@ const handleDurationClick = (date: string, duration: 'AM' | 'PM' | 'FD') => {
         }
       : null;
 
-    const pmEvent = pmRequests.length
+    const pmEvent = pmApproved > 0 || pmPending > 0
       ? {
-          title: `PM: ${pmRequests.length} (pending: ${pmPending})`,
+          title: `PM: ${pmApproved} (pending: ${pmPending})`,
           start: new Date(date),
           end: new Date(date),
           dateKey: date,
@@ -187,9 +194,9 @@ const handleDurationClick = (date: string, duration: 'AM' | 'PM' | 'FD') => {
         }
       : null;
 
-    const fdEvent = fdRequests.length
+    const fdEvent = fdApproved > 0 || fdPending > 0
       ? {
-          title: `FD: ${fdRequests.length} (pending: ${fdPending})`,
+          title: `FD: ${fdApproved} (pending: ${fdPending})`,
           start: new Date(date),
           end: new Date(date),
           dateKey: date,
