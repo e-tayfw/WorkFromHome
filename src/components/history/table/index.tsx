@@ -154,8 +154,8 @@ export const RequestTable: React.FC = () => {
   // Show empty state when no requests are available
   if (!loading && requests.length === 0) {
     return (
-      <div className="flex items-center justify-center h-screen">
-        <H1 className="font-bold">You have no requests!</H1>
+      <div className="flex">
+        <H1 className="font-bold text-center">You have no requests!</H1>
       </div>
     );
   }
