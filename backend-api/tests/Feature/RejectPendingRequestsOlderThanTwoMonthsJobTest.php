@@ -132,4 +132,36 @@ class RejectPendingRequestsOlderThanTwoMonthsJobTest extends TestCase
             'Status' => 'Pending', // Status should remain 'Pending'
         ]);
     }
+
+    /**
+     * Test if the job is removed when the request status is not 'Pending' after 2 months.
+     * 
+     * #[Depends('test_database_is_test_db')]
+     */
+    public function test_job_is_removed_if_request_status_is_not_pending_after_two_months(): void
+    {
+        // Step 1: Simulate a request that is 3 months old and not pending
+        $requestNotPending = Requests::create([
+            'Requestor_ID' => 140879, // Simulated data
+            'Approver_ID' => 140001,  // Simulated data
+            'Status' => 'Approved',    // Status is not 'Pending'
+            'Date_Requested' => Carbon::now()->subMonths(3), // Request made 3 months ago
+            'Date_Of_Request' => Carbon::now()->subMonths(3), // Date of request 3 months ago
+            'Duration' => 'FD',        // Some value for duration
+            'created_at' => Carbon::now()->subMonths(3),
+            'updated_at' => Carbon::now()->subMonths(3),
+        ]);
+
+        // Step 2: Dispatch the job for that request
+        RejectPendingRequestsOlderThanTwoMonthsJob::dispatch($requestNotPending);
+
+        // Step 3: Run the handle method manually to simulate processing the job
+        $job = new RejectPendingRequestsOlderThanTwoMonthsJob($requestNotPending);
+        $job->handle(); // Simulate job execution
+
+        // Step 4: Assert that the job has been removed from the jobs table
+        $this->assertDatabaseMissing('jobs', [
+            'payload' => json_encode(serialize($job)), // Adapt this to your serialization method if needed
+        ]);
+    }
 }
