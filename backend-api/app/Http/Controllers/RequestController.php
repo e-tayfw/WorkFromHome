@@ -6,6 +6,10 @@ use App\Models\Requests;
 use App\Models\RequestLog;
 use App\Models\Employee;
 use Illuminate\Http\Request;
+use App\Jobs\RejectPendingRequestsOlderThanTwoMonthsJob;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
+use DB;
+use Log;
 
 class RequestController extends Controller
 {
@@ -16,7 +20,7 @@ class RequestController extends Controller
     }
 
     // Fetch all requests by requestorID
-     public function getRequestsByRequestorID($requestor_id)
+    public function getRequestsByRequestorID($requestor_id)
     {
         $request = Requests::where(column: 'Requestor_ID', operator: $requestor_id)->get();
         if ($request) {
@@ -27,7 +31,7 @@ class RequestController extends Controller
     }
 
     // Fetch all requests by approverID
-     public function getRequestsByApproverID($approver_id)
+    public function getRequestsByApproverID($approver_id)
     {
         $request = Requests::where(column: 'Approver_ID', operator: $approver_id)->get();
         if ($request) {
@@ -35,76 +39,76 @@ class RequestController extends Controller
         } else {
             return response()->json(['message' => 'Request not found'], 404);
         }
-    }   
+    }
+
     public function createRequest(Request $request)
-    {   
-        // Decode json input and give assign to variables based on key
-        $staff_id = $request->input('staffid');
-        $selectedDate = $request->input('date');
-        $arrangement = $request->input('arrangement');
-        $reason = $request->input('reason');
-
-        // Fetch employee row using staff_id
-        $employee = Employee::where("Staff_ID", $staff_id)->first();
-
-
-        if ($employee) {
-
-            // Check if a request exists for the same date
-            $existingRequest = Requests::where([["Requestor_ID", '=', $staff_id],["Date_Requested",'=', $selectedDate]])->first();
-            if($existingRequest){
+    {
+        $staffId = $request->staffid;
+        $selectedDate = $request->date;
+        $arrangement = $request->arrangement;
+        $reason = $request->reason;
+    
+        try {
+            $employee = Employee::where("Staff_ID", $staffId)->firstOrFail();
+    
+            $existingRequest = Requests::where([
+                ['Requestor_ID', '=', $staffId],
+                ['Date_Requested', '=', $selectedDate]
+            ])->first();
+    
+            if ($existingRequest) {
                 return response()->json([
                     'message' => 'A request for the same date already exists',
                     'date' => $selectedDate,
                     'success' => false
                 ]);
             }
-            else{
-                // Get reporting manager
-                $reporting_manager = $employee->Reporting_Manager;
-            
-                // If Reporting Manager found, update the DB with the request
-                if ($reporting_manager) {
-                    // Create new Request row
-                    $newRequest = new Requests();
-                    $newRequest->Requestor_ID = $staff_id;
-                    $newRequest->Approver_ID = $reporting_manager;
-                    $newRequest->Status = "Pending";
-                    $newRequest->Date_Requested = $selectedDate;
-                    $newRequest->Date_Of_Request = date("Y-m-d");
-                    $newRequest->Duration = $arrangement;
-            
-                    // Save the Request
-                    if ($newRequest->save()) {
-                        // Create new Request Log row
-                        $newRequestLog = new RequestLog();
-                        $newRequestLog->Request_ID = $newRequest->Request_ID;
-                        $newRequestLog->Previous_State = 'Pending';
-                        $newRequestLog->New_State = "Pending";
-                        $newRequestLog->Employee_ID = $staff_id;
-                        $newRequestLog->Date = date("Y-m-d");
-                        $newRequestLog->Remarks = $reason;
-            
-                        // Save the Request Log
-                        if ($newRequestLog->save()) {
-                            // Return success response with created Request and RequestLog details
-                            return response()->json([
-                                'message' => 'Rows for Request and RequestLog have been successfully created',
-                                'success' => true,
-                                'date' => $selectedDate,
-                                "arrangement" => $arrangement,
-                                "reportingManager" => $reporting_manager
-                            ]);
-                        } else {
-                            // Handle error saving RequestLog
-                            return response()->json(['message' => 'Failed to create RequestLog'], 500);
-                        }
-                    } else {
-                        // Handle error saving Request
-                        return response()->json(['message' => 'Failed to create Request'], 500);
-                    }
-                }
+    
+            $reportingManager = $employee->Reporting_Manager;
+            if (!$reportingManager) {
+                return response()->json(['message' => 'Reporting manager not found', 'success' => false], 404);
             }
+    
+            DB::beginTransaction();
+    
+            $newRequest = Requests::create([
+                'Requestor_ID' => $staffId,
+                'Approver_ID' => $reportingManager,
+                'Status' => 'Pending',
+                'Date_Requested' => $selectedDate,
+                'Date_Of_Request' => now(),
+                'Duration' => $arrangement,
+            ]);
+    
+            // Dispatch the job to check status after 2 months
+            RejectPendingRequestsOlderThanTwoMonthsJob::dispatch($newRequest)->delay(now()->addMonths(2));
+            
+            RequestLog::create([
+                'Request_ID' => $newRequest->Request_ID,
+                'Previous_State' => 'Pending',
+                'New_State' => 'Pending',
+                'Employee_ID' => $staffId,
+                'Date' => now(),
+                'Remarks' => $reason,
+            ]);
+    
+            DB::commit();
+    
+            return response()->json([
+                'message' => 'Rows for Request and RequestLog have been successfully created',
+                'success' => true,
+                'date' => $selectedDate,
+                'arrangement' => $arrangement,
+                'reportingManager' => $reportingManager
+            ]);
+    
+        } catch (ModelNotFoundException $e) {
+            return response()->json(['message' => 'Employee not found', 'success' => false], 404);
+    
+        } catch (\Exception $e) {
+            // Rollback transaction in case of any failure
+            DB::rollBack();
+            return response()->json(['message' => 'Failed to create Request or RequestLog', 'error' => $e->getMessage()], 500);
         }
     }
 }
