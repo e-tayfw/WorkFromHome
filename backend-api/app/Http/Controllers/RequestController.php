@@ -21,7 +21,7 @@ class RequestController extends Controller
     public function getProportionOfTeam($approver_id)
     {
         // query database for the people with that approver
-        $request = Requests::where([['Approver_ID', $approver_id],['Status', 'Approved']])->get();
+        $request = Requests::where([['Approver_ID', $approver_id], ['Status', 'Approved']])->get();
         $team_size = Employee::where('Reporting_Manager', $approver_id)->count();
         if ($team_size != 0) {
             $proportion = 1 / $team_size;
@@ -65,7 +65,7 @@ class RequestController extends Controller
         $formattedDate = (new DateTime($date))->format('Y-m-d');
 
         // query database for the people with that approver
-        $request = Requests::where([['Approver_ID', $approver_id],['Status', 'Approved']])->get();
+        $request = Requests::where([['Approver_ID', $approver_id], ['Status', 'Approved']])->get();
         $team_size = Employee::where('Reporting_Manager', $approver_id)->count();
         if ($team_size != 0) {
             $proportion = 1 / $team_size;
@@ -218,8 +218,8 @@ class RequestController extends Controller
         $requestDB = Requests::where("Request_ID", $request_id)->first();
 
         // check for batch = null
-        if($request_batch !== null) {
-            return response()-> json(['message'=>'Request is batch request, unable to approve this request by itself'], 400);
+        if ($request_batch !== null) {
+            return response()->json(['message' => 'Request is batch request, unable to approve this request by itself'], 400);
         }
 
         // check for correct status
@@ -237,21 +237,20 @@ class RequestController extends Controller
             return response()->json(['message' => "You are not allowed to approve this request"], 400);
         }
 
-        // check for 50% rule violation
+        // check for date formatting
         if (!preg_match('/^\d{4}-(0?[1-9]|1[0-2])-(0?[1-9]|[12]\d|3[01])$/', $date)) {
             return response()->json(['message' => 'The format of date is not correct, sample format 2024-10-03', 'received format' => $date], 400);
         }
         $formattedDate = (new DateTime($date))->format('Y-m-d');
 
         // query database for the people with that approver
-        $requests = Requests::where(column: 'Approver_ID', operator: $approver_id)->get();
+        $requests = Requests::where([['Approver_ID', $approver_id], ['Date_Requested', $formattedDate], ['Status', "Approved"]])->get();
         $team_size = Employee::where('Reporting_Manager', $approver_id)->count();
         if ($team_size != 0) {
             $proportion = 1 / $team_size;
         } else {
             return response()->json(['message' => 'This person manages 0 people.'], 404);
         }
-
 
         if ($requests) {
             // create a dictionary of different dates and check how many people are working from home for that date
@@ -264,22 +263,23 @@ class RequestController extends Controller
                     // how to print the values of $dateOfReq and $date
                     $arrangement = $req->Duration;
 
-                    if (!isset($date_dictionary[$date])) {
-                        $date_dictionary[$date] = ['AM' => 0, 'PM' => 0, 'FD' => 0];
+                    if (!isset($date_dictionary[$formattedDateOfReq])) {
+                        $date_dictionary[$formattedDateOfReq] = ['AM' => 0, 'PM' => 0, 'FD' => 0];
                     }
 
                     if ($arrangement === 'AM') {
-                        $date_dictionary[$date]['AM'] += $proportion;
+                        $date_dictionary[$formattedDateOfReq]['AM'] += $proportion;
                     } else if ($arrangement === "PM") {
-                        $date_dictionary[$date]['PM'] += $proportion;
+                        $date_dictionary[$formattedDateOfReq]['PM'] += $proportion;
                     } else if ($arrangement === "FD") {
-                        $date_dictionary[$date]["FD"] += $proportion;
+                        $date_dictionary[$formattedDateOfReq]["FD"] += $proportion;
                     }
                 }
             }
             // Check for if the next person exceeds 50% violation
-            $curr = $date_dictionary[$date][$wfh_type];
+            $curr = $date_dictionary[$formattedDate][$wfh_type];
             $curr = $curr + $proportion;
+            error_log($date, $date_dictionary[$date][$wfh_type], $curr);
             if ($curr > 0.5) {
                 return response()->json(['message' => 'Unable to accept request as this would lead to less than 50% of the team being in office'], 400);
             }
@@ -305,7 +305,7 @@ class RequestController extends Controller
             // Handle error saving RequestLog
             return response()->json(['message' => 'Failed to create Request Logs'], 500);
         }
-        
+
         return response()->json($requestDB);
     }
 
@@ -334,8 +334,8 @@ class RequestController extends Controller
         }
 
         // check for batch = null
-        if($request_batch !== null) {
-            return response()-> json(['message'=>'Request is batch request, unable to approve this request by itself'], 400);
+        if ($request_batch !== null) {
+            return response()->json(['message' => 'Request is batch request, unable to approve this request by itself'], 400);
         }
 
         // check for reason provided
