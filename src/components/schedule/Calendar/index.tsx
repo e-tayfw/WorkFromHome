@@ -21,7 +21,6 @@ export const WFHCalendar: React.FC = () => {
   const [schedule, setSchedule] = useState<ScheduleData | null>(null); // To store fetched schedule data
   // Step 1: Access the staffId from the Redux store
   const staffId = useSelector((state: RootState) => state.auth.staffId);
-  console.log(staffId);
 
   // Function to fetch the schedule and update state
   const fetchSchedule = async () => {
@@ -29,7 +28,6 @@ export const WFHCalendar: React.FC = () => {
       // Make sure staffId exists before fetching
       try {
         const fetchedSchedule = await generateOwnSchedule(Number(staffId));
-        console.log("Fetched schedule data:", fetchedSchedule); // Log the fetched data
         setSchedule([fetchedSchedule]); // Update the schedule state with the fetched data
       } catch (error) {
         console.error("Error fetching schedule:", error);
@@ -43,7 +41,6 @@ export const WFHCalendar: React.FC = () => {
   useEffect(() => {
     if (staffId) {
       fetchSchedule();
-      console.log(fetchSchedule());
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // The effect will run only when staffId changes and is not null
@@ -77,7 +74,11 @@ export const WFHCalendar: React.FC = () => {
 
   const isPrevDisabled = () => {
     const firstDate = schedule?.[0]?.schedule
-      ? Object.keys(schedule[0].schedule).shift()
+      ? Object.keys(schedule[0].schedule).sort(
+          (a, b) =>
+            moment(a, "DDMMYY").toDate().getTime() -
+            moment(b, "DDMMYY").toDate().getTime()
+        )[0]
       : null;
     if (!firstDate) return false;
 
@@ -120,7 +121,11 @@ export const WFHCalendar: React.FC = () => {
 
   const isPrevWeekDisabled = () => {
     const firstDate = schedule?.[0]?.schedule
-      ? Object.keys(schedule[0].schedule).shift()
+      ? Object.keys(schedule[0].schedule).sort(
+          (a, b) =>
+            moment(a, "DDMMYY").toDate().getTime() -
+            moment(b, "DDMMYY").toDate().getTime()
+        )[0]
       : null;
 
     const currentDate = new Date(
@@ -244,18 +249,25 @@ export const WFHCalendar: React.FC = () => {
   const groupScheduleByWeek = () => {
     if (!schedule || !schedule[0].schedule) {
       console.log("No schedule found");
-      return schedule;
+      return;
     }
-    const weeksObj: { [key: string]: Schedule } = {};
+
+    const weeksObj: { [key: number]: Schedule } = {};
+
+    // Iterate over each date in the schedule
     Object.keys(schedule[0].schedule).forEach((date: string) => {
-      const weekNumber = getWeekNumber(date).toString();
+      const momentDate = moment(date, "DDMMYY");
+      const weekNumber = momentDate.isoWeek(); // Use ISO week number for consistency
+
+      // If the weekNumber doesn't exist in weeksObj, initialize it
       if (!weeksObj[weekNumber]) {
         weeksObj[weekNumber] = {};
       }
-      weeksObj[weekNumber][date] = (
-        schedule[0].schedule as { [key: string]: number }
-      )[date];
+
+      // Add the date to the corresponding week
+      weeksObj[weekNumber][date] = schedule[0].schedule[date]!;
     });
+
     setWeeks(weeksObj);
   };
 
@@ -380,8 +392,8 @@ export const WFHCalendar: React.FC = () => {
               Next Week
             </button>
           </div>
-          {Object.keys(weeks).map((weekNumber, index) => (
-            <div key={index}>
+          {Object.keys(weeks).map((weekNumber) => (
+            <div key={weekNumber}>
               {currentWeek === parseInt(weekNumber) ? (
                 <div>
                   <H2 className="text-lg font-bold mb-4">
@@ -431,6 +443,7 @@ export const WFHCalendar: React.FC = () => {
 
                         return (
                           <div
+                            key={dateString}
                             className={`flex flex-col justify-between items-center p-4 border border-gray-200 rounded-xl min-h-[100px] lg:min-h-[400px] w-full md:w-1/2 lg:w-1/7 xl:w-1/7 2xl:w-1/7 ${getWfhClass()}`}
                           >
                             <div className="flex flex-col">
