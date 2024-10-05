@@ -24,6 +24,7 @@ export const generateOwnSchedule = async (staffId: number) => {
     }
 }
 
+
 export const generateTeamSchedule = async (staffId: number) => {
   try {
     const response = await fetch(

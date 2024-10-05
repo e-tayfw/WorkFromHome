@@ -3,6 +3,7 @@ import { WFHCalendar } from "@/components/schedule/Calendar";
 import  { TeamCalendar } from "@/components/schedule/TeamCalendar";
 import { useRouter } from "next/router";
 
+
 const Schedule = () => {
   const router = useRouter();
   const { team } = router.query;

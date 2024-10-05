@@ -1,16 +1,17 @@
 import { configureStore } from "@reduxjs/toolkit";
 import authReducer from "@/redux/slices/authSlice"; // Make sure your slice is correctly imported
 import { persistStore, persistReducer } from "redux-persist";
+
 import storage from "redux-persist/lib/storage"; // defaults to localStorage for web
 import { combineReducers } from "redux";
 // import logger from "redux-logger";
 import { thunk } from "redux-thunk";
 
+
 // Define persist config
 const persistConfig = {
   key: "root",
   storage
-};
 
 const rootReducer = combineReducers({
   auth: authReducer,

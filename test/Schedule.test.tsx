@@ -5,6 +5,7 @@ import Schedule from "@/components/schedule";
 import { Provider } from "react-redux";
 import { store } from "@/redux/store";
 
+
 // Mock the useRouter hook from Next.js
 jest.mock("next/router", () => ({
   useRouter: jest.fn(),
