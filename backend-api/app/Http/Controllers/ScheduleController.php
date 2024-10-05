@@ -23,9 +23,9 @@ class ScheduleController extends Controller
             ->where('Status', 'Approved')
             ->get();;
         // Handle empty results
-        if ($requests->isEmpty()) {
-            return response()->json(['message' => 'No approved requests found for the given requestor'], 404);
-        }
+        // if ($requests->isEmpty()) {
+        //     continue;
+        // }
 
         // Handle invalid Requestor_ID
         if (empty($staff_id)) {
