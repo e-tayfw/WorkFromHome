@@ -242,24 +242,30 @@ class RequestController extends Controller
             return response()->json(['message' => 'The format of date is not correct, sample format 2024-10-03'], 424);
         }
         $formattedDate = (new DateTime($date))->format('Y-m-d');
-
+        
         // query database for the people with that approver
-        $requests = Requests::where([['Approver_ID', $approver_id], ['Date_Requested', $formattedDate], ['Status', "Approved"]])->get();
+        $requests = Requests::where('Approver_ID', $approver_id)
+                    ->get();
+                    
         $team_size = Employee::where('Reporting_Manager', $approver_id)->count();
+        
         if ($team_size != 0) {
             $proportion = 1 / $team_size;
         } else {
             return response()->json(['message' => 'This person manages 0 people.'], 404);
         }
-
+        
         if ($requests) {
             // create a dictionary of different dates and check how many people are working from home for that date
             $date_dictionary = [];
+            $counter = 0;
             // for loop to iterate through date_dictionary to find different dates and see how many people are working from home for that date
             foreach ($requests as $req) {
                 $dateOfReq = $req->Date_Requested;
                 $formattedDateOfReq = (new DateTime($dateOfReq))->format('Y-m-d');
-                if ($formattedDate == $formattedDateOfReq) {
+                if ($formattedDate == $formattedDateOfReq && $req->Status == $status) {
+                    $counter++;
+                    
                     // how to print the values of $dateOfReq and $date
                     $arrangement = $req->Duration;
 
@@ -276,13 +282,18 @@ class RequestController extends Controller
                     }
                 }
             }
-            // Check for if the next person exceeds 50% violation
-            $curr = $date_dictionary[$formattedDate][$wfh_type];
-            $curr = $curr + $proportion;
-            error_log($date, $date_dictionary[$date][$wfh_type], $curr);
-            if ($curr > 0.5) {
-                return response()->json(['message' => 'Unable to accept request as this would lead to less than 50% of the team being in office'], 400);
+            if ($counter != 0) {
+                error_log($counter);
+                // Check for if the next person exceeds 50% violation
+                $curr = $date_dictionary[$formattedDate][$wfh_type];
+                $curr = $curr + $proportion;
+                if ($curr > 0.5) {
+                    return response()->json(['message' => 'Unable to accept request as this would lead to less than 50% of the team being in office'], 400);
+                }
             }
+            
+        } else {
+            return response()->json(["message"=> "Unable to query from Requests Table"], 500);
         }
 
         // Approve request
