@@ -23,11 +23,9 @@ interface Schedule {
 }
 
 export const TeamCalendar: React.FC = () => {
-  const [schedule, setSchedule] = useState<ScheduleData | null>(
-    null
-  );
+  const [schedule, setSchedule] = useState<ScheduleData | null>(null);
   const staffId = useSelector((state: RootState) => state.auth.staffId);
-  
+
   // Function to fetch the schedule and update state
   const fetchSchedule = async () => {
     console.log("Staff:", staffId);
@@ -38,6 +36,7 @@ export const TeamCalendar: React.FC = () => {
         console.log("Fetched schedule data:", fetchedSchedule); // Log the fetched data
         setSchedule(fetchedSchedule); // Update the schedule state with the fetched data
       } catch (error) {
+        setSchedule(team_schedule_test); // Use the test data if fetching fails
         console.error("Error fetching schedule:", error);
       }
     } else {
@@ -234,7 +233,7 @@ export const TeamCalendar: React.FC = () => {
         <div>
           <div className="flex justify-between mb-4">
             <button
-              className={`bg-primary hover:bg-secondary text-white font-bold py-2 px-4 my-4 rounded-xl ${
+              className={`bg-primary hover:bg-secondary text-white font-bold py-2 px-4  rounded-xl ${
                 isPrevDisabled() ? "opacity-50 cursor-not-allowed" : ""
               }`}
               onClick={handlePrevDay}
@@ -314,7 +313,7 @@ export const TeamCalendar: React.FC = () => {
         <div>
           <div className="flex justify-between mb-4">
             <button
-              className={`bg-primary hover:bg-secondary text-white font-bold py-2 px-4 my-4 rounded-xl ${
+              className={`bg-primary hover:bg-secondary text-white font-bold py-2 px-4 rounded-xl ${
                 isPrevWeekDisabled() ? "opacity-50 cursor-not-allowed" : ""
               }`}
               onClick={handlePrevWeek}
@@ -333,6 +332,9 @@ export const TeamCalendar: React.FC = () => {
               Next Week
             </button>
           </div>
+          <BodySmall className="font-bold">
+            Click the eye icon to view WFH users
+          </BodySmall>
           {weeks[currentWeek.toString()] ? (
             <div className="week-schedule flex flex-col lg:flex-row justify-center lg:space-x-4 space-y-3">
               {Object.keys(weeks[currentWeek.toString()])
@@ -400,9 +402,6 @@ export const TeamCalendar: React.FC = () => {
                         }}
                       />
                     </button>
-                    <BodySmall className="font-bold">
-                      Click the eye icon to view WFH users
-                    </BodySmall>
                     <Body className="text-lg">
                       AM WFH:{" "}
                       {
