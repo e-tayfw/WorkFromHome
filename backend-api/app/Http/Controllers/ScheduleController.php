@@ -8,6 +8,8 @@ use Carbon\Carbon;
 
 use Illuminate\Support\Facades\Log;
 
+
+
 class ScheduleController extends Controller
 {
     // Generate own schedule
