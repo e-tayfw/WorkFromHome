@@ -60,7 +60,7 @@ class RequestController extends Controller
     public function getProportionOfTeamOnDate($approver_id, $date)
     {
         if (!preg_match('/^\d{4}-(0?[1-9]|1[0-2])-(0?[1-9]|[12]\d|3[01])$/', $date)) {
-            return response()->json(['message' => 'The format of date is not correct, sample format 2024-10-03', 'received format' => $date], 400);
+            return response()->json(['message' => 'The format of date is not correct, sample format 2024-10-03'], 424);
         }
         $formattedDate = (new DateTime($date))->format('Y-m-d');
 
@@ -239,7 +239,7 @@ class RequestController extends Controller
 
         // check for date formatting
         if (!preg_match('/^\d{4}-(0?[1-9]|1[0-2])-(0?[1-9]|[12]\d|3[01])$/', $date)) {
-            return response()->json(['message' => 'The format of date is not correct, sample format 2024-10-03', 'received format' => $date], 400);
+            return response()->json(['message' => 'The format of date is not correct, sample format 2024-10-03'], 424);
         }
         $formattedDate = (new DateTime($date))->format('Y-m-d');
 

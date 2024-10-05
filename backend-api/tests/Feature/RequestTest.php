@@ -71,10 +71,27 @@ class RequestTest extends TestCase
     public function test_get_all_requests_by_aprover_id(): void
     {
         // Send a GET request with an invalid ID (e.g., a string instead of an integer)
-        $response = $this->getJson('/api/request/requestorId/140001');
+        $response = $this->getJson('/api/request/approverID/140001');
 
         // Assert that the response status is 200 (OK) due to validation
         $response->assertStatus(200);
+    }
+
+    /**
+     * Test if the API returns a 200 to get all request by approver ID but the ID is not an approver for anyone.
+     * 
+     * #[Depends('test_database_is_test_db')]
+     */
+    public function test_get_all_requests_by_aprover_id_person_is_not_approver(): void
+    {
+        // Send a GET request with an invalid ID (e.g., a string instead of an integer)
+        $response = $this->getJson('/api/request/approverID/140880');
+
+        // Assert that the response status is 200 (OK) due to validation
+        $response->assertStatus(200);
+
+        // Assert that the response contains an empty array (indicating no requests found)
+        $response->assertJson([]);
     }
 
 
@@ -85,10 +102,10 @@ class RequestTest extends TestCase
      */
     public function test_get_proportion_of_team(): void
     {
-        // Send a GET request to a non-existing email
+        // Send a GET request
         $response = $this->getJson('/api/request/proportionOfTeam/140001');
 
-        // Assert that the response status is 404 (Not Found) as person is not a manager
+        // Assert that the response status is 200 (OK) 
         $response->assertStatus(200);
     }
 
@@ -113,7 +130,7 @@ class RequestTest extends TestCase
      */
     public function test_get_proportion_of_team_valid_id_non_manager(): void
     {
-        // Send a GET request to a non-existing email
+        // Send a GET request to an employee that is not a manager
         $response = $this->getJson('/api/request/proportionOfTeam/140910');
 
         // Assert that the response status is 404 (Not Found) as person is not a manager
@@ -127,10 +144,10 @@ class RequestTest extends TestCase
      */
     public function test_get_proportion_of_team_on_date(): void
     {
-        // Send a GET request to a non-existing email
+        // Send a GET request
         $response = $this->getJson('/api/request/proportionOfTeam/date/140001/2024-10-03');
 
-        // Assert that the response status is 404 (Not Found) as person is not a manager
+        // Assert that the response status is 200 (OK) as person is not a manager
         $response->assertStatus(200);
     }
 
@@ -139,12 +156,26 @@ class RequestTest extends TestCase
      * 
      * #[Depends('test_database_is_test_db')]
      */
-    public function test_get_proportion_of_team_on_date_invlid_id(): void
+    public function test_get_proportion_of_team_on_date_invalid_id(): void
     {
-        // Send a GET request to a non-existing email
+        // Send a GET request to a non-existing staff_id
         $response = $this->getJson('/api/request/proportionOfTeam/date/000000/2024-10-03');
 
         // Assert that the response status is 404 (Not Found) as person is not a manager
         $response->assertStatus(404);
+    }
+
+    /**
+     * Test if the API returns a 424 if date format is wrong.
+     * 
+     * #[Depends('test_database_is_test_db')]
+     */
+    public function test_get_proportion_of_team_on_date_invalid_date_format(): void
+    {
+        // Send a GET request to a non-existing email
+        $response = $this->getJson('/api/request/proportionOfTeam/date/140001/03-10-2024');
+
+        // Assert that the response status is 424 (Not Found) as person is not a manager
+        $response->assertStatus(424);
     }
 }
