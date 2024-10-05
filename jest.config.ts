@@ -1,5 +1,8 @@
 import nextJest from 'next/jest';
 
+import { pathsToModuleNameMapper } from "ts-jest";
+import { compilerOptions } from "./tsconfig.json";
+
 const createJestConfig = nextJest({
   dir: './',
 })
@@ -8,6 +11,9 @@ const config = {
   preset: "ts-jest", // Use ts-jest to work with TypeScript
   testEnvironment: "jest-environment-jsdom", // Use jsdom for React component testing
   setupFilesAfterEnv: ["<rootDir>/setupTests.ts"], // Optional: Path to setup file
+  moduleNameMapper: pathsToModuleNameMapper(compilerOptions.paths, {
+    prefix: "<rootDir>/",
+  }),
 };
 // module.exports = {
 //   preset: "ts-jest", // Use ts-jest to work with TypeScript

@@ -3,9 +3,9 @@ import { Body, H2, H1, BodySmall } from "@/components/TextStyles";
 import moment from "moment";
 import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
-import { team_schedule_test } from "@/constants/team_schedule_test";
+// import { team_schedule_test } from "@/constants/team_schedule_test";
 import { EyeIcon } from "@/components/Svgs/eye";
-import { dateFormat } from "@/utils/date-format";
+// import { dateFormat } from "@/utils/date-format";
 import { CloseIcon } from "@/components/Svgs/close";
 import { generateTeamSchedule } from "@/pages/api/scheduleApi";
 
@@ -142,12 +142,14 @@ export const TeamCalendar: React.FC = () => {
     setSelectedDate(newDate.format("YYYY-MM-DD"));
   };
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const groupScheduleByWeek = () => {
     if (!schedule) {
       return;
     }
     const weeksObj: { [key: string]: Schedule } = {};
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     Object.entries(schedule).forEach(([userId, userSchedule]) => {
       Object.keys(userSchedule).forEach((date: string) => {
         const weekNumber = moment(date, "DDMMYY").week().toString();
@@ -167,7 +169,7 @@ export const TeamCalendar: React.FC = () => {
     if (schedule) {
       groupScheduleByWeek();
     }
-  }, [schedule]);
+  }, [groupScheduleByWeek, schedule]);
 
   const handlePrevDay = () => {
     const prevDate = moment(selectedDate).subtract(1, "days");
