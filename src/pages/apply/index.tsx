@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Apply } from "@/components/apply";
+import { Apply } from "@/components/Apply";
 import axios from 'axios'
 
 const ApplyPage: React.FC = ({}) => {

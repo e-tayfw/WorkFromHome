@@ -1,13 +1,14 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { Datecomponent } from "@/components/apply/datepicker";
-import { Selection } from "@/components/apply/selection";
-import { Reason } from "@/components/apply/reason";
-import { Submit } from "@/components/apply/submit";
-import { Modal } from "@/components/apply/modal";
+import { Datecomponent } from "@/components/Apply/Datepicker";
+import { Selection } from "@/components/Apply/Selection";
+import { Reason } from "@/components/Apply/Reason";
+import { Submit } from "@/components/Apply/Submit";
+import { Modal } from "@/components/Apply/Modal";
 import { H1, BodyLarge, Body, Display } from "@/components/TextStyles";
 import Swal from 'sweetalert2';
 import { useSelector } from "react-redux";
 import axios, { AxiosResponse } from 'axios';
+import { toast } from "react-toastify";
 
 type ArrangementType = 'AM' | 'PM' | 'FD' | '';
 
@@ -83,6 +84,7 @@ const Apply: React.FC = ({}) => {
         setSubmittedData(submitData);
         // Reset form fields on success
         if (response.data.success) {
+          toast.success("Request submitted successfully");
           setSelectedDate("");
           setPreferredArrangement("");
           setReason("");
@@ -90,6 +92,7 @@ const Apply: React.FC = ({}) => {
       // Show the modal after the API call completes
       setIsModalOpen(true);
     } catch (error) {
+        toast.error("An unexpected error occurred. Please try again.");
         console.error("Error in API call:", error);
         setApiResponse({ success: false, message: "An unexpected error occurred. Please try again." });
         setIsModalOpen(true); // Show modal even on error
