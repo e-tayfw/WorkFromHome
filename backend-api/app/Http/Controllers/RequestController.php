@@ -203,19 +203,17 @@ class RequestController extends Controller
     {
         // Decode json input and give assign to variables based on key
         $request_id = $request->input('Request_ID');
-        $requestor_id = $request->input('Requestor_ID');
         $approver_id = $request->input('Approver_ID');
         $status = $request->input('Status');
         $date = $request->input('Date_Requested');
         $request_batch = $request->input('Request_Batch');
-        $date_of_request = $request->input('Date_Of_Request');
         $wfh_type = $request->input('Duration');
-        $created_at = $request->input('created_at');
-        $updated_at = $request->input('updated_at');
-        $reason = $request->input('reason');
+        $reason = $request->input('Reason');
 
         // Fetch employee row using staff_id
         $requestDB = Requests::where("Request_ID", $request_id)->first();
+
+        // can check if the request is currently at a state from which it can be approved
 
         // check for batch = null
         if ($request_batch !== null) {
@@ -325,16 +323,10 @@ class RequestController extends Controller
     {
         // Decode json input and give assign to variables based on key
         $request_id = $request->input('Request_ID');
-        $requestor_id = $request->input('Requestor_ID');
         $approver_id = $request->input('Approver_ID');
         $status = $request->input('Status');
-        $date_requested = $request->input('Date_Requested');
         $request_batch = $request->input('Request_Batch');
-        $date_of_request = $request->input('Date_Of_Request');
-        $duration = $request->input('Duration');
-        $created_at = $request->input('created_at');
-        $updated_at = $request->input('updated_at');
-        $reason = $request->input('reason');
+        $reason = $request->input('Reason');
 
         // Fetch employee row using staff_id
         $requestDB = Requests::where("Request_ID", $request_id)->first();
