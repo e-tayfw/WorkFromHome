@@ -145,7 +145,7 @@ class ScheduleController extends Controller
 
                 // Check if there is an approved request for this team member on this date
                 $request = $approvedRequests->where('Requestor_ID', $member_id)
-                    ->where('Date_Requested', $formattedDate)
+                    ->where('Date_Requested', $date->format('Y-m-d'))
                     ->first();
 
                 if ($request) {
@@ -230,7 +230,7 @@ class ScheduleController extends Controller
 
                 // Check if there is an approved request for this team member on this date
                 $request = $approvedRequests->where('Requestor_ID', $member_id)
-                    ->where('Date_Requested', $formattedDate)
+                    ->where('Date_Requested', $date->format('Y-m-d'))
                     ->first();
 
                 if ($request) {
