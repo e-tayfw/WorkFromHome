@@ -5,7 +5,7 @@ import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
 import { team_schedule_test } from "@/constants/team_schedule_test";
 import { EyeIcon } from "@/components/Svgs/eye";
-import { dateFormat } from "@/utils/date-format";
+// import { dateFormat } from "@/utils/date-format";
 import { CloseIcon } from "@/components/Svgs/close";
 import { generateTeamSchedule } from "@/pages/api/scheduleApi";
 
@@ -147,6 +147,7 @@ export const TeamCalendar: React.FC = () => {
     }
     const weeksObj: { [key: string]: Schedule } = {};
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     Object.entries(schedule).forEach(([userId, userSchedule]) => {
       Object.keys(userSchedule).forEach((date: string) => {
         const weekNumber = moment(date, "DDMMYY").week().toString();
@@ -166,6 +167,7 @@ export const TeamCalendar: React.FC = () => {
     if (schedule) {
       groupScheduleByWeek();
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [schedule]);
 
   const handlePrevDay = () => {
@@ -291,7 +293,9 @@ export const TeamCalendar: React.FC = () => {
           <div
             className={`flex flex-col items-center p-4 border border-gray-200 min-h-[400px] rounded-xl mb-4 }`}
           >
-            <EyeIcon onClick={() => setModalOpen(true)} />
+            <EyeIcon
+              onClick={() => setModalOpen(true)}
+            />
             <BodySmall className="font-bold">
               Click the eye icon to view WFH users
             </BodySmall>

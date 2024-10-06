@@ -1,6 +1,6 @@
 import React, { SVGProps } from "react";
 
-export const CloseIcon = (props: SVGProps<any>) => {
+export const CloseIcon = (props: SVGProps<never>) => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -8,12 +8,12 @@ export const CloseIcon = (props: SVGProps<any>) => {
       fill="none"
       viewBox="0 0 24 24"
       stroke="currentColor"
-      stroke-width="2"
+      strokeWidth="2"
       {...props}
     >
       <path
-        stroke-linecap="round"
-        stroke-linejoin="round"
+        strokeLinecap="round"
+        strokeLinejoin="round"
         d="M6 18L18 6M6 6l12 12"
       />
     </svg>
