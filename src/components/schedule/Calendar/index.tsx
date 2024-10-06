@@ -313,7 +313,7 @@ export const WFHCalendar: React.FC = () => {
   };
 
   return (
-    <div className="container mx-auto p-4">
+    <div className="container w-full mx-auto p-4">
       <H1 className="text-2xl font-bold mb-4">WFH Calendar</H1>
       <button
         className="bg-primary hover:bg-secondary text-white font-bold py-2 px-4 mb-4 rounded-xl"
@@ -325,7 +325,7 @@ export const WFHCalendar: React.FC = () => {
         <div>
           <div className="flex justify-between mb-4">
             <button
-              className={`bg-primary hover:bg-secondary text-white font-bold py-2 px-4 my-4 rounded-xl ${
+              className={`bg-primary hover:bg-secondary text-white font-bold py-2 px-4 rounded-xl ${
                 isPrevDisabled() ? "opacity-50 cursor-not-allowed" : ""
               }`}
               onClick={handlePrevDay}
