@@ -15,6 +15,11 @@ import { TeamCalendar } from "@/components/schedule/TeamCalendar";
 import moment from "moment";
 import { generateTeamSchedule } from "@/pages/api/scheduleApi";
 
+// mock the generateTeamSchedule Api
+jest.mock("@/pages/api/scheduleApi", () => ({
+  generateTeamSchedule: jest.fn(),
+}));
+
 // Mock the store
 const mockStore = configureStore<Partial<RootState>, unknown>([]);
 
