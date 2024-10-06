@@ -3,12 +3,11 @@ import { Body, H2, H1, BodySmall } from "@/components/TextStyles";
 import moment from "moment";
 import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
-import { team_schedule_test } from "@/constants/team_schedule_test";
 import { EyeIcon } from "@/components/Svgs/eye";
 // import { dateFormat } from "@/utils/date-format";
 import { CloseIcon } from "@/components/Svgs/close";
 import { generateTeamSchedule } from "@/pages/api/scheduleApi";
-
+import { getEmployeeFullNameByStaffID } from "@/pages/api/employeeApi";
 // Define the structure of the schedule
 interface TeamMember {
   [date: string]: number | undefined;
@@ -28,15 +27,12 @@ export const TeamCalendar: React.FC = () => {
 
   // Function to fetch the schedule and update state
   const fetchSchedule = async () => {
-    console.log("Staff:", staffId);
     if (staffId) {
       // Make sure staffId exists before fetching
       try {
         const fetchedSchedule = await generateTeamSchedule(Number(staffId));
-        console.log("Fetched schedule data:", fetchedSchedule); // Log the fetched data
-        setSchedule(fetchedSchedule); // Update the schedule state with the fetched data
+        setSchedule(fetchedSchedule.team_schedule); // Update the schedule state with the fetched data
       } catch (error) {
-        setSchedule(team_schedule_test); // Use the test data if fetching fails
         console.error("Error fetching schedule:", error);
       }
     } else {
@@ -64,11 +60,14 @@ export const TeamCalendar: React.FC = () => {
   const [selectedWeeklyDate, setSelectedWeeklyDate] = useState<string>(
     moment().format("DDMMYY")
   );
+
   const isNextDisabled = () => {
     if (!schedule) return false;
     const dates = Object.values(schedule)
       .flatMap((userSchedule) => Object.keys(userSchedule))
-      .sort();
+      .sort((a, b) =>
+        moment(a, "DDMMYY").isBefore(moment(b, "DDMMYY")) ? -1 : 1
+      );
     const lastDate = dates.pop();
     if (!lastDate) return false;
     const currentDate = moment(selectedDate);
@@ -81,7 +80,9 @@ export const TeamCalendar: React.FC = () => {
     if (!schedule) return false;
     const dates = Object.values(schedule)
       .flatMap((userSchedule) => Object.keys(userSchedule))
-      .sort();
+      .sort((a, b) =>
+        moment(a, "DDMMYY").isBefore(moment(b, "DDMMYY")) ? -1 : 1
+      );
     const firstDate = dates.shift();
     if (!firstDate) return false;
     const currentDate = moment(selectedDate);
@@ -94,7 +95,9 @@ export const TeamCalendar: React.FC = () => {
     if (!schedule) return false;
     const dates = Object.values(schedule)
       .flatMap((userSchedule) => Object.keys(userSchedule))
-      .sort();
+      .sort((a, b) =>
+        moment(a, "DDMMYY").isBefore(moment(b, "DDMMYY")) ? -1 : 1
+      );
     const lastDate = dates.pop();
     if (!lastDate) return false;
 
@@ -109,7 +112,9 @@ export const TeamCalendar: React.FC = () => {
     if (!schedule) return false;
     const dates = Object.values(schedule)
       .flatMap((userSchedule) => Object.keys(userSchedule))
-      .sort();
+      .sort((a, b) =>
+        moment(a, "DDMMYY").isBefore(moment(b, "DDMMYY")) ? -1 : 1
+      );
     const firstDate = dates.shift();
     if (!firstDate) return false;
 
@@ -125,6 +130,14 @@ export const TeamCalendar: React.FC = () => {
     const weekEnd = moment().week(weekNumber).endOf("week");
 
     return `${weekStart.format("DD/MM/YY")} - ${weekEnd.format("DD/MM/YY")}`;
+  };
+  const getEmployeeName = async (staffId: number) => {
+    try {
+      const response = await getEmployeeFullNameByStaffID(staffId.toString());
+      return response;
+    } catch (error) {
+      console.error("Error fetching employee name:", error);
+    }
   };
 
   const handleNextWeek = () => {
@@ -167,7 +180,7 @@ export const TeamCalendar: React.FC = () => {
     if (schedule) {
       groupScheduleByWeek();
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [schedule]);
 
   const handlePrevDay = () => {
@@ -267,23 +280,29 @@ export const TeamCalendar: React.FC = () => {
                 <div className="flex flex-col items-center">
                   <Body className="text-lg font-bold">
                     {getTeamSchedule(selectedDate).amwfhUsers.length > 0
-                      ? `Staff on AM WFH: ${getTeamSchedule(
-                          selectedDate
-                        ).amwfhUsers.join(", ")}`
+                      ? `Staff on AM WFH: ${getTeamSchedule(selectedDate)
+                          .amwfhUsers.map((staffId: string) =>
+                            getEmployeeName(Number(staffId))
+                          )
+                          .join(", ")}`
                       : "No Users on AM WFH"}
                   </Body>
                   <Body className="text-lg font-bold">
-                    {getTeamSchedule(selectedDate).pmwfhUsers.length > 0
-                      ? `Staff on PM WFH: ${getTeamSchedule(
-                          selectedDate
-                        ).pmwfhUsers.join(", ")}`
+                    {getTeamSchedule(selectedDate).amwfhUsers.length > 0
+                      ? `Staff on PM WFH: ${getTeamSchedule(selectedDate)
+                          .pmwfhUsers.map((staffId: string) =>
+                            getEmployeeName(Number(staffId))
+                          )
+                          .join(", ")}`
                       : "No Users on PM WFH"}
                   </Body>
                   <Body className="text-lg font-bold">
-                    {getTeamSchedule(selectedDate).fulldaywfhUsers.length > 0
-                      ? `Staff on Full Day WFH: ${getTeamSchedule(
-                          selectedDate
-                        ).fulldaywfhUsers.join(", ")}`
+                    {getTeamSchedule(selectedDate).amwfhUsers.length > 0
+                      ? `Staff on Full Day WFH: ${getTeamSchedule(selectedDate)
+                          .fulldaywfhUsers.map((staffId: string) =>
+                            getEmployeeName(Number(staffId))
+                          )
+                          .join(", ")}`
                       : "No Users on Full Day WFH"}
                   </Body>
                 </div>
@@ -293,9 +312,7 @@ export const TeamCalendar: React.FC = () => {
           <div
             className={`flex flex-col items-center p-4 border border-gray-200 min-h-[400px] rounded-xl mb-4 }`}
           >
-            <EyeIcon
-              onClick={() => setModalOpen(true)}
-            />
+            <EyeIcon onClick={() => setModalOpen(true)} />
             <BodySmall className="font-bold">
               Click the eye icon to view WFH users
             </BodySmall>
