@@ -18,6 +18,7 @@ Route::get('/employee/email/{email}', [EmployeeController::class, 'getEmployeeBy
 Route::get('/employee/department/{department}', [EmployeeController::class, 'getEmployeeByDepartment']);
 Route::get('/employee/team/manager/{reportingManager}', [EmployeeController::class, 'getEmployeeTeamByManager']);
 Route::get('/employee/team/member/{teamMember}', [EmployeeController::class, 'getEmployeeTeamByMember']);
+Route::get('/employee/name/{id}', [EmployeeController::class, 'getEmployeeFullNameByStaffID']);
 Route::get(uri: '/testScheduleData', action: [TestScheduleController::class, 'getSchedule']);
 
 // Request
