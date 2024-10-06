@@ -20,7 +20,7 @@ export const getEmployeeDataByEmail = async (username: string) => {
 
 export const getEmployeeFullNameByStaffID = async (staffID: string) => {
   try {
-    const response = await fetch(`http://127.0.0.1:8085/api/employee/staffID/${staffID}`, {
+    const response = await fetch(`http://127.0.0.1:8085/api/employee/name/${staffID}`, {
       method: 'GET', // Fetch defaults to GET, so this is optional
     });
 
