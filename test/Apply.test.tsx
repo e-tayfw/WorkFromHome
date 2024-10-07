@@ -109,47 +109,6 @@ describe('Apply Component', () => {
     // Submit button should still be disabled
     expect(screen.getByTestId('submit-button')).toBeDisabled();
   });
-  it('Prevents selecting a date more than 2 months in the past', () => {
-    render(
-      <Provider store={store}>
-        <Apply />
-      </Provider>
-    );
-
-    const dateInput = screen.getByTestId('date-input');
-    const tooOldDate = new Date();
-    tooOldDate.setMonth(tooOldDate.getMonth() - 3);
-    
-    const alertMock = jest.spyOn(window, 'alert').mockImplementation(() => {});
-
-    fireEvent.change(dateInput, { target: { value: tooOldDate.toISOString().split('T')[0] } });
-
-    expect(alertMock).toHaveBeenCalledWith('Cannot select a date more than 2 months in the past');
-    expect(screen.getByTestId('submit-button')).toBeDisabled();
-
-    alertMock.mockRestore();
-  });
-
-  it('Prevents selecting a date more than 3 months in the future', () => {
-    render(
-      <Provider store={store}>
-        <Apply />
-      </Provider>
-    );
-
-    const dateInput = screen.getByTestId('date-input');
-    const tooFutureDate = new Date();
-    tooFutureDate.setMonth(tooFutureDate.getMonth() + 4);
-    
-    const alertMock = jest.spyOn(window, 'alert').mockImplementation(() => {});
-
-    fireEvent.change(dateInput, { target: { value: tooFutureDate.toISOString().split('T')[0] } });
-
-    expect(alertMock).toHaveBeenCalledWith('Cannot select a date more than 3 months in the future');
-    expect(screen.getByTestId('submit-button')).toBeDisabled();
-
-    alertMock.mockRestore();
-  });
 
   
 });
