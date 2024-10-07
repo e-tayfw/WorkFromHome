@@ -107,7 +107,7 @@ const Apply: React.FC = () => {
   return (
     <div className="container flex flex-col items-center px-4 sm:px-6 lg:px-8 mt-24 sm:mt-28">
       <div className="">
-        <Display className="text-[50px] lg:text-[80px] leading-[60px] lg:leading-[95px] font-bold mb-8">
+        <Display className="text-[50px] lg:text-[80px] leading-[60px] lg:leading-[95px] sm:ml-32 font-bold mb-8">
           Work-From-Home
         </Display>
       </div>
