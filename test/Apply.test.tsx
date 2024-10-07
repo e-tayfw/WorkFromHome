@@ -7,26 +7,9 @@ import '@testing-library/jest-dom';
 
 // Mock the imported components
 jest.mock('@/components/apply/datepicker', () => ({
-    Datecomponent: ({ onDateChange }: { onDateChange: (date: string) => void }) => {
-      const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const selectedDate = new Date(e.target.value);
-        const currentDate = new Date();
-        const twoMonthsAgo = new Date(currentDate.setMonth(currentDate.getMonth() - 2));
-        const threeMonthsAhead = new Date(currentDate.setMonth(currentDate.getMonth() + 5));
-  
-        if (selectedDate < twoMonthsAgo) {
-          alert('Cannot select a date more than 2 months in the past');
-          return;
-        }
-        if (selectedDate > threeMonthsAhead) {
-          alert('Cannot select a date more than 3 months in the future');
-          return;
-        }
-        onDateChange(e.target.value);
-      };
-  
-      return <input data-testid="date-input" type="date" onChange={handleChange} />;
-    },
+    Datecomponent: ({ onDateChange }: { onDateChange: (date: string) => void }) => (
+      <input data-testid="date-input" onChange={(e) => onDateChange(e.target.value)} />
+    ),
   }));
 
 jest.mock('@/components/apply/selection', () => ({
