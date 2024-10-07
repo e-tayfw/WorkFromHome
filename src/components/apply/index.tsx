@@ -47,13 +47,6 @@ const Apply: React.FC = ({}) => {
     setReason(text);
   }, []);
 
-  const getCsrfToken = async () => {
-    // Call this once to set the CSRF token in a cookie
-    await axios.get('http://127.0.0.1:8085/sanctum/csrf-cookie', {
-      withCredentials: true, // Ensure the cookies are sent
-    });
-  };
-  
   const handleSubmit = useCallback(async (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     // event.preventDefault();
     setIsLoading(true);
@@ -68,7 +61,6 @@ const Apply: React.FC = ({}) => {
       
  
     try {
-        await getCsrfToken();
         const response = await axios.post("http://127.0.0.1:8085/api/request", submitData, {
           headers:{
             'Content-Type' : 'application/json',
@@ -171,7 +163,6 @@ const Apply: React.FC = ({}) => {
             {apiResponse.success == false && submittedData && (
               <div className="mt-4 text-left">
                 <Body className="">{apiResponse.message}</Body>
-                <Body className="">A request for the same date already exists</Body>
                 <Body className="font-semibold mt-2 mb-2">Details:</Body>
                 <Body>Date: {submittedData.date}</Body>
                 <Body>Arrangement: {submittedData.arrangement == "FD" ? "Work-From-Home (Full Day)" : submittedData.arrangement == "AM" ? "Work-From-Home (AM)" : "Work-From-Home (PM)"}</Body>
