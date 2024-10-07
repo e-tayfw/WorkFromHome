@@ -8,6 +8,7 @@ use Carbon\Carbon;
 
 use Illuminate\Support\Facades\Log;
 
+
 class ScheduleController extends Controller
 {
     // Generate own schedule
@@ -24,9 +25,9 @@ class ScheduleController extends Controller
             ->get();
         
         // Handle empty results
-        if ($requests->isEmpty()) {
-            return response()->json(['message' => 'No approved requests found for the given requestor'], 404);
-        }
+        // if ($requests->isEmpty()) {
+        //     continue;
+        // }
 
         // Current date
         $currentDate = Carbon::now();
