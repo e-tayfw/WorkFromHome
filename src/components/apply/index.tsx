@@ -3,11 +3,10 @@ import { Datecomponent } from "@/components/apply/datepicker";
 import { Selection } from "@/components/apply/selection";
 import { Reason } from "@/components/apply/reason";
 import { Submit } from "@/components/apply/submit";
-import { Modal } from "@/components/apply/modal";
 import { H1, BodyLarge, Body, Display } from "@/components/TextStyles";
 import Swal from 'sweetalert2';
 import { useSelector } from "react-redux";
-import axios, { AxiosResponse } from 'axios';
+import axios from 'axios';
 import { toast } from "react-toastify";
 
 type ArrangementType = 'AM' | 'PM' | 'FD' | '';
@@ -19,16 +18,13 @@ interface SubmitData {
   reason: string;
 }
 
-const Apply: React.FC = ({}) => {
+const Apply: React.FC = () => {
   const [selectedDate, setSelectedDate] = useState("");
   const [preferredArrangement, setPreferredArrangement] = useState<ArrangementType>("");
   const [reason, setReason] = useState("");
   const [isFormValid, setIsFormValid] = useState(false);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [submittedData, setSubmittedData] = useState<SubmitData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [apiResponse, setApiResponse] = useState<{ success: boolean; message: string } | null>(null);
-  const staffid = useSelector((state:any) => state.auth.staffId);
+  const staffid = useSelector((state: any) => state.auth.staffId);
 
   useEffect(() => {
     setIsFormValid(
@@ -49,9 +45,7 @@ const Apply: React.FC = ({}) => {
   }, []);
 
   const handleSubmit = useCallback(async (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
-    // event.preventDefault();
     setIsLoading(true);
-    setApiResponse(null);
 
     const submitData: SubmitData = {
       staffid: staffid,
@@ -59,53 +53,64 @@ const Apply: React.FC = ({}) => {
       arrangement: preferredArrangement,
       reason: reason,
     };
-      
- 
+
     try {
-        const response = await axios.post("http://127.0.0.1:8085/api/request", submitData, {
-          headers:{
-            'Content-Type' : 'application/json',
-          },
-          withCredentials: true
+      const response = await axios.post("http://127.0.0.1:8085/api/request", submitData, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.data.success) {
+        Swal.fire({
+          title: 'Request Submitted',
+          html: `
+            <p>Awaiting approval from your Reporting Manager</p>
+            <br>
+            <p><u><strong>Details</strong></u></p>
+            <br>
+            <div style="display: flex; justify-content: center;">
+              <div style="text-align: left; display: inline-block;">
+                <p>Date: ${submitData.date}</p>
+                <p>Arrangement: ${submitData.arrangement === "FD" ? "Work-From-Home (Full Day)" : 
+                                  submitData.arrangement === "AM" ? "Work-From-Home (AM)" : "Work-From-Home (PM)"}</p>
+                <p>Reason: ${submitData.reason}</p>
+                <p>Reporting Manager: ${response.data.reportingManager}</p>
+              </div>
+            </div>
+          `,
+          icon: 'success',
+          confirmButtonText: 'OK'
         });
-        console.log(response.data);
-        setApiResponse({
-            success: response.data.success,
-            message: response.data.message
-          });
-        setSubmittedData(submitData);
+
+        
         // Reset form fields on success
-        if (response.data.success) {
-          toast.success("Request submitted successfully");
-          setSelectedDate("");
-          setPreferredArrangement("");
-          setReason("");
-        } 
-      // Show the modal after the API call completes
-      setIsModalOpen(true);
+        setSelectedDate("");
+        setPreferredArrangement("");
+        setReason("");
+      } else {
+        throw new Error(response.data.message);
+      }
     } catch (error) {
-        toast.error("An unexpected error occurred. Please try again.");
-        console.error("Error in API call:", error);
-        setApiResponse({ success: false, message: "An unexpected error occurred. Please try again." });
-        setIsModalOpen(true); // Show modal even on error
+      console.error("Error in API call:", error);
+      Swal.fire({
+        title: 'Request Rejected',
+        text: error instanceof Error ? error.message : "An unexpected error occurred. Please try again.",
+        icon: 'error',
+        confirmButtonText: 'OK'
+      });
     } finally {
-
       setIsLoading(false);
-
     }
   }, [staffid, selectedDate, preferredArrangement, reason]);
 
-  const closeModal = () => {
-    setIsModalOpen(false);
-  };
-
   return (
     <div className="container flex flex-col items-center px-4 sm:px-6 lg:px-8 mt-24 sm:mt-28">
-        <div className="">
-          <Display className="text-[50px] lg:text-[80px] leading-[60px] lg:leading-[95px] font-bold mb-8">
-            Work-From-Home
-          </Display>
-        </div>
+      <div className="">
+        <Display className="text-[50px] lg:text-[80px] leading-[60px] lg:leading-[95px] font-bold mb-8">
+          Work-From-Home
+        </Display>
+      </div>
       <div className="w-full max-w-lg">
         <div>
           <Body className="text-sm font-light text-primary">
@@ -147,34 +152,6 @@ const Apply: React.FC = ({}) => {
           <Submit onSubmit={handleSubmit} isDisabled={!isFormValid || isLoading} />
         </div>
       </div>
-
-      <Modal
-        isOpen={isModalOpen}
-        onClose={closeModal}
-        title={apiResponse?.success ? "Request Submitted" : "Request Rejected"}>
-        {apiResponse && submittedData && (
-          <div>
-            {apiResponse.success == true && submittedData && (
-              <div className="mt-4 text-left">
-                <Body className="">Awaiting approval from your Reporting Manager</Body>
-                <Body className="font-semibold mt-2 mb-2">Details:</Body>
-                <Body>Date: {submittedData.date}</Body>
-                <Body>Arrangement: {submittedData.arrangement == "FD" ? "Work-From-Home (Full Day)" : submittedData.arrangement == "AM" ? "Work-From-Home (AM)" : "Work-From-Home (PM)"}</Body>
-                <Body>Reason: {submittedData.reason}</Body>
-              </div>
-            )}
-            {apiResponse.success == false && submittedData && (
-              <div className="mt-4 text-left">
-                <Body className="">{apiResponse.message}</Body>
-                <Body className="font-semibold mt-2 mb-2">Details:</Body>
-                <Body>Date: {submittedData.date}</Body>
-                <Body>Arrangement: {submittedData.arrangement == "FD" ? "Work-From-Home (Full Day)" : submittedData.arrangement == "AM" ? "Work-From-Home (AM)" : "Work-From-Home (PM)"}</Body>
-                <Body>Reason: {submittedData.reason}</Body>
-              </div>
-            )}
-          </div>
-        )}
-      </Modal>
     </div>
   );
 };
