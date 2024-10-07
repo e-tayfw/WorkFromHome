@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { Datecomponent } from "@/components/Apply/Datepicker";
-import { Selection } from "@/components/Apply/Selection";
-import { Reason } from "@/components/Apply/Reason";
-import { Submit } from "@/components/Apply/Submit";
-import { Modal } from "@/components/Apply/Modal";
+import { Datecomponent } from "@/components/apply/datepicker";
+import { Selection } from "@/components/apply/selection";
+import { Reason } from "@/components/apply/reason";
+import { Submit } from "@/components/apply/submit";
+import { Modal } from "@/components/apply/modal";
 import { H1, BodyLarge, Body, Display } from "@/components/TextStyles";
 import Swal from 'sweetalert2';
 import { useSelector } from "react-redux";
