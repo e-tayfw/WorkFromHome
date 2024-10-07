@@ -9,12 +9,9 @@ interface ActionHandlerProps {
   requestId: number;
   requestorId: number;
   dateRequested: string;
-  dateOfRequest: string;
   requestBatch: string | null;
   duration: string;
   status: string;
-  createdAt: string;
-  updatedAt: string;
   onWithdraw: (requestId: number) => void;
   isDisabled: boolean;
   proportionAfterApproval: number | null;
@@ -24,67 +21,89 @@ const ActionHandler: React.FC<ActionHandlerProps> = ({
   requestId,
   requestorId,
   dateRequested,
-  dateOfRequest,
   requestBatch,
   duration,
   status,
-  createdAt,
-  updatedAt,
   onWithdraw,
   isDisabled,
   proportionAfterApproval,
 }) => {
   const employeeId = parseInt(useSelector((state: any) => state.auth.staffId), 10);
 
-  // Function to format the current date with six-digit precision
-  const getFormattedTimestamp = () => {
-    const date = new Date();
-    const formattedDate = date.toISOString().slice(0, -1); // Remove the "Z" at the end
-    const sixDigitMillis = `${formattedDate}.${date.getMilliseconds().toString().padEnd(3, '0')}000Z`;
-    return sixDigitMillis;
-  };
-
   const handleApprove = () => {
-    Swal.fire({
-      title: 'Are you sure?',
-      text: `The proportion of staff working from home once accepted will be ${(
-        proportionAfterApproval! * 100
-      ).toFixed(1)}%`,
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonText: 'Confirm',
-      cancelButtonText: 'Cancel',
-      confirmButtonColor: '#072040',
-      cancelButtonColor: '#a2b4cc',
-    }).then((result) => {
-      if (result.isConfirmed) {
-        const currentDate = getFormattedTimestamp(); // Use the new timestamp format
-        const payload = {
-          Request_ID: requestId,
-          Requestor_ID: requestorId,
-          Approver_ID: employeeId,
-          Status: 'Approved',
-          Date_Requested: dateRequested,
-          Request_Batch: requestBatch,
-          Date_Of_Request: dateOfRequest,
-          Duration: duration,
-          created_at: currentDate,
-          updated_at: currentDate,
-        };
-        console.log('Approval Payload:', payload);
-        axios.post('http://127.0.0.1:8085/api/approveRequest', payload)
-          .then(() => {
-            toast.success('The request has been approved successfully!', {
-              position: 'top-right',
+    if (status.toLowerCase() === 'withdraw pending') {
+      // Modal for withdraw pending status (no proportion text)
+      Swal.fire({
+        title: 'Are you sure?',
+        text: 'Do you want to approve this request?',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Confirm',
+        cancelButtonText: 'Cancel',
+        confirmButtonColor: '#072040',
+        cancelButtonColor: '#a2b4cc',
+      }).then((result) => {
+        if (result.isConfirmed) {
+          const payload = {
+            Request_ID: requestId,
+            Approver_ID: employeeId,
+            Status: 'Approved',
+            Date_Requested: dateRequested,
+            Request_Batch: requestBatch,
+            Duration: duration,
+          };
+
+          axios.post('http://127.0.0.1:8085/api/approveRequest', payload)
+            .then(() => {
+              toast.success('The request has been approved successfully!', {
+                position: 'top-right',
+              });
+            })
+            .catch(() => {
+              toast.error('An error occurred while approving the request.', {
+                position: 'top-right',
+              });
             });
-          })
-          .catch(() => {
-            toast.error('An error occurred while approving the request.', {
-              position: 'top-right',
+        }
+      });
+    } else {
+      // Modal for pending status (show proportion text)
+      Swal.fire({
+        title: 'Are you sure?',
+        text: `The proportion of staff working from home once accepted will be ${(
+          proportionAfterApproval! * 100
+        ).toFixed(1)}%`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Confirm',
+        cancelButtonText: 'Cancel',
+        confirmButtonColor: '#072040',
+        cancelButtonColor: '#a2b4cc',
+      }).then((result) => {
+        if (result.isConfirmed) {
+          const payload = {
+            Request_ID: requestId,
+            Approver_ID: employeeId,
+            Status: 'Approved',
+            Date_Requested: dateRequested,
+            Request_Batch: requestBatch,
+            Duration: duration,
+          };
+
+          axios.post('http://127.0.0.1:8085/api/approveRequest', payload)
+            .then(() => {
+              toast.success('The request has been approved successfully!', {
+                position: 'top-right',
+              });
+            })
+            .catch(() => {
+              toast.error('An error occurred while approving the request.', {
+                position: 'top-right',
+              });
             });
-          });
-      }
-    });
+        }
+      });
+    }
   };
 
   const handleReject = () => {
@@ -104,19 +123,12 @@ const ActionHandler: React.FC<ActionHandlerProps> = ({
       },
     }).then((result) => {
       if (result.isConfirmed && result.value) {
-        const currentDate = getFormattedTimestamp(); // Use the new timestamp format
         const payload = {
           Request_ID: requestId,
-          Requestor_ID: requestorId,
           Approver_ID: employeeId,
           Status: 'Rejected',
-          Date_Requested: dateRequested,
           Request_Batch: requestBatch,
-          Date_Of_Request: dateOfRequest,
-          Duration: duration,
-          created_at: currentDate,
-          updated_at: currentDate,
-          reason: result.value,
+          Reason: result.value,
         };
 
         axios.post('http://127.0.0.1:8085/api/rejectRequest', payload)
@@ -149,12 +161,20 @@ const ActionHandler: React.FC<ActionHandlerProps> = ({
           Withdraw
         </button>
       ) : status.toLowerCase() === 'withdraw pending' ? (
-        <button
-          className="bg-green-100 text-green-700 font-semibold py-1 px-4 rounded-md transition duration-200 ease-in-out mr-2 hover:bg-green-200"
-          onClick={handleApprove}
-        >
-          Approve
-        </button>
+        <>
+          <button
+            className="bg-green-100 text-green-700 font-semibold py-1 px-4 rounded-md transition duration-200 ease-in-out mr-2 hover:bg-green-200"
+            onClick={handleApprove}
+          >
+            Approve
+          </button>
+          <button
+            className="bg-red-100 hover:bg-red-200 text-red-700 font-semibold py-1 px-4 rounded-md transition duration-200 ease-in-out"
+            onClick={handleReject}
+          >
+            Reject
+          </button>
+        </>
       ) : status.toLowerCase() === 'pending' ? (
         <>
           <button
