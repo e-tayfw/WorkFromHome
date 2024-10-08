@@ -10,7 +10,7 @@ import { faSort, faSortUp, faSortDown, faChevronDown, faChevronRight } from '@fo
 const ApproveTable: React.FC = () => {
   const [requests, setRequests] = useState([]);
   const [employees, setEmployees] = useState([]);
-  const [expandedStaff, setExpandedStaff] = useState<number[]>([]); // State to track which staff's table is expanded
+  const [expandedStaff, setExpandedStaff] = useState<number[]>([]);
   const [sortConfig, setSortConfig] = useState<{ key: keyof Request; direction: string } | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -24,7 +24,7 @@ const ApproveTable: React.FC = () => {
         html: 'Please wait while we fetch your approvals',
         allowOutsideClick: false,
         didOpen: () => {
-          Swal.showLoading();
+          Swal.showLoading(); // Start SweetAlert loading spinner
         },
       });
 
@@ -54,7 +54,7 @@ const ApproveTable: React.FC = () => {
         setRequests(mappedRequests);
         setEmployees(mappedEmployees);
         setLoading(false);
-        Swal.close();
+        Swal.close(); // Close the SweetAlert once data is loaded
       } catch (err) {
         console.error('Error fetching approval data:', err);
         setError('Failed to load approval data');
@@ -70,7 +70,6 @@ const ApproveTable: React.FC = () => {
     fetchData();
   }, [staffId]);
 
-  // Sorting logic
   const sortedRequests = useMemo(() => {
     let sortableRequests = [...requests];
     if (sortConfig !== null) {
@@ -78,7 +77,6 @@ const ApproveTable: React.FC = () => {
         let aValue: any = a[sortConfig.key];
         let bValue: any = b[sortConfig.key];
 
-        // Handle sorting for date fields
         if (sortConfig.key === 'dateRequested' || sortConfig.key === 'dateOfRequest') {
           aValue = new Date(aValue);
           bValue = new Date(bValue);
@@ -96,7 +94,6 @@ const ApproveTable: React.FC = () => {
     return sortableRequests;
   }, [requests, sortConfig]);
 
-  // Function to handle sorting
   const requestSort = (key: keyof Request) => {
     let direction = 'ascending';
     if (sortConfig && sortConfig.key === key && sortConfig.direction === 'ascending') {
@@ -105,7 +102,6 @@ const ApproveTable: React.FC = () => {
     setSortConfig({ key, direction });
   };
 
-  // Get appropriate sorting icon
   const getSortIcon = (key: keyof Request) => {
     if (!sortConfig || sortConfig.key !== key) {
       return <FontAwesomeIcon icon={faSort} />;
@@ -116,7 +112,6 @@ const ApproveTable: React.FC = () => {
     return <FontAwesomeIcon icon={faSortDown} />;
   };
 
-  // Function to toggle the expanded state of a staff's requests
   const toggleExpand = (staffId: number) => {
     if (expandedStaff.includes(staffId)) {
       setExpandedStaff(expandedStaff.filter((id) => id !== staffId));
@@ -125,17 +120,15 @@ const ApproveTable: React.FC = () => {
     }
   };
 
-  // Get all requests for a specific employee
   const getEmployeeRequests = (employeeId: number) => {
     return sortedRequests.filter((request) => request.requestorId === employeeId);
   };
 
   return (
     <div className="container mx-auto p-4">
-
       {employees.map((employee) => {
         const employeeRequests = getEmployeeRequests(employee.Staff_ID);
-        const isExpanded = expandedStaff.includes(employee.Staff_ID); // Check if the current staff is expanded
+        const isExpanded = expandedStaff.includes(employee.Staff_ID);
 
         return (
           <div key={employee.Staff_ID} className="mb-8">
@@ -187,18 +180,7 @@ const ApproveTable: React.FC = () => {
                         dateOfRequest={request.dateOfRequest}
                         duration={request.duration}
                         teamSize={employees.length}
-                        onApprove={(id) => {
-                          console.log(`Approved request ID: ${id}`);
-                          // Approve request logic here
-                        }}
-                        onReject={(id) => {
-                          console.log(`Rejected request ID: ${id}`);
-                          // Reject request logic here
-                        }}
-                        onWithdraw={(id) => {
-                          console.log(`Withdrawn request ID: ${id}`);
-                          // Withdraw request logic here
-                        }}
+                        onRefreshRequests={() => fetchData()} // Call fetchData to refresh the data
                       />
                     ))}
                   </tbody>
@@ -211,13 +193,6 @@ const ApproveTable: React.FC = () => {
           </div>
         );
       })}
-
-      {/* Display loading spinner if data is loading */}
-      {loading && (
-        <div className="flex items-center justify-center mt-6">
-          <BodyLarge className="text-primary">Loading...</BodyLarge>
-        </div>
-      )}
 
       {/* Error message display */}
       {error && (

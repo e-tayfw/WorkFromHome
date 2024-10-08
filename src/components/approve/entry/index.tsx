@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Body } from '@/components/TextStyles';
 import axios from 'axios';
-import ActionHandler from '@/components/approve/actionHandler'; // Import ActionHandler
-import { Oval } from 'react-loader-spinner'; // Import the spinner
+import ActionHandler from '@/components/approve/actionHandler';
+import { Oval } from 'react-loader-spinner';
 
 interface ApproveEntryProps {
   requestId: number;
@@ -15,9 +15,7 @@ interface ApproveEntryProps {
   dateOfRequest: string;
   duration: string;
   teamSize: number;
-  onApprove: (requestId: number) => void;
-  onReject: (requestId: number) => void;
-  onWithdraw: (requestId: number) => void;
+  onRefreshRequests: () => void; // Add the refresh prop
 }
 
 const ApproveEntry: React.FC<ApproveEntryProps> = ({
@@ -31,29 +29,27 @@ const ApproveEntry: React.FC<ApproveEntryProps> = ({
   dateOfRequest,
   duration,
   teamSize,
-  onApprove,
-  onReject,
-  onWithdraw,
+  onRefreshRequests, // Pass this prop
 }) => {
   const [proportion, setProportion] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [requestStatus, setRequestStatus] = useState(status);
 
-  // Fetch proportion for the specific duration and date
+  const fetchProportion = async () => {
+    try {
+      const response = await axios.get(`http://127.0.0.1:8085/api/request/proportionOfTeam/${approverId}`);
+      const proportions = response.data;
+      const proportionForDateAndDuration = proportions[dateRequested]?.[duration] || 0;
+      setProportion(proportionForDateAndDuration);
+    } catch (err) {
+      console.error('Error fetching team proportion:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchProportion = async () => {
-      try {
-        const response = await axios.get(`http://127.0.0.1:8085/api/request/proportionOfTeam/${approverId}`);
-        const proportions = response.data;
-        const proportionForDateAndDuration = proportions[dateRequested]?.[duration] || 0;
-        setProportion(proportionForDateAndDuration); // Only set the proportion for that duration
-      } catch (err) {
-        console.error('Error fetching team proportion:', err);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchProportion(); // Fetch proportion regardless of whether the date is in the past or future
+    fetchProportion();
   }, [dateRequested, duration, approverId]);
 
   const willExceedProportion = () => {
@@ -62,16 +58,14 @@ const ApproveEntry: React.FC<ApproveEntryProps> = ({
     return proportion + proportionPerEmployee > 0.5;
   };
 
-  // Calculate proportion after approval for the specific duration
   const proportionAfterApproval = () => {
     if (proportion === null || teamSize === 0) return null;
     const proportionPerEmployee = 1 / teamSize;
     return proportion + proportionPerEmployee;
   };
 
-  // Determine background color based on status
   const getStatusClass = () => {
-    switch (status?.toLowerCase()) {
+    switch (requestStatus?.toLowerCase()) {
       case 'approved':
         return 'bg-teal-100 text-teal-700'; // Custom color for approved
       case 'pending':
@@ -99,9 +93,8 @@ const ApproveEntry: React.FC<ApproveEntryProps> = ({
       <td className="px-4 py-2">
         <Body className="text-text">{dateOfRequest}</Body>
       </td>
-      {/* Apply the dynamic background color based on the status */}
       <td className={`px-4 py-2 ${getStatusClass()} font-semibold rounded-md`}>
-        <Body>{status}</Body>
+        <Body>{requestStatus}</Body>
       </td>
       <td className="px-4 py-2">
         {isLoading ? (
@@ -125,12 +118,19 @@ const ApproveEntry: React.FC<ApproveEntryProps> = ({
             dateOfRequest={dateOfRequest}
             requestBatch={requestBatch}
             duration={duration}
-            status={status}
-            createdAt={new Date().toISOString()}
-            updatedAt={new Date().toISOString()}
-            onWithdraw={onWithdraw}
+            status={requestStatus}
+            onWithdraw={(id) => {
+              onRefreshRequests(); // Refresh all data after action
+            }}
+            onApprove={() => {
+              onRefreshRequests(); // Refresh all data after action
+            }}
+            onReject={() => {
+              onRefreshRequests(); // Refresh all data after action
+            }}
             isDisabled={willExceedProportion()}
-            proportionAfterApproval={proportionAfterApproval()} // Always pass the specific proportion for that duration
+            proportionAfterApproval={proportionAfterApproval()}
+            onRefreshRequests={onRefreshRequests} // Pass the refresh function to ActionHandler
           />
         )}
       </td>

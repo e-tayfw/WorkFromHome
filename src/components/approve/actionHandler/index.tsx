@@ -15,6 +15,7 @@ interface ActionHandlerProps {
   onWithdraw: (requestId: number) => void;
   isDisabled: boolean;
   proportionAfterApproval: number | null;
+  onRefreshRequests: () => void; // Add the refresh function prop
 }
 
 const ActionHandler: React.FC<ActionHandlerProps> = ({
@@ -27,83 +28,54 @@ const ActionHandler: React.FC<ActionHandlerProps> = ({
   onWithdraw,
   isDisabled,
   proportionAfterApproval,
+  onRefreshRequests, // Destructure the new prop
 }) => {
   const employeeId = parseInt(useSelector((state: any) => state.auth.staffId), 10);
 
   const handleApprove = () => {
-    if (status.toLowerCase() === 'withdraw pending') {
-      // Modal for withdraw pending status (no proportion text)
-      Swal.fire({
-        title: 'Are you sure?',
-        text: 'Do you want to approve this request?',
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonText: 'Confirm',
-        cancelButtonText: 'Cancel',
-        confirmButtonColor: '#072040',
-        cancelButtonColor: '#a2b4cc',
-      }).then((result) => {
-        if (result.isConfirmed) {
-          const payload = {
-            Request_ID: requestId,
-            Approver_ID: employeeId,
-            Status: 'Approved',
-            Date_Requested: dateRequested,
-            Request_Batch: requestBatch,
-            Duration: duration,
-          };
-
-          axios.post('http://127.0.0.1:8085/api/approveRequest', payload)
-            .then(() => {
-              toast.success('The request has been approved successfully!', {
-                position: 'top-right',
-              });
-            })
-            .catch(() => {
-              toast.error('An error occurred while approving the request.', {
-                position: 'top-right',
-              });
+    const approvalConfirmationText =
+      status.toLowerCase() === 'pending'
+        ? `The proportion of staff working from home once accepted will be ${(proportionAfterApproval! * 100).toFixed(1)}%`
+        : 'Do you want to approve this request?'; // Generic message for 'withdraw pending'
+  
+    Swal.fire({
+      title: 'Are you sure?',
+      text: approvalConfirmationText,
+      input: 'text',
+      inputPlaceholder: 'Enter your comments here (optional)...',
+      showCancelButton: true,
+      confirmButtonText: 'Confirm',
+      cancelButtonText: 'Cancel',
+      confirmButtonColor: '#072040',
+      cancelButtonColor: '#a2b4cc',
+    }).then((result) => {
+      if (result.isConfirmed) {
+        const payload = {
+          Request_ID: requestId,
+          Approver_ID: employeeId,
+          Status: 'Approved',
+          Date_Requested: dateRequested,
+          Request_Batch: requestBatch,
+          Duration: duration,
+          Reason: result.value || null, // Add optional comments as Reason
+        };
+  
+        axios.post('http://127.0.0.1:8085/api/approveRequest', payload)
+          .then((response) => {
+            // Show success message from the response
+            toast.success(response.data.message || 'The request has been approved successfully!', {
+              position: 'top-right',
             });
-        }
-      });
-    } else {
-      // Modal for pending status (show proportion text)
-      Swal.fire({
-        title: 'Are you sure?',
-        text: `The proportion of staff working from home once accepted will be ${(
-          proportionAfterApproval! * 100
-        ).toFixed(1)}%`,
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonText: 'Confirm',
-        cancelButtonText: 'Cancel',
-        confirmButtonColor: '#072040',
-        cancelButtonColor: '#a2b4cc',
-      }).then((result) => {
-        if (result.isConfirmed) {
-          const payload = {
-            Request_ID: requestId,
-            Approver_ID: employeeId,
-            Status: 'Approved',
-            Date_Requested: dateRequested,
-            Request_Batch: requestBatch,
-            Duration: duration,
-          };
-
-          axios.post('http://127.0.0.1:8085/api/approveRequest', payload)
-            .then(() => {
-              toast.success('The request has been approved successfully!', {
-                position: 'top-right',
-              });
-            })
-            .catch(() => {
-              toast.error('An error occurred while approving the request.', {
-                position: 'top-right',
-              });
+            onRefreshRequests(); // Call the refresh function after successful approval
+          })
+          .catch((error) => {
+            // Show error message from the response or a default message
+            toast.error(error.response?.data?.message || 'An error occurred while approving the request.', {
+              position: 'top-right',
             });
-        }
-      });
-    }
+          });
+      }
+    });
   };
 
   const handleReject = () => {
@@ -132,13 +104,16 @@ const ActionHandler: React.FC<ActionHandlerProps> = ({
         };
 
         axios.post('http://127.0.0.1:8085/api/rejectRequest', payload)
-          .then(() => {
-            toast.success('The request has been rejected successfully!', {
+          .then((response) => {
+            // Show success message from the response
+            toast.success(response.data.message || 'The request has been rejected successfully!', {
               position: 'top-right',
             });
+            onRefreshRequests(); // Call the refresh function after successful rejection
           })
-          .catch(() => {
-            toast.error('An error occurred while rejecting the request.', {
+          .catch((error) => {
+            // Show error message from the response or a default message
+            toast.error(error.response?.data?.message || 'An error occurred while rejecting the request.', {
               position: 'top-right',
             });
           });
@@ -148,6 +123,20 @@ const ActionHandler: React.FC<ActionHandlerProps> = ({
 
   const handleWithdraw = () => {
     onWithdraw(requestId);
+    axios.post('http://127.0.0.1:8085/api/withdrawRequest', { Request_ID: requestId })
+      .then((response) => {
+        // Show success message from the response
+        toast.success(response.data.message || 'The request has been withdrawn successfully!', {
+          position: 'top-right',
+        });
+        onRefreshRequests(); // Refresh the data after withdraw
+      })
+      .catch((error) => {
+        // Show error message from the response or a default message
+        toast.error(error.response?.data?.message || 'An error occurred while withdrawing the request.', {
+          position: 'top-right',
+        });
+      });
   };
 
   return (
