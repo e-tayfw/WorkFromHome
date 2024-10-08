@@ -6,22 +6,24 @@ interface RequestEntryProps {
   requestId: string;
   requestorId: string;
   approverId: string;
-  status: string | undefined;
+  status: string;
   dateRequested: string;
   requestBatch: string;
   dateOfRequest: string;
   duration: string;
+  fetchRequests: () => void; // Include fetchRequests prop
 }
 
 const RequestEntry: React.FC<RequestEntryProps> = ({
   requestId,
   requestorId,
   approverId,
-  status = 'unknown',
+  status,
   dateRequested,
   requestBatch,
   dateOfRequest,
   duration,
+  fetchRequests, // Destructure the fetchRequests prop
 }) => {
   const statusColor = () => {
     switch (status?.toLowerCase()) {
@@ -56,7 +58,14 @@ const RequestEntry: React.FC<RequestEntryProps> = ({
         <Body>{status}</Body>
       </td>
       <td className="px-4 py-2">
-        <ActionHandler status={status} dateRequested={dateRequested} />
+        {/* Pass necessary props to ActionHandler */}
+        <ActionHandler 
+          requestId={requestId}
+          employeeId={requestorId}
+          status={status}
+          dateRequested={dateRequested}
+          onRefreshRequests={fetchRequests} // Pass fetchRequests to ActionHandler
+        />
       </td>
     </tr>
   );

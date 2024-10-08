@@ -9,9 +9,10 @@ interface ActionHandlerProps {
   dateRequested: string;
   requestId: string;
   employeeId: string;
+  onRefreshRequests: () => void; // Add the refresh function prop
 }
 
-const ActionHandler: React.FC<ActionHandlerProps> = ({ status, dateRequested, requestId, employeeId }) => {
+const ActionHandler: React.FC<ActionHandlerProps> = ({ status, dateRequested, requestId, employeeId, onRefreshRequests }) => {
   const isWithinTwoWeeks = () => {
     const currentDate = new Date();
     const requestedDate = new Date(dateRequested);
@@ -39,26 +40,37 @@ const ActionHandler: React.FC<ActionHandlerProps> = ({ status, dateRequested, re
         if (!value) {
           return 'You need to provide a reason!';
         }
-      }
+      },
     }).then((result) => {
       if (result.isConfirmed) {
         const reason = result.value;
-        // Make API call to withdraw request
-        axios.post('http://127.0.0.1:8085/api/request/withdraw', {
+        
+        // Prepare the payload
+        const payload = {
           Request_ID: requestId,
           Employee_ID: employeeId,
           Reason: reason,
-        })
-        .then(() => {
-          toast.success('The request has been withdrawn successfully!', {
-            position: 'top-right',
+        };
+        
+        // Log the payload to the console
+        console.log('Payload for withdraw request:', payload);
+  
+        // Make API call to withdraw request
+        axios
+          .post('http://127.0.0.1:8085/api/request/withdraw', payload)
+          .then((response) => {
+            // Use the 'message' from the response to show a success toast
+            toast.success(response.data.message || 'The request has been withdrawn successfully!', {
+              position: 'top-right',
+            });
+            onRefreshRequests(); // Refresh the requests after successful withdraw
+          })
+          .catch((error) => {
+            // Use the 'message' from the error response to show an error toast
+            toast.error(error.response?.data?.message || 'An error occurred while withdrawing the request.', {
+              position: 'top-right',
+            });
           });
-        })
-        .catch(() => {
-          toast.error('An error occurred while withdrawing the request.', {
-            position: 'top-right',
-          });
-        });
       }
     });
   };
