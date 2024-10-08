@@ -1,11 +1,12 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import axios from 'axios';
-import Swal from 'sweetalert2';
 import { useSelector } from 'react-redux';
 import ApproveEntry from '@/components/approve/entry';
 import { H1, BodyLarge } from '@/components/TextStyles';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSort, faSortUp, faSortDown, faChevronDown, faChevronRight } from '@fortawesome/free-solid-svg-icons';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const ApproveTable: React.FC = () => {
   const [requests, setRequests] = useState([]);
@@ -19,15 +20,6 @@ const ApproveTable: React.FC = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      Swal.fire({
-        title: 'Loading...',
-        html: 'Please wait while we fetch your approvals',
-        allowOutsideClick: false,
-        didOpen: () => {
-          Swal.showLoading(); // Start SweetAlert loading spinner
-        },
-      });
-
       try {
         const [requestRes, employeeRes] = await Promise.all([
           axios.get(`http://127.0.0.1:8085/api/request/approverID/${staffId}`),
@@ -54,16 +46,12 @@ const ApproveTable: React.FC = () => {
         setRequests(mappedRequests);
         setEmployees(mappedEmployees);
         setLoading(false);
-        Swal.close(); // Close the SweetAlert once data is loaded
+        toast.success('Data loaded successfully');
       } catch (err) {
         console.error('Error fetching approval data:', err);
         setError('Failed to load approval data');
         setLoading(false);
-        Swal.fire({
-          icon: 'error',
-          title: 'Oops...',
-          text: 'Failed to load approvals, please try again!',
-        });
+        toast.error('Failed to load approvals, please try again!');
       }
     };
 
@@ -126,6 +114,8 @@ const ApproveTable: React.FC = () => {
 
   return (
     <div className="container mx-auto p-4">
+      <ToastContainer position="top-right" autoClose={5000} hideProgressBar={false} newestOnTop closeOnClick />
+      
       {employees.map((employee) => {
         const employeeRequests = getEmployeeRequests(employee.Staff_ID);
         const isExpanded = expandedStaff.includes(employee.Staff_ID);

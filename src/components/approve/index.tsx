@@ -1,16 +1,67 @@
-import { useState } from "react";
-import { Display, BodyLarge } from "@/components/TextStyles"; // Import BodyLarge for buttons
+import { useState, useEffect } from "react";
+import { Display, BodyLarge, H1 } from "@/components/TextStyles"; // Importing custom text styles
 import ApproveTable from "@/components/approve/table";
 import CalendarView from "@/components/approve/calendar"; // Import the CalendarView
+import axios from "axios";
+import { useSelector } from "react-redux";
+import { ToastContainer, toast } from "react-toastify";
 
 const Approve = () => {
   const [viewMode, setViewMode] = useState<"table" | "calendar">("table"); // State to toggle between views
+  const [noReportsMessage, setNoReportsMessage] = useState<string | null>(null); // Message for no reports
+  const staffId = useSelector((state: any) => state.auth.staffId); // Get staffId from Redux store
 
+  useEffect(() => {
+    // Fetch the message from the API based on staffId
+    const fetchReportMessage = async () => {
+      try {
+        const response = await axios.get(`http://127.0.0.1:8085/api/employee/team/manager/${staffId}`);
+        
+        const message = response.data.message;
+        
+        // Check if the message indicates no employees reporting to the person
+        if (message === "No employee reports to this person") {
+          setNoReportsMessage("You have no direct Reports");
+        }
+      } catch (error) {
+        console.error("Error fetching report message:", error);
+        toast.error("Failed to fetch report message.");
+      }
+    };
+
+    fetchReportMessage();
+  }, [staffId]);
+
+  // If the message indicates no reports, display it using the H1 component
+  if (noReportsMessage) {
+    return (
+      <div data-testid="approve-component" className="flex flex-col items-start">
+        <div className="flex flex-row relative mt-20 lg:mt-0 max-h-[500px]">
+          <div className="px-[16px] lg:px-[128px]">
+            <div className="py-[10px] lg:py-[60px]">
+              <span className="block animate-slide-up1 mt-[60px] md:mt-[100px]">
+                <Display>Manage Staff Requests</Display>
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div className="max-w-8xl w-full px-[16px] md:px-[128px] pt-[60px] pb-[30px] md:pt-[50px]">
+          <div className="flex">
+            <H1 className="font-bold text-center">You have no direct reports :(</H1>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // If there are direct reports, show the toggle buttons and views
   return (
     <div data-testid="approve-component" className="flex flex-col items-start">
+      <ToastContainer position="top-right" autoClose={5000} hideProgressBar={false} newestOnTop closeOnClick />
       <div className="flex flex-row relative mt-20 lg:mt-0 max-h-[500px]">
         <div className="px-[16px] lg:px-[128px]">
-          <div className="py-[10px] lg:py-[60px] text-[50px] lg:text-[80px] leading-[60px] lg:leading-[95px] font-bold">
+          <div className="py-[10px] lg:py-[60px]">
             <span className="block animate-slide-up1 mt-[60px] md:mt-[100px]">
               <Display>Manage Staff Requests</Display>
             </span>
@@ -23,9 +74,7 @@ const Approve = () => {
         <div className="mb-4 flex space-x-4">
           <button
             className={`px-4 py-2 rounded-md focus:outline-none transition-all duration-200 ${
-              viewMode === "table"
-                ? "bg-primary text-white shadow-lg"
-                : "bg-gray-200 text-primary"
+              viewMode === "table" ? "bg-primary text-white shadow-lg" : "bg-gray-200 text-primary"
             }`}
             onClick={() => setViewMode("table")}
           >
@@ -33,9 +82,7 @@ const Approve = () => {
           </button>
           <button
             className={`px-4 py-2 rounded-md focus:outline-none transition-all duration-200 ${
-              viewMode === "calendar"
-                ? "bg-primary text-white shadow-lg"
-                : "bg-gray-200 text-primary"
+              viewMode === "calendar" ? "bg-primary text-white shadow-lg" : "bg-gray-200 text-primary"
             }`}
             onClick={() => setViewMode("calendar")}
           >

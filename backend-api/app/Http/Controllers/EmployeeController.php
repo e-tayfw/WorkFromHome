@@ -76,20 +76,22 @@ class EmployeeController extends Controller
         $manager = Employee::where('Staff_ID', $reportingManager)->first();
         $employees = Employee::where('Reporting_Manager', $reportingManager)->get();
 
+        // Check if the manager exists
         if (!$manager) {
             return response()->json(['message' => 'Reporting manager not found'], 404);
         }
 
+        // If no employees report to the manager, return a 200 status with an appropriate message
         if ($employees->isEmpty()) {
-            return response()->json(['message' => 'No employee reports to this person'], 404);
-        } else {
-            // Combine the manager and employees in a single response
-            $result = [
-                'manager' => $manager,
-                'employees' => $employees
-            ];
-            return response()->json($result);
-        }
+            return response()->json(['message' => 'No employee reports to this person'], 200);
+        } 
+
+        // Return the manager and their employees
+        $result = [
+            'manager' => $manager,
+            'employees' => $employees
+        ];
+        return response()->json($result);
     }
 
     // Fetch team by their member
