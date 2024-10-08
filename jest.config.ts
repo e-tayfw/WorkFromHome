@@ -3,8 +3,7 @@ import nextJest from "next/jest";
 import { pathsToModuleNameMapper } from "ts-jest";
 import { compilerOptions } from "./tsconfig.json";
 
-import { pathsToModuleNameMapper } from "ts-jest";
-import { compilerOptions } from "./tsconfig.json";
+
 
 const createJestConfig = nextJest({
   dir: "./",
