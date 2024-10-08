@@ -60,7 +60,7 @@ export const RequestTable: React.FC = () => {
           status: item.Status,
           dateRequested: item.Date_Requested,
           requestBatch: item.Request_Batch,
-          dateOfRequest: item.Date_Of_Request,
+          dateOfRequest: new Date(item.created_at).toISOString().split('T')[0],
           duration: item.Duration
         }));
         
