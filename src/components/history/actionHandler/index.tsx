@@ -9,7 +9,7 @@ interface ActionHandlerProps {
   dateRequested: string;
   requestId: string;
   employeeId: string;
-  onRefreshRequests: () => void; // Add the refresh function prop
+  onRefreshRequests: () => void;
 }
 
 const ActionHandler: React.FC<ActionHandlerProps> = ({ status, dateRequested, requestId, employeeId, onRefreshRequests }) => {
@@ -45,28 +45,21 @@ const ActionHandler: React.FC<ActionHandlerProps> = ({ status, dateRequested, re
       if (result.isConfirmed) {
         const reason = result.value;
         
-        // Prepare the payload
         const payload = {
           Request_ID: requestId,
           Employee_ID: employeeId,
           Reason: reason,
         };
-        
-        // Log the payload to the console
-        console.log('Payload for withdraw request:', payload);
-  
-        // Make API call to withdraw request
+
         axios
           .post('http://127.0.0.1:8085/api/request/withdraw', payload)
           .then((response) => {
-            // Use the 'message' from the response to show a success toast
             toast.success(response.data.message || 'The request has been withdrawn successfully!', {
               position: 'top-right',
             });
-            onRefreshRequests(); // Refresh the requests after successful withdraw
+            onRefreshRequests();
           })
           .catch((error) => {
-            // Use the 'message' from the error response to show an error toast
             toast.error(error.response?.data?.message || 'An error occurred while withdrawing the request.', {
               position: 'top-right',
             });
@@ -78,7 +71,7 @@ const ActionHandler: React.FC<ActionHandlerProps> = ({ status, dateRequested, re
   const getActionButton = () => {
     switch (status?.toLowerCase()) {
       case 'approved':
-      case 'withdraw rejected':
+      case 'withdraw rejected': // Show the button for Withdraw Rejected status
         if (isWithinTwoWeeks()) {
           return (
             <button
@@ -104,10 +97,6 @@ const ActionHandler: React.FC<ActionHandlerProps> = ({ status, dateRequested, re
             </button>
           </>
         );
-      case 'withdrawn':
-      case 'rejected':
-      case 'withdraw pending':
-        return null;
       default:
         return null;
     }
