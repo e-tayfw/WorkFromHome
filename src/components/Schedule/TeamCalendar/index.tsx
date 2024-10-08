@@ -334,7 +334,10 @@ export const TeamCalendar: React.FC = () => {
                   <H2 className="text-lg font-bold">
                     {moment(modalDate).format("DD/MM/YY")} - WFH Schedule
                   </H2>
-                  <button onClick={() => setModalOpen(false)}>
+                  <button
+                    data-testid="close-modal"
+                    onClick={() => setModalOpen(false)}
+                  >
                     <CloseIcon />
                   </button>
                 </div>
@@ -398,7 +401,10 @@ export const TeamCalendar: React.FC = () => {
             </button>
           </div>
           <div className="flex flex-col items-center p-4 border border-gray-200 min-h-[400px] rounded-xl mb-4">
-            <EyeIcon onClick={() => handleEyeIconClick(selectedDate)} />
+            <EyeIcon
+              data-testid={`eye-icon-${selectedDate}`}
+              onClick={() => handleEyeIconClick(selectedDate)}
+            />
             <BodySmall className="font-bold">
               Click the eye icon to view WFH users
             </BodySmall>
@@ -459,7 +465,10 @@ export const TeamCalendar: React.FC = () => {
                   >
                     <H2>{displayDate}</H2>
                     <button>
-                      <EyeIcon onClick={() => handleEyeIconClick(dateStr)} />
+                      <EyeIcon
+                        data-testid={`eye-icon-${dateStr}`}
+                        onClick={() => handleEyeIconClick(dateStr)}
+                      />
                     </button>
                     <Body className="text-lg">
                       AM WFH: {scheduleData.amCount}
