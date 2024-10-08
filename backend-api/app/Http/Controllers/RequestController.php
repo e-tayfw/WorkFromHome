@@ -98,6 +98,7 @@ class RequestController extends Controller
             return response()->json([
                 'message' => 'Rows for Request and RequestLog have been successfully created',
                 'success' => true,
+                'Request_ID' => $newRequest->Request_ID,
                 'date' => $selectedDate,
                 'arrangement' => $arrangement,
                 'reportingManager' => $reportingManager
@@ -111,34 +112,78 @@ class RequestController extends Controller
         }
     }
 
-    public function withdrawRequest($id)
+    public function withdrawRequest(Request $request)
     {
-        $request = Requests::find($id);
 
-        if (!$request) {
-            return response()->json(['message' => 'No request found with that id'], 404);
+        // Check if the employee ID exists in the system
+        $employeeExists = Employee::find($request->Employee_ID);
+        if (!$employeeExists) {
+            return response()->json(['message' => 'Invalid Employee ID'], 400);
         }
 
-        switch ($request->Status) {
+        // Check if the request ID exists in the system
+        $requestExists = Requests::find($request->Request_ID);
+        if (!$requestExists) {
+            return response()->json(['message' => 'Invalid Request ID'], 400);
+        }
+
+        // Check if the request exists and belongs to the employee
+        $booking = Requests::where([
+            "Request_ID" => $request->Request_ID,
+            "Requestor_ID" => $request->Employee_ID
+        ])->first();
+
+        if (!$booking) {
+            return response()->json(
+                ['message' => "Request ID: {$request->Request_ID} was not originally made by this Employee ID: {$request->Employee_ID}"], 
+                404
+            );
+        }
+
+        switch ($booking->Status) {
             case 'Approved':
-                $wfhDate = Carbon::parse($request->Date_Requested);
+                $wfhDate = Carbon::parse($booking->Date_Requested);
                 $currentDate = Carbon::now();
 
                 // Check if the current date is within 2 weeks of the WFH date
                 if ($currentDate->diffInDays($wfhDate, false) <= 14) {
-                    Requests::where('Request_ID', $id)->update(['Status' => 'Withdraw Pending']);
+                    Requests::where('Request_ID', $request->Request_ID)->update(['Status' => 'Withdraw Pending']);
+                    RequestLog::create([
+                        "Request_ID" => $request->Request_ID,
+                        "Employee_ID" => $request->Employee_ID,
+                        "Previous_State" => "Approved",
+                        "New_State" => "Withdraw Pending",
+                        "Date" => $booking->Date_Of_Request, // not sure what this date is for
+                        "Remarks" => $request->Reason
+                    ]);
                     return response()->json(['message' => 'Request submitted for withdrawal and is now pending approval'], 200);
                 } else {
                     return response()->json(['message' => 'Withdraw request can only be submitted within 2 weeks of the WFH date'], 400);
                 }
             case 'Pending':
-                Requests::where('Request_ID', $id)->update(['Status' => 'Withdrawn']);
+                Requests::where('Request_ID', $request->Request_ID)->update(['Status' => 'Withdrawn']);
+                RequestLog::create([
+                    "Request_ID" => $request->Request_ID,
+                    "Employee_ID" => $request->Employee_ID,
+                    "Previous_State" => "Pending",
+                    "New_State" => "Withdrawn",
+                    "Date" => $booking->Date_Of_Request, // not sure what this date is for
+                    "Remarks" => $request->Reason
+                ]);
                 return response()->json(['message' => 'Request withdrawn successfully'], 200);
             case 'Rejected':
                 return response()->json(['message' => 'Request is rejected for WFH, require Pending or Approved Status to withdraw'], 200);
             case 'Withdraw Rejected':
                 // Allow staff to submit the withdraw again
-                Requests::where('Request_ID', $id)->update(['Status' => 'Withdraw Pending']);
+                Requests::where('Request_ID', $request->Request_ID)->update(['Status' => 'Withdraw Pending']);
+                RequestLog::create([
+                    "Request_ID" => $request->Request_ID,
+                    "Employee_ID" => $request->Employee_ID,
+                    "Previous_State" => "Withdraw Rejected",
+                    "New_State" => "Withdraw Pending",
+                    "Date" => $booking->Date_Of_Request, // not sure what this date is for
+                    "Remarks" => $request->Reason
+                ]);
                 return response()->json(['message' => 'Request resubmitted for withdrawal and is now pending approval'], 200);
             case 'Withdraw Pending':
                 return response()->json(['message' => 'Withdraw Request is waiting for approval from a manager'], 200);

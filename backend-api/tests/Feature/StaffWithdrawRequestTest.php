@@ -8,6 +8,7 @@ use App\Models\Requests;
 use Carbon\Carbon;
 use Database\Seeders\EmployeeSeeder;
 use DB;
+use Log;
 
 class StaffWithdrawRequestTest extends TestCase
 {
@@ -33,15 +34,41 @@ class StaffWithdrawRequestTest extends TestCase
     }
 
     /**
-     * Test that returns a 404 status when the request is not found.
+     * Test that returns a 400 status when the request is not found.
      * 
      * #[Depends('test_database_is_test_db')]
      */
-    public function test_request_not_found_returns_404(): void
+    public function test_request_id_not_found_returns_400(): void
     {
+        // Prepare payload with non-existent Request_ID
+        $payload = [
+            "Request_ID" => 999999,  // Non-existent ID
+            "Employee_ID" => 171009,
+            "Reason" => "Personal"
+        ];
+
         // Try to withdraw a non-existent request id
-        $response = $this->postJson('/api/request/999999/withdraw');
-        $response->assertStatus(404);
+        $response = $this->postJson('/api/request/withdraw', $payload);
+        $response->assertStatus(400);
+    }
+
+    /**
+     * Test that returns a 400 status when the request is not found.
+     * 
+     * #[Depends('test_database_is_test_db')]
+     */
+    public function test_employee_id_not_found_returns_400(): void
+    {
+        // Prepare payload with non-existent Request_ID
+        $payload = [
+            "Request_ID" => 171009,  // Non-existent ID
+            "Employee_ID" => 999999,
+            "Reason" => "Personal"
+        ];
+
+        // Try to withdraw a non-existent request id
+        $response = $this->postJson('/api/request/withdraw', $payload);
+        $response->assertStatus(400);
     }
 
     /**
@@ -57,8 +84,14 @@ class StaffWithdrawRequestTest extends TestCase
             'Date_Requested' => Carbon::now()->addDays(10), // Within 2 weeks
         ]);
 
+        $payload = [
+            "Request_ID" => $request->Request_ID, 
+            "Employee_ID" => $request->Requestor_ID,
+            "Reason" => "Personal"
+        ];
+
         // Withdraw the request and check the response
-        $response = $this->postJson("/api/request/{$request->Request_ID}/withdraw");
+        $response = $this->postJson("/api/request/withdraw", $payload);
         $response->assertStatus(200);
 
         // Assert that the request status is now 'Withdraw Pending'
@@ -81,8 +114,14 @@ class StaffWithdrawRequestTest extends TestCase
             'Date_Requested' => Carbon::now()->addDays(20), // More than 2 weeks away
         ]);
 
+        $payload = [
+            "Request_ID" => $request->Request_ID, 
+            "Employee_ID" => $request->Requestor_ID,
+            "Reason" => "Personal"
+        ];
+
         // Attempt to withdraw and check for a rejection
-        $response = $this->postJson("/api/request/{$request->Request_ID}/withdraw");
+        $response = $this->postJson("/api/request/withdraw", $payload);
         $response->assertStatus(400);
 
         // Assert that the request status is still 'Approved'
@@ -104,8 +143,14 @@ class StaffWithdrawRequestTest extends TestCase
             'Status' => 'Pending',
         ]);
 
+        $payload = [
+            "Request_ID" => $request->Request_ID, 
+            "Employee_ID" => $request->Requestor_ID,
+            "Reason" => "Personal"
+        ];
+
         // Attempt to withdraw and check the response
-        $response = $this->postJson("/api/request/{$request->Request_ID}/withdraw");
+        $response = $this->postJson("/api/request/withdraw", $payload);
         $response->assertStatus(200);
 
         // Assert that the status is now 'Withdrawn'
@@ -127,8 +172,14 @@ class StaffWithdrawRequestTest extends TestCase
             'Status' => 'Rejected',
         ]);
 
+        $payload = [
+            "Request_ID" => $request->Request_ID, 
+            "Employee_ID" => $request->Requestor_ID,
+            "Reason" => "Personal"
+        ];
+
         // Attempt to withdraw and check the response
-        $response = $this->postJson("/api/request/{$request->Request_ID}/withdraw");
+        $response = $this->postJson("/api/request/withdraw", $payload);
         $response->assertStatus(200);
 
         // Assert that the status is still 'Rejected'
@@ -150,8 +201,14 @@ class StaffWithdrawRequestTest extends TestCase
             'Status' => 'Withdraw Rejected',
         ]);
 
+        $payload = [
+            "Request_ID" => $request->Request_ID, 
+            "Employee_ID" => $request->Requestor_ID,
+            "Reason" => "Personal"
+        ];
+
         // Attempt to resubmit for withdrawal and check the response
-        $response = $this->postJson("/api/request/{$request->Request_ID}/withdraw");
+        $response = $this->postJson("/api/request/withdraw", $payload);
         $response->assertStatus(200);
 
         // Assert that the status is now 'Withdraw Pending'
@@ -173,8 +230,14 @@ class StaffWithdrawRequestTest extends TestCase
             'Status' => 'Withdraw Pending',
         ]);
 
+        $payload = [
+            "Request_ID" => $request->Request_ID, 
+            "Employee_ID" => $request->Requestor_ID,
+            "Reason" => "Personal"
+        ];
+
         // Attempt to withdraw and check the response
-        $response = $this->postJson("/api/request/{$request->Request_ID}/withdraw");
+        $response = $this->postJson("/api/request/withdraw", $payload);
         $response->assertStatus(200);
 
         // Assert that the status is now 'Withdraw Pending'
@@ -196,8 +259,14 @@ class StaffWithdrawRequestTest extends TestCase
             'Status' => 'Withdrawn',
         ]);
 
+        $payload = [
+            "Request_ID" => $request->Request_ID, 
+            "Employee_ID" => $request->Requestor_ID,
+            "Reason" => "Personal"
+        ];
+        
         // Attempt to withdraw and check the response
-        $response = $this->postJson("/api/request/{$request->Request_ID}/withdraw");
+        $response = $this->postJson("/api/request/withdraw", $payload);
         $response->assertStatus(200);
 
         // Assert that the status is still 'Withdrawn'
