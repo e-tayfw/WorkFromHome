@@ -44,6 +44,7 @@ const Apply: React.FC = ({}) => {
   }, []);
 
   //remove later
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const simulateApiCall = (data: SubmitData): Promise<{ success: boolean; message: string }> => {
     return new Promise((resolve) => {
       setTimeout(() => {

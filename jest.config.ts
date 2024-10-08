@@ -1,11 +1,13 @@
-import nextJest from 'next/jest';
+import nextJest from "next/jest";
 
 import { pathsToModuleNameMapper } from "ts-jest";
 import { compilerOptions } from "./tsconfig.json";
 
+
+
 const createJestConfig = nextJest({
-  dir: './',
-})
+  dir: "./",
+});
 
 const config = {
   preset: "ts-jest", // Use ts-jest to work with TypeScript
@@ -28,4 +30,4 @@ const config = {
 //   // transformIgnorePatterns: ["<rootDir>/node_modules/"], // Ignore transforming node_modules
 // };
 
-module.exports = createJestConfig(config)
+module.exports = createJestConfig(config);

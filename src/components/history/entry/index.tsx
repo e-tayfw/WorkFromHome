@@ -13,11 +13,15 @@ interface RequestEntryProps {
 }
 
 const RequestEntry: React.FC<RequestEntryProps> = ({
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   requestId,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   requestorId,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   approverId,
   status = 'unknown', // Default to 'unknown' if status is undefined
   dateRequested,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   requestBatch,
   dateOfRequest,
   duration,

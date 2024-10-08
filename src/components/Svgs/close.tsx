@@ -1,6 +1,6 @@
 import React, { SVGProps } from "react";
 
-export const CloseIcon = (props: SVGProps<any>) => {
+export const CloseIcon = (props: SVGProps<never>) => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"

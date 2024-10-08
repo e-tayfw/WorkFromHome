@@ -24,6 +24,9 @@ class ScheduleController extends Controller
             ->where('Status', 'Approved')
             ->get();
         
+        $requests = Requests::where(column: 'Requestor_ID', operator: $staff_id)
+            ->where('Status', 'Approved')
+            ->get();;
         // Handle empty results
         // if ($requests->isEmpty()) {
         //     continue;
@@ -140,7 +143,7 @@ class ScheduleController extends Controller
 
                 // Check if there is an approved request for this team member on this date
                 $request = $approvedRequests->where('Requestor_ID', $member_id)
-                    ->where('Date_Requested', $formattedDate)
+                    ->where('Date_Requested', $date->format('Y-m-d'))
                     ->first();
 
                 if ($request) {
@@ -225,7 +228,7 @@ class ScheduleController extends Controller
 
                 // Check if there is an approved request for this team member on this date
                 $request = $approvedRequests->where('Requestor_ID', $member_id)
-                    ->where('Date_Requested', $formattedDate)
+                    ->where('Date_Requested', $date->format('Y-m-d'))
                     ->first();
 
                 if ($request) {
