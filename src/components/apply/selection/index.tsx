@@ -1,18 +1,23 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, ChangeEvent } from 'react';
 
-const Selection = ({ onSelectionChange, selectedValue }) => {
-    const [localSelectedValue, setLocalSelectedValue] = useState(selectedValue);
+type SelectionValue = 'AM' | 'PM' | 'FD' | '';
+
+interface SelectionProps {
+  onSelectionChange: (value: SelectionValue) => void;
+  selectedValue: SelectionValue;
+}
+
+const Selection: React.FC<SelectionProps> = ({ onSelectionChange, selectedValue }) => {
+    const [localSelectedValue, setLocalSelectedValue] = useState<SelectionValue>(selectedValue);
 
     useEffect(() => {
       setLocalSelectedValue(selectedValue);
     }, [selectedValue]);
-
-    useEffect(() => {
-      onSelectionChange(localSelectedValue);
-    }, [localSelectedValue, onSelectionChange]);
   
-    const handleChange = (event) => {
-      setLocalSelectedValue(event.target.value);
+    const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
+      const newValue = event.target.value as SelectionValue;
+      setLocalSelectedValue(newValue);
+      onSelectionChange(newValue);
     };
 
     return (

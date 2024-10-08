@@ -2,9 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Employee;
 use App\Models\Requests;
-
+use App\Models\RequestLog;
+use App\Models\Employee;
+use Illuminate\Http\Request;
 
 class RequestController extends Controller
 {
@@ -35,40 +36,74 @@ class RequestController extends Controller
             return response()->json(['message' => 'Request not found'], 404);
         }
     }   
-
-    public function createRequest($request_info)
+    public function createRequest(Request $request)
     {   
         // Decode json input and give assign to variables based on key
-        $decoded_request = json_decode($request_info);
-
-        $staff_id = $decoded_request->staffid;
-        $selectedDate = $decoded_request->date;
-        $arrangement = $decoded_request->preferredArrangement;
-        $reason = $decoded_request->reason;
+        $staff_id = $request->input('staffid');
+        $selectedDate = $request->input('date');
+        $arrangement = $request->input('arrangement');
+        $reason = $request->input('reason');
 
         // Fetch employee row using staff_id
         $employee = Employee::where("Staff_ID", $staff_id)->first();
 
-        // If found retrieve the staff's Reporting Manager
+
         if ($employee) {
+
+            // Check if a request exists for the same date
+            $existingRequest = Requests::where([["Requestor_ID", '=', $staff_id],["Date_Requested",'=', $selectedDate]])->first();
+            if($existingRequest){
+                return response()->json([
+                    'message' => 'A request for the same date already exists',
+                    'date' => $selectedDate,
+                    'success' => false
+                ]);
+            }
+            else{
+                // Get reporting manager
+                $reporting_manager = $employee->Reporting_Manager;
             
-            $reporting_manager = $employee->Reporting_Manager;
-
-            // If Reporting Manager found, update the DB with the request
-            if ($reporting_manager) {
-                // Create new Request row
-                $newRequest = new Requests();
-                $newRequest -> Requestor_ID = $staff_id;
-                $newRequest -> Approver_ID = $reporting_manager;
-                $newRequest -> Status = "Pending";
-                $newRequest -> Date_Requested = $selectedDate;
-                $newRequest -> Date_Of_Request = date("Y-m-d");
-                $newRequest -> Duration = $arrangement;
-
-                $newRequest-> save();
-
-                // Create new Request Log row
-                // $newRequestLog = new 
+                // If Reporting Manager found, update the DB with the request
+                if ($reporting_manager) {
+                    // Create new Request row
+                    $newRequest = new Requests();
+                    $newRequest->Requestor_ID = $staff_id;
+                    $newRequest->Approver_ID = $reporting_manager;
+                    $newRequest->Status = "Pending";
+                    $newRequest->Date_Requested = $selectedDate;
+                    $newRequest->Date_Of_Request = date("Y-m-d");
+                    $newRequest->Duration = $arrangement;
+            
+                    // Save the Request
+                    if ($newRequest->save()) {
+                        // Create new Request Log row
+                        $newRequestLog = new RequestLog();
+                        $newRequestLog->Request_ID = $newRequest->Request_ID;
+                        $newRequestLog->Previous_State = 'Pending';
+                        $newRequestLog->New_State = "Pending";
+                        $newRequestLog->Employee_ID = $staff_id;
+                        $newRequestLog->Date = date("Y-m-d");
+                        $newRequestLog->Remarks = $reason;
+            
+                        // Save the Request Log
+                        if ($newRequestLog->save()) {
+                            // Return success response with created Request and RequestLog details
+                            return response()->json([
+                                'message' => 'Rows for Request and RequestLog have been successfully created',
+                                'success' => true,
+                                'date' => $selectedDate,
+                                "arrangement" => $arrangement,
+                                "reportingManager" => $reporting_manager
+                            ]);
+                        } else {
+                            // Handle error saving RequestLog
+                            return response()->json(['message' => 'Failed to create RequestLog'], 500);
+                        }
+                    } else {
+                        // Handle error saving Request
+                        return response()->json(['message' => 'Failed to create Request'], 500);
+                    }
+                }
             }
         }
     }

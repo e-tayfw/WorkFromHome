@@ -2,11 +2,11 @@ import { toast } from "react-toastify";
 import React, { useState } from "react";
 import { useRouter } from "next/router";
 import { useDispatch } from "react-redux";
-import { setAuthData } from "@/redux/slices/authSlice"
+import { setAuthData } from "@/redux/slices/authSlice";
 import { getEmployeeDataByEmail } from "@/pages/api/employeeApi";
 
 export function Auth() {
-  const userTypes = [ "HR", "Director", "Manager", "Employee"];
+  const userTypes = ["HR", "Director", "Manager", "Employee"];
   const [username, setUsername] = useState<string>("");
   const [userType, setUserType] = useState("");
   const dispatch = useDispatch();
@@ -23,10 +23,8 @@ export function Auth() {
     }
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const submitForm = async (_username: string, userType: string) => {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
       setTimeout(() => {
         resolve("success");
       }, 4000);
@@ -40,26 +38,31 @@ export function Auth() {
       toast.error("Please fill in all fields");
     } else {
       try {
-        submitForm(username, userType);
+        await submitForm(username, userType);
 
-        // Step 1: Retrieve employee data using email
+        // Step 1: Retrieve employee data using the email
         const employeeData = await getEmployeeDataByEmail(username);
         console.log(employeeData);
 
         // Step 2: Extract the Staff_ID from the retrieved employee data
         const staffId = employeeData.Staff_ID;
 
-        // Step 3: Dispatch the employee data to Redux store
+        // Step 3: Store the employee ID (Staff_ID) in localStorage
+        localStorage.setItem("employeeId", staffId.toString());
+
+        // Step 4: Dispatch the employee data to Redux store
         dispatch(
           setAuthData({
-            email: employeeData.Email, // Chandra.Kong@allinone.com.sg
+            email: employeeData.Email, // e.g., Chandra.Kong@allinone.com.sg
             roleType: userType,
             staffId: staffId.toString(),
           })
         );
-        
+
+        // Step 5: Optionally store userType if needed for other parts of the app
         localStorage.setItem("userType", userType);
 
+        // Step 6: Redirect to another page after successful login
         router.push("/schedule");
       } catch (error) {
         toast.error("An error occurred during submission");
