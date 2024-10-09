@@ -304,14 +304,14 @@ class RequestController extends Controller
         if ($request_batch !== null) {
             return response()->json(['message' => 'Request is batch request, unable to approve this request by itself'], 400);
         }
-
+        
         // check for correct status
         if ($status !== 'Approved') {
             return response()->json(['message' => 'You are not trying to approve request, this endpoint was to approve requests'], 400);
         }
-
+        
         // check if the requst is already approved
-        if ($requestDB->Status == "Approved") {
+        if ($requestDB->Status== "Approved") {
             return response()->json(['message' => "Request was already Approved"], 400);
         }
 
@@ -322,7 +322,7 @@ class RequestController extends Controller
 
         // check for date formatting
         if (!preg_match('/^\d{4}-(0?[1-9]|1[0-2])-(0?[1-9]|[12]\d|3[01])$/', $date)) {
-            return response()->json(['message' => 'The format of date is not correct, sample format 2024-10-03'], 424);
+            return response()->json(['message' => 'The format of date is not correct, sample format 2024-10-03'], 400);
         }
         $formattedDate = (new DateTime($date))->format('Y-m-d');
         
@@ -376,7 +376,7 @@ class RequestController extends Controller
             }
             
         } else {
-            return response()->json(["message"=> "Unable to query from Requests Table"], 500);
+            return response()->json(["message"=> "Unable to query from Requests Table"], 400);
         }
 
         // Approve request

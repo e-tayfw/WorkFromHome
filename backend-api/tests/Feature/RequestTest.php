@@ -5,7 +5,7 @@ namespace Tests\Feature;
 use Database\Seeders\EmployeeSeeder;
 use Database\Seeders\RequestSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use app\Models\Requests;
+use App\Models\Requests;
 use Tests\TestCase;
 use DB;
 use Log;
@@ -304,53 +304,32 @@ class RequestTest extends TestCase
      */
     public function test_approve_request_success(): void
     {
-        // Prepare data with a non-existent staff ID
-        $staffId = '140008'; // Assuming this staff ID exist
-        $date = '2024-10-6'; // Valid date
-        $arrangement = 'FD'; // Valid arrangement
-        $reason = 'Personal'; // Valid reason
+        $request = Requests::factory()->create([
+            'Status' => 'Pending',
+            'Approver_ID' => 151408,
+            'Request_ID' => 15,
+            'Date_Requested' => '2024-09-27',
+            'Request_Batch' => null,
+            'Duration'=>'FD'
+        ]);
 
-        // Prepare the payload
         $payload = [
-            'staffid' => $staffId,
-            'date' => $date,
-            'arrangement' => $arrangement,
-            'reason' => $reason,
+            "Request_ID" => 15,
+            "Approver_ID" => 151408,
+            "Status" => "Approved",
+            "Date_Requested" => '2024-09-27',
+            "Request_Batch" => null,
+            "Duration" => 'FD',
         ];
 
-        // Send POST request to create request
-        $response = $this->postJson('/api/request', $payload);
-
-        // Assert that the response status is 400 (Bad Request)
-        $response->assertStatus(200);
-
-        // Fetch the latest created request from the database
-        $latestRequest = Requests::latest()->first(); // Assuming 'Request' is the model
-        $id = $latestRequest->Request_ID;
-
-        // Prepare date
-        $Request_ID = $id; // Valid request ID from seeder
-        $Approver_ID = '140001'; // Valid approver ID
-        $Status = 'Approved'; // Valid status
-        $Date_Requested = '2024-10-03'; // Valid date
-        $Request_Batch = null; // Valid request batch
-        $Duration = "FD"; // Valud duration
-
-        // Prepare payload
-        $payload = [
-            'Request_ID'=>$Request_ID,
-            'Approver_ID' => $Approver_ID,
-            'Status' => $Status,
-            'Date_Requested' => $Date_Requested,
-            'Request_Batch' => $Request_Batch,
-            'Duration' => $Duration
-        ];
-    
-        // Send a GET request to a valid request
         $response = $this->postJson('/api/approveRequest', $payload);
 
-        // Assert that the response status is 200 (OK) 
         $response->assertStatus(200);
+
+        $this->assertDatabaseHas('Request', [
+            'Request_ID' => 15,
+            'Status' => "Approved"
+        ]);
     }
 
     /**
@@ -360,11 +339,20 @@ class RequestTest extends TestCase
      */
     public function test_approve_request_incorrect_status(): void
     {
+        $request = Requests::factory()->create([
+            'Status' => 'Pending',
+            'Approver_ID' => 151408,
+            'Request_ID' => 15,
+            'Date_Requested' => '2024-09-27',
+            'Request_Batch' => null,
+            'Duration'=>'FD'
+        ]);
+
         // Prepare date
-        $Request_ID = '1'; // Valid request ID from seeder
-        $Approver_ID = '140001'; // Valid approver ID
+        $Request_ID = 15; // Valid request ID from seeder
+        $Approver_ID = 151408; // Valid approver ID
         $Status = 'Rejected'; // Valid status
-        $Date_Requested = '2024-10-03'; // Valid date
+        $Date_Requested = '2024-09-27'; // Valid date
         $Request_Batch = null; // Valid request batch
         $Duration = "FD"; // Valud duration
 
@@ -392,28 +380,156 @@ class RequestTest extends TestCase
      */
     public function test_approve_request_request_already_approved(): void
     {
-        // Prepare date
-        $Request_ID = '1'; // Valid request ID from seeder
-        $Approver_ID = '140001'; // Valid approver ID
-        $Status = 'Approved'; // Valid status
-        $Date_Requested = '2024-10-03'; // Valid date
-        $Request_Batch = null; // Valid request batch
-        $Duration = "FD"; // Valud duration
+        $request = Requests::factory()->create([
+            'Status' => 'Approved',
+            'Approver_ID' => 151408,
+            'Request_ID' => 15,
+            'Date_Requested' => '2024-09-27',
+            'Request_Batch' => null,
+            'Duration'=>'FD'
+        ]);
 
-        // Prepare payload
         $payload = [
-            'Request_ID'=>$Request_ID,
-            'Approver_ID' => $Approver_ID,
-            'Status' => $Status,
-            'Date_Requested' => $Date_Requested,
-            'Request_Batch' => $Request_Batch,
-            'Duration' => $Duration
+            "Request_ID" => 15,
+            "Approver_ID" => 151408,
+            "Status" => "Approved",
+            "Date_Requested" => '2024-09-27',
+            "Request_Batch" => null,
+            "Duration" => 'FD',
         ];
     
         // Send a GET request to a valid request
         $response = $this->postJson('/api/approveRequest', $payload);
 
-        // Assert that the response status is 200 (OK) 
+        // Assert that the response status is 400 (Bad Request) 
+        $response->assertStatus(400);
+    }
+
+    /**
+     * Test if the API returns a 400 for not trying to approve
+     * 
+     * #[Depends('test_database_is_test_db')]
+     */
+    public function test_approve_request_invalid_date_format(): void
+    {
+        $request = Requests::factory()->create([
+            'Status' => 'Approved',
+            'Approver_ID' => 151408,
+            'Request_ID' => 15,
+            'Date_Requested' => '2024-09-27',
+            'Request_Batch' => null,
+            'Duration'=>'FD'
+        ]);
+
+        $payload = [
+            "Request_ID" => 15,
+            "Approver_ID" => 151408,
+            "Status" => "Approved",
+            "Date_Requested" => '2024-27-09',
+            "Request_Batch" => null,
+            "Duration" => 'FD',
+        ];
+    
+        // Send a GET request to a valid request
+        $response = $this->postJson('/api/approveRequest', $payload);
+
+        // Assert that the response status is 400 (Bad Request) 
+        $response->assertStatus(400);
+    }
+
+    /**
+     * Test if the API returns a 400 for not trying to approve
+     * 
+     * #[Depends('test_database_is_test_db')]
+     */
+    public function test_approve_request_50_percent_rule(): void
+    {
+        $request1 = Requests::factory()->create([
+            'Status' => 'Approved',
+            'Approver_ID' => 151408,
+            'Request_ID' => 15,
+            'Date_Requested' => '2024-09-27',
+            'Request_Batch' => null,
+            'Duration'=>'FD'
+        ]);
+        $request2 = Requests::factory()->create([
+            'Status' => 'Approved',
+            'Approver_ID' => 130002,
+            'Request_ID' => 16,
+            'Date_Requested' => '2024-09-27',
+            'Request_Batch' => null,
+            'Duration'=>'FD'
+        ]);
+        $request3 = Requests::factory()->create([
+            'Status' => 'Approved',
+            'Approver_ID' => 160008,
+            'Request_ID' => 17,
+            'Date_Requested' => '2024-09-27',
+            'Request_Batch' => null,
+            'Duration'=>'FD'
+        ]);
+        $request4 = Requests::factory()->create([
+            'Status' => 'Approved',
+            'Approver_ID' => 170166,
+            'Request_ID' => 18,
+            'Date_Requested' => '2024-09-27',
+            'Request_Batch' => null,
+            'Duration'=>'FD'
+        ]);
+        $request5 = Requests::factory()->create([
+            'Status' => 'Pending',
+            'Approver_ID' => 210001,
+            'Request_ID' => 19,
+            'Date_Requested' => '2024-09-27',
+            'Request_Batch' => null,
+            'Duration'=>'FD'
+        ]);
+
+        $payload = [
+            "Request_ID" => 19,
+            "Approver_ID" => 151408,
+            "Status" => "Approved",
+            "Date_Requested" => '2024-27-09',
+            "Request_Batch" => null,
+            "Duration" => 'FD',
+        ];
+    
+        // Send a GET request to a valid request
+        $response = $this->postJson('/api/approveRequest', $payload);
+
+        // Assert that the response status is 400 (Bad Request) 
+        $response->assertStatus(400);
+    }
+
+    /**
+     * Test if the API returns a 400 for not trying to approve
+     * 
+     * #[Depends('test_database_is_test_db')]
+     */
+    public function test_approve_request_wrong_approver_id(): void
+    {
+        $request = Requests::factory()->create([
+            'Status' => 'Pending',
+            'Approver_ID' => 140001,
+            'Request_ID' => 15,
+            'Date_Requested' => '2024-09-27',
+            'Request_Batch' => null,
+            'Duration'=>'FD'
+        ]);
+
+        $payload = [
+            "Request_ID" => 15,
+            "Approver_ID" => 151408,
+            "Status" => "Approved",
+            "Date_Requested" => '2024-27-09',
+            "Request_Batch" => null,
+            "Duration" => 'FD',
+        ];
+    
+        // Send a GET request to a valid request
+        $response = $this->postJson('/api/approveRequest', $payload);
+
+        // Assert that the response status is 400 (Bad Request) 
         $response->assertStatus(400);
     }
 }
