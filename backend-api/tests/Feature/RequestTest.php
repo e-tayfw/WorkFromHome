@@ -641,4 +641,138 @@ class RequestTest extends TestCase
             'Status' => "Rejected"
         ]);
     }
+
+    /**
+     * Test if the API returns a 400 for not trying to approve
+     * 
+     * #[Depends('test_database_is_test_db')]
+     */
+    public function test_withdraw_request_reject_success(): void
+    {
+        $request = Requests::factory()->create([
+            'Status' => 'Withdraw Pending',
+            'Approver_ID' => 151408,
+            'Request_ID' => 15,
+            'Date_Requested' => '2024-09-27',
+            'Request_Batch' => null,
+            'Duration'=>'FD'
+        ]);
+
+        $payload = [
+            "Request_ID" => 15,
+            "Approver_ID" => 151408,
+            "Status" => "Withdraw Rejected",
+            "Date_Requested" => '2024-09-27',
+            "Request_Batch" => null,
+            "Duration" => 'FD',
+            "Reason" => 'xxx'
+        ];
+
+        $response = $this->postJson('/api/rejectRequest', $payload);
+
+        $response->assertStatus(200);
+
+        $this->assertDatabaseHas('Request', [
+            'Request_ID' => 15,
+            'Status' => "Withdraw Rejected"
+        ]);
+    }
+
+    /**
+     * Test if the API returns a 400 for not trying to approve
+     * 
+     * #[Depends('test_database_is_test_db')]
+     */
+    public function test_withdraw_request_approve_success(): void
+    {
+        $request = Requests::factory()->create([
+            'Status' => 'Withdraw Pending',
+            'Approver_ID' => 151408,
+            'Request_ID' => 15,
+            'Date_Requested' => '2024-09-27',
+            'Request_Batch' => null,
+            'Duration'=>'FD'
+        ]);
+
+        $payload = [
+            "Request_ID" => 15,
+            "Approver_ID" => 151408,
+            "Status" => "Withdrawn",
+            "Date_Requested" => '2024-09-27',
+            "Request_Batch" => null,
+            "Duration" => 'FD',
+            "Reason" => 'xxx'
+        ];
+
+        $response = $this->postJson('/api/approveRequest', $payload);
+
+        $response->assertStatus(200);
+
+        $this->assertDatabaseHas('Request', [
+            'Request_ID' => 15,
+            'Status' => "Withdrawn"
+        ]);
+    }
+
+    /**
+     * Test if the API returns a 400 for not trying to approve
+     * 
+     * #[Depends('test_database_is_test_db')]
+     */
+    public function test_withdraw_request_reject_inncorect_state_change(): void
+    {
+        $request = Requests::factory()->create([
+            'Status' => 'Withdraw Pending',
+            'Approver_ID' => 151408,
+            'Request_ID' => 15,
+            'Date_Requested' => '2024-09-27',
+            'Request_Batch' => null,
+            'Duration'=>'FD'
+        ]);
+
+        $payload = [
+            "Request_ID" => 15,
+            "Approver_ID" => 151408,
+            "Status" => "Rejected",
+            "Date_Requested" => '2024-09-27',
+            "Request_Batch" => null,
+            "Duration" => 'FD',
+            "Reason" => 'xxx'
+        ];
+
+        $response = $this->postJson('/api/rejectRequest', $payload);
+
+        $response->assertStatus(400);
+    }
+
+    /**
+     * Test if the API returns a 400 for not trying to approve
+     * 
+     * #[Depends('test_database_is_test_db')]
+     */
+    public function test_withdraw_request_approve_incorrect_state_change(): void
+    {
+        $request = Requests::factory()->create([
+            'Status' => 'Withdraw Pending',
+            'Approver_ID' => 151408,
+            'Request_ID' => 15,
+            'Date_Requested' => '2024-09-27',
+            'Request_Batch' => null,
+            'Duration'=>'FD'
+        ]);
+
+        $payload = [
+            "Request_ID" => 15,
+            "Approver_ID" => 151408,
+            "Status" => "Approved",
+            "Date_Requested" => '2024-09-27',
+            "Request_Batch" => null,
+            "Duration" => 'FD',
+            "Reason" => 'xxx'
+        ];
+
+        $response = $this->postJson('/api/approveRequest', $payload);
+
+        $response->assertStatus(400);
+    }
 }

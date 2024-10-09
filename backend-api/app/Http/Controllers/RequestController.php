@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Carbon\Carbon;
 use DB;
 use Log;
+use Mockery\Generator\StringManipulation\Pass\Pass;
 
 class RequestController extends Controller
 {
@@ -306,7 +307,9 @@ class RequestController extends Controller
         }
         
         // check for correct status
-        if ($status !== 'Approved') {
+        if ($status == 'Approved' || $status == 'Withdrawn') {
+            
+        } else {
             return response()->json(['message' => 'You are not trying to approve request, this endpoint was to approve requests'], 400);
         }
         
@@ -315,9 +318,28 @@ class RequestController extends Controller
             return response()->json(['message' => "Request was already Approved"], 400);
         }
 
+        // check if the requst is already approved
+        if ($requestDB->Status== "Withdrawn") {
+            return response()->json(['message' => "Request was already Withdrawn"], 400);
+        }
+
         // check if the person rejecting the request is the approver
         if ($requestDB->Approver_ID !== $approver_id) {
             return response()->json(['message' => "You are not allowed to approve this request"], 400);
+        }
+
+        if ($requestDB->Status == 'Withdraw Pending' && $status == 'Withdrawn') {
+            $newRequestLog = new RequestLog();
+            $newRequestLog->Request_ID = $requestDB->Request_ID;
+            $newRequestLog->Previous_State = $requestDB->Status;
+            $newRequestLog->New_State = $status;
+            $newRequestLog->Employee_ID = $approver_id;
+            $newRequestLog->Date = date("Y-m-d");
+            $newRequestLog->Remarks = $reason;
+            $newRequestLog->save();
+            $requestDB->Status = 'Withdrawn';
+            $requestDB->save();
+            return response()->json($requestDB, 200);
         }
 
         // check for date formatting
@@ -380,15 +402,19 @@ class RequestController extends Controller
 
         // Approve request
         // Add to request log table
-        $newRequestLog = new RequestLog();
-        $newRequestLog->Request_ID = $requestDB->Request_ID;
-        $newRequestLog->Previous_State = $requestDB->Status;
-        $newRequestLog->New_State = $status;
-        $newRequestLog->Employee_ID = $approver_id;
-        $newRequestLog->Date = date("Y-m-d");
-        $newRequestLog->Remarks = $reason;
-        $requestDB->Status = 'Approved';
-        $requestDB->save();
+        if ($status == "Approved" && $requestDB->Status == "Pending") {
+            $newRequestLog = new RequestLog();
+            $newRequestLog->Request_ID = $requestDB->Request_ID;
+            $newRequestLog->Previous_State = $requestDB->Status;
+            $newRequestLog->New_State = $status;
+            $newRequestLog->Employee_ID = $approver_id;
+            $newRequestLog->Date = date("Y-m-d");
+            $newRequestLog->Remarks = $reason;
+            $requestDB->Status = 'Approved';
+            $requestDB->save();
+        } else {
+            return response()->json(["message"=> "Unable to convert status: $requestDB->Status to $status"], 400);
+        }
 
         // Save the Request Log
         if ($newRequestLog->save()) {
@@ -411,15 +437,15 @@ class RequestController extends Controller
         $status = $request->input('Status');
         $request_batch = $request->input('Request_Batch');
         $reason = $request->input('Reason');
-        
-        error_log($reason);
 
         // Fetch employee row using staff_id
         $requestDB = Requests::where("Request_ID", $request_id)->first();
 
 
         // Checking for correct status
-        if ($status !== 'Rejected') {
+        if ($status == 'Rejected' || $status == "Withdraw Rejected") {
+            
+        } else {
             return response()->json(['message' => 'You are not trying to reject request, this endpoint was to reject requests'], 400);
         }
 
@@ -431,6 +457,11 @@ class RequestController extends Controller
         // check for reason provided
         if ($reason == "") {
             return response()->json(['message' => "Reason was not provided"], 401);
+        }
+
+        // check if the requst is already rejected
+        if ($requestDB->Status == "Withdraw Rejected") {
+            return response()->json(['message' => "Request was already Withdraw Rejected"], 400);
         }
 
         // check if the requst is already rejected
@@ -446,9 +477,15 @@ class RequestController extends Controller
         // Insert any other functional checks before rejection can be done
 
         // Change state of the ticket to rejected
-        $requestDB->Status = 'Rejected';
+        if ($requestDB->Status == 'Pending' && $status == 'Rejected') {
+            $requestDB->Status = 'Rejected';
+        } else if ($requestDB->Status=='Withdraw Pending' && $status == 'Withdraw Rejected'){
+            $requestDB->Status = 'Withdraw Rejected';
+        } else {
+            return response()->json(['message' => "A state change from $requestDB->Status to $status is not allowed"], 400);
+        }
+        
         $requestDB->save();
-        return response()->json($requestDB);
         // Add to request log table
         $newRequestLog = new RequestLog();
         $newRequestLog->Request_ID = $requestDB->Request_ID;
@@ -463,7 +500,7 @@ class RequestController extends Controller
             return response()->json($requestDB, 200);
         } else {
             // Handle error saving RequestLog
-            return response()->json(['message' => 'Failed to create Request Logs'], 500);
+            return response()->json(['message' => 'Failed to create Request Logs'], 400);
         }
     }
 }
