@@ -366,7 +366,6 @@ class RequestController extends Controller
                 }
             }
             if ($counter != 0) {
-                error_log($counter);
                 // Check for if the next person exceeds 50% violation
                 $curr = $date_dictionary[$formattedDate][$wfh_type];
                 $curr = $curr + $proportion;
@@ -412,9 +411,12 @@ class RequestController extends Controller
         $status = $request->input('Status');
         $request_batch = $request->input('Request_Batch');
         $reason = $request->input('Reason');
+        
+        error_log($reason);
 
         // Fetch employee row using staff_id
         $requestDB = Requests::where("Request_ID", $request_id)->first();
+
 
         // Checking for correct status
         if ($status !== 'Rejected') {
@@ -428,7 +430,7 @@ class RequestController extends Controller
 
         // check for reason provided
         if ($reason == "") {
-            return response()->json(['message' => "Reason was not provided"], 400);
+            return response()->json(['message' => "Reason was not provided"], 401);
         }
 
         // check if the requst is already rejected
