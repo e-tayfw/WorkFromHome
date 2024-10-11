@@ -90,77 +90,47 @@ const Apply: React.FC = () => {
         setReason("");
       }
       else if(response.data.success == false){
-        if((response.data.existing == "AM" || response.data.existing == "PM") && response.data.requested == "FD"){
-          Swal.fire({
-            title: 'Request Rejected',
-            html: `
-              <p>You can't apply for a full day request when a ${response.data.existing} request already exists</p>
-              <br>
-              <p><u><strong>Details</strong></u></p>
-              <br>
-              <div style="display: flex; justify-content: center;">
-                <div style="text-align: left; display: inline-block;">
-                  <p>Date: ${response.data.date}</p>
-                  <p>Existing Arrangement: ${response.data.existing === "FD" ? "Work-From-Home (Full Day)" : 
-                                    response.data.existing === "AM" ? "Work-From-Home (AM)" : "Work-From-Home (PM)"}</p>
-                  <p>Requested Arrangement: ${response.data.requested === "FD" ? "Work-From-Home (Full Day)" : 
-                                    response.data.requested === "AM" ? "Work-From-Home (AM)" : "Work-From-Home (PM)"}</p>                                    
-                </div>
-              </div>
-            `,
-            icon: 'error',
-            confirmButtonText: 'OK'
-          });
-          setPreferredArrangement("");          
-        }
-        else if (response.data.existing == "FD" && response.data.requested != "FD"){
-          Swal.fire({
-            title: 'Request Rejected',
-            html: `
-              <p>You have already made a request for a Full Day WFH on ${response.data.date}</p>
-              <br>
-              <p><u><strong>Details</strong></u></p>
-              <br>
-              <div style="display: flex; justify-content: center;">
-                <div style="text-align: left; display: inline-block;">
-                  <p>Date: ${response.data.date}</p>
-                  <p>Existing Arrangement: ${response.data.existing === "FD" ? "Work-From-Home (Full Day)" : 
-                                    response.data.existing === "AM" ? "Work-From-Home (AM)" : "Work-From-Home (PM)"}</p>
-                  <p>Requested Arrangement: ${response.data.requested === "FD" ? "Work-From-Home (Full Day)" : 
-                                    response.data.requested === "AM" ? "Work-From-Home (AM)" : "Work-From-Home (PM)"}</p>                                    
-                </div>
-              </div>
-            `,
-            icon: 'error',
-            confirmButtonText: 'OK'
-          });
-          setPreferredArrangement("");
+        
+        let title = 'Request Rejected';
+        let message = '';
+        let resetDate = false;
+
+        if ((response.data.existing === "AM" || response.data.existing === "PM") && response.data.requested === "FD") {
+          message = `You can't apply for a full day request when a same-day request already exists`;
+
+        } else if (response.data.existing === "FD" && response.data.requested !== "FD") {
+          message = `You have already made a request for a Full Day WFH on ${response.data.date}`;
+
+        } else {
+          message = `You already have a request for the same WFH arrangement on ${response.data.date}`;
+          resetDate = true;
         }
 
-        else{
-          Swal.fire({
-            title: 'Request Rejected',
-            html: `
-              <p>You already have a request for the same WFH arrangement on ${response.data.date}</p>
-              <br>
-              <p><u><strong>Details</strong></u></p>
-              <br>
-              <div style="display: flex; justify-content: center;">
-                <div style="text-align: left; display: inline-block;">
-                  <p>Date: ${response.data.date}</p>
-                  <p>Existing Arrangement: ${response.data.existing === "FD" ? "Work-From-Home (Full Day)" : 
-                                    response.data.existing === "AM" ? "Work-From-Home (AM)" : "Work-From-Home (PM)"}</p>
-                  <p>Requested Arrangement: ${response.data.requested === "FD" ? "Work-From-Home (Full Day)" : 
-                                    response.data.requested === "AM" ? "Work-From-Home (AM)" : "Work-From-Home (PM)"}</p>                                    
-                </div>
+        Swal.fire({
+          title: title,
+          html: `
+            <p>${message}</p>
+            <br>
+            <p><u><strong>Details</strong></u></p>
+            <br>
+            <div style="display: flex; justify-content: center;">
+              <div style="text-align: left; display: inline-block;">
+                <p>Date: ${response.data.date}</p>
+                <p>Existing Arrangement: ${response.data.existing === "FD" ? "Work-From-Home (Full Day)" : 
+                                  response.data.existing === "AM" ? "Work-From-Home (AM)" : "Work-From-Home (PM)"}</p>
+                <p>Requested Arrangement: ${response.data.requested === "FD" ? "Work-From-Home (Full Day)" : 
+                                  response.data.requested === "AM" ? "Work-From-Home (AM)" : "Work-From-Home (PM)"}</p>                                   
               </div>
-            `,
-            icon: 'error',
-            confirmButtonText: 'OK'
-          });
-          
+            </div>
+          `,
+          icon: 'error',
+          confirmButtonText: 'OK'
+        });
+      
+        setPreferredArrangement("");
+
+        if (resetDate) {
           setSelectedDate("");
-          setPreferredArrangement("");
           setReason("");
         }
       }

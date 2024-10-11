@@ -57,42 +57,30 @@ class RequestController extends Controller
                 ['Date_Requested', '=', $selectedDate]
             ])->first();
 
+
             if ($existingRequest) {
                 // Get existing arrangement from existing request
                 $existingArrangement = $existingRequest->Duration;
+                $message = '';
 
-                // Reject duplicate arrangement requests 
-                if(($existingArrangement == $arrangement)){
+                if ($existingArrangement == $arrangement) {
+                    $message = 'Duplicate requests cannot be made';
+                } elseif ($existingArrangement == "FD" && $arrangement != "FD") {
+                    $message = 'Conflict with existing full day request';
+                } elseif (($existingArrangement == "AM" || $existingArrangement == "PM") && $arrangement == "FD") {
+                    $message = 'Full day being requested when a half day arrangement already exists';
+                }
+
+                if ($message) {
                     return response()->json([
-                        'message' =>'Duplicate requests cannot be made',
+                        'message' => $message,
                         'existing' => $existingArrangement,
                         'requested' => $arrangement,
                         'date' => $selectedDate,
                         'success' => false
                     ]);
                 }
-
-                // Reject if a FD WFH already exists
-                elseif($existingArrangement == "FD" && ($arrangement != "FD")){
-                    return response()->json([
-                        'message' => 'Conflict with existing full day request',
-                        'existing' => $existingArrangement,
-                        'requested' => $arrangement,
-                        'date' => $selectedDate,
-                        'success' => false,
-                    ]);
-                }
-
-                // Reject if AM or PM exists but an FD is being requested
-                elseif(($existingArrangement == "AM" || $existingArrangement == "PM") && ($arrangement == "FD")){
-                    return response()->json([
-                        'message' => 'Full day being requested when a half day arrangement already exists',
-                        'existing' => $existingArrangement,
-                        'requested' => $arrangement,
-                        'date' => $selectedDate,
-                        'success' => false,
-                    ]);                    
-                }
+                
             }
 
             $reportingManager = $employee->Reporting_Manager;

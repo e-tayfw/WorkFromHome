@@ -3,6 +3,7 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { Provider } from 'react-redux';
 import configureStore from 'redux-mock-store';
 import { Apply } from '@/components/apply';
+import axios from 'axios';
 import '@testing-library/jest-dom';
 
 // Mock the imported components
@@ -35,6 +36,7 @@ jest.mock('@/components/apply/submit', () => ({
   ),
 }));
 
+
 // Mock the redux store
 const mockStore = configureStore([]);
 const store = mockStore({
@@ -44,7 +46,19 @@ const store = mockStore({
 });
 
 describe('Apply Component', () => {
-  it('Enables submit button when all fields are filled', () => {
+  it('shows all form fields', () => {
+    render(
+      <Provider store={store}>
+        <Apply />
+      </Provider>
+    );
+    expect(screen.getByTestId('date-input')).toBeInTheDocument();
+    expect(screen.getByTestId('arrangement-select')).toBeInTheDocument();
+    expect(screen.getByTestId('reason-input')).toBeInTheDocument();
+    expect(screen.getByTestId('submit-button')).toBeInTheDocument();
+  });
+
+  it('enables submit button when all fields are filled', () => {
     render(
       <Provider store={store}>
         <Apply />
@@ -67,7 +81,7 @@ describe('Apply Component', () => {
     expect(screen.getByTestId('submit-button')).toBeEnabled();
   });
 
-  it('Keeps submit button disabled when not all fields are filled', () => {
+  it('keeps submit button disabled when not all fields are filled', () => {
     render(
       <Provider store={store}>
         <Apply />
@@ -92,6 +106,7 @@ describe('Apply Component', () => {
     // Submit button should still be disabled
     expect(screen.getByTestId('submit-button')).toBeDisabled();
   });
+
 
   
 });
