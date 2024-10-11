@@ -24,11 +24,10 @@
     }
   },
   "include": [
-    "next-env.d.ts",
-    "**/*.ts",
-    "**/*.tsx"
+    "**/*.tsx",
+    "src/**/*"
   ],
   "exclude": [
-    "node_modules", "backend-api"
+    "node_modules", "backend-api", "tests"
   ]
 }

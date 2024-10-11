@@ -16,6 +16,11 @@ const config = {
   moduleNameMapper: pathsToModuleNameMapper(compilerOptions.paths, {
     prefix: "<rootDir>/",
   }),
+  globals: {
+    "ts-jest": {
+      tsconfig: "tsconfig.jest.json",
+    },
+  },
 };
 // module.exports = {
 //   preset: "ts-jest", // Use ts-jest to work with TypeScript
