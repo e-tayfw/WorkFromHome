@@ -8,12 +8,29 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useSelector } from "react-redux";
 
+interface Request {
+  requestId: number;
+  requestorId: number;
+  approverId: number;
+  status: string;
+  dateRequested: string;
+  requestBatch: string;
+  dateOfRequest: string;
+  duration: string;
+}
+
+interface Employee {
+  Staff_ID: number;
+  Staff_FName: string;
+  Staff_LName: string;
+}
+
 interface ApproveTableProps {
-  employees: Array<{ Staff_ID: number; Staff_FName: string; Staff_LName: string }>;
+  employees: Employee[];
 }
 
 const ApproveTable: React.FC<ApproveTableProps> = ({ employees }) => {
-  const [requests, setRequests] = useState([]);
+  const [requests, setRequests] = useState<Request[]>([]);
   const [expandedStaff, setExpandedStaff] = useState<number[]>([]); // Track expanded staff tables
   const [sortConfig, setSortConfig] = useState<{ key: keyof Request; direction: string } | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
@@ -28,7 +45,7 @@ const ApproveTable: React.FC<ApproveTableProps> = ({ employees }) => {
     try {
       const requestRes = await axios.get(`http://127.0.0.1:8085/api/request/approverID/${staffId}`);
 
-      const mappedRequests = requestRes.data.map((item: any) => ({
+      const mappedRequests: Request[] = requestRes.data.map((item: any) => ({
         requestId: item.Request_ID,
         requestorId: item.Requestor_ID,
         approverId: item.Approver_ID,
