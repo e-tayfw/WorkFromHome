@@ -1,38 +1,50 @@
 import { useState, useEffect } from "react";
-import { Display, BodyLarge, H1 } from "@/components/TextStyles"; // Importing custom text styles
+import { Display, BodyLarge, H1 } from "@/components/TextStyles";
 import ApproveTable from "@/components/approve/table";
-import CalendarView from "@/components/approve/calendar"; // Import the CalendarView
+import CalendarView from "@/components/approve/calendar";
 import axios from "axios";
 import { useSelector } from "react-redux";
 import { ToastContainer, toast } from "react-toastify";
+import 'react-toastify/dist/ReactToastify.css';
 
 const Approve = () => {
-  const [viewMode, setViewMode] = useState<"table" | "calendar">("table"); // State to toggle between views
-  const [noReportsMessage, setNoReportsMessage] = useState<string | null>(null); // Message for no reports
-  const staffId = useSelector((state: any) => state.auth.staffId); // Get staffId from Redux store
+  const [viewMode, setViewMode] = useState<"table" | "calendar">("table");
+  const [noReportsMessage, setNoReportsMessage] = useState<string | null>(null);
+  const [employees, setEmployees] = useState([]); // State to hold employee data
+  const staffId = useSelector((state: any) => state.auth.staffId);
+  const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
+    // Ensure ToastContainer is only rendered on the client side
+    setIsClient(true);
+    
     // Fetch the message from the API based on staffId
-    const fetchReportMessage = async () => {
+    const fetchReportData = async () => {
       try {
         const response = await axios.get(`http://127.0.0.1:8085/api/employee/team/manager/${staffId}`);
-        
+
         const message = response.data.message;
-        
-        // Check if the message indicates no employees reporting to the person
+
+        // Set employees and noReportsMessage based on the response
         if (message === "No employee reports to this person") {
           setNoReportsMessage("You have no direct Reports");
+        } else {
+          const mappedEmployees = response.data.employees.map((emp: any) => ({
+            Staff_ID: emp.Staff_ID,
+            Staff_FName: emp.Staff_FName,
+            Staff_LName: emp.Staff_LName
+          }));
+          setEmployees(mappedEmployees);
         }
       } catch (error) {
-        console.error("Error fetching report message:", error);
-        toast.error("Failed to fetch report message.");
+        console.error("Error fetching report data:", error);
+        toast.error("Failed to fetch report data.");
       }
     };
 
-    fetchReportMessage();
+    fetchReportData();
   }, [staffId]);
 
-  // If the message indicates no reports, display it using the H1 component
   if (noReportsMessage) {
     return (
       <div data-testid="approve-component" className="flex flex-col items-start">
@@ -55,10 +67,11 @@ const Approve = () => {
     );
   }
 
-  // If there are direct reports, show the toggle buttons and views
   return (
     <div data-testid="approve-component" className="flex flex-col items-start">
-      <ToastContainer position="top-right" autoClose={5000} hideProgressBar={false} newestOnTop closeOnClick />
+      {/* Conditionally render ToastContainer only on the client */}
+      {isClient && <ToastContainer position="top-right" autoClose={5000} hideProgressBar={false} newestOnTop closeOnClick />}
+      
       <div className="flex flex-row relative mt-20 lg:mt-0 max-h-[500px]">
         <div className="px-[16px] lg:px-[128px]">
           <div className="py-[10px] lg:py-[60px]">
@@ -91,7 +104,11 @@ const Approve = () => {
         </div>
 
         {/* Conditionally render either the table or calendar view */}
-        {viewMode === "table" ? <ApproveTable /> : <CalendarView />}
+        {viewMode === "table" ? (
+          <ApproveTable employees={employees} />
+        ) : (
+          <CalendarView />
+        )}
       </div>
     </div>
   );

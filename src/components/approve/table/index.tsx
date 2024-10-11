@@ -1,62 +1,73 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import axios from 'axios';
-import { useSelector } from 'react-redux';
 import ApproveEntry from '@/components/approve/entry';
 import { H1, BodyLarge } from '@/components/TextStyles';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSort, faSortUp, faSortDown, faChevronDown, faChevronRight } from '@fortawesome/free-solid-svg-icons';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { useSelector } from "react-redux";
 
-const ApproveTable: React.FC = () => {
+interface ApproveTableProps {
+  employees: Array<{ Staff_ID: number; Staff_FName: string; Staff_LName: string }>;
+}
+
+const ApproveTable: React.FC<ApproveTableProps> = ({ employees }) => {
   const [requests, setRequests] = useState([]);
-  const [employees, setEmployees] = useState([]);
-  const [expandedStaff, setExpandedStaff] = useState<number[]>([]);
+  const [expandedStaff, setExpandedStaff] = useState<number[]>([]); // Track expanded staff tables
   const [sortConfig, setSortConfig] = useState<{ key: keyof Request; direction: string } | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [allDataLoaded, setAllDataLoaded] = useState<boolean>(false);
+  const [isClient, setIsClient] = useState(false); 
 
   const staffId = useSelector((state: any) => state.auth.staffId);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [requestRes, employeeRes] = await Promise.all([
-          axios.get(`http://127.0.0.1:8085/api/request/approverID/${staffId}`),
-          axios.get(`http://127.0.0.1:8085/api/employee/team/manager/${staffId}`)
-        ]);
+  // Define fetchRequests to refresh data and collapse expanded tables
+  const fetchRequests = async () => {
+    try {
+      const requestRes = await axios.get(`http://127.0.0.1:8085/api/request/approverID/${staffId}`);
 
-        const mappedRequests = requestRes.data.map((item: any) => ({
-          requestId: item.Request_ID,
-          requestorId: item.Requestor_ID,
-          approverId: item.Approver_ID,
-          status: item.Status,
-          dateRequested: item.Date_Requested,
-          requestBatch: item.Request_Batch,
-          dateOfRequest: new Date(item.created_at).toISOString().split('T')[0],
-          duration: item.Duration
-        }));
+      const mappedRequests = requestRes.data.map((item: any) => ({
+        requestId: item.Request_ID,
+        requestorId: item.Requestor_ID,
+        approverId: item.Approver_ID,
+        status: item.Status,
+        dateRequested: item.Date_Requested,
+        requestBatch: item.Request_Batch,
+        dateOfRequest: new Date(item.created_at).toISOString().split('T')[0],
+        duration: item.Duration
+      }));
 
-        const mappedEmployees = employeeRes.data.employees.map((emp: any) => ({
-          Staff_ID: emp.Staff_ID,
-          Staff_FName: emp.Staff_FName,
-          Staff_LName: emp.Staff_LName
-        }));
+      setRequests(mappedRequests);
+      setLoading(false);
 
-        setRequests(mappedRequests);
-        setEmployees(mappedEmployees);
-        setLoading(false);
-        toast.success('Data loaded successfully');
-      } catch (err) {
-        console.error('Error fetching approval data:', err);
-        setError('Failed to load approval data');
-        setLoading(false);
-        toast.error('Failed to load approvals, please try again!');
+      // If employees are also loaded, show the success toast
+      if (employees.length > 0) {
+        setAllDataLoaded(true);
       }
-    };
 
-    fetchData();
-  }, [staffId]);
+      // Collapse all expanded sections after refresh
+      setExpandedStaff([]);
+      
+    } catch (err) {
+      console.error('Error fetching approval data:', err);
+      setError('Failed to load approval data');
+      setLoading(false);
+      toast.error('Failed to load approvals, please try again!');
+    }
+  };
+
+  useEffect(() => {
+    setIsClient(true);
+    fetchRequests();
+  }, [staffId, employees]);
+
+  useEffect(() => {
+    if (allDataLoaded) {
+      toast.success('All data loaded successfully');
+    }
+  }, [allDataLoaded]);
 
   const sortedRequests = useMemo(() => {
     let sortableRequests = [...requests];
@@ -114,8 +125,9 @@ const ApproveTable: React.FC = () => {
 
   return (
     <div className="container mx-auto p-4">
-      <ToastContainer position="top-right" autoClose={5000} hideProgressBar={false} newestOnTop closeOnClick />
-      
+      {/* Conditionally render ToastContainer only if it's client-side */}
+      {isClient && <ToastContainer position="top-right" autoClose={5000} hideProgressBar={false} newestOnTop closeOnClick />}
+
       {employees.map((employee) => {
         const employeeRequests = getEmployeeRequests(employee.Staff_ID);
         const isExpanded = expandedStaff.includes(employee.Staff_ID);
@@ -170,7 +182,7 @@ const ApproveTable: React.FC = () => {
                         dateOfRequest={request.dateOfRequest}
                         duration={request.duration}
                         teamSize={employees.length}
-                        onRefreshRequests={() => fetchData()} // Call fetchData to refresh the data
+                        onRefreshRequests={fetchRequests} // Pass fetchRequests to ApproveEntry
                       />
                     ))}
                   </tbody>

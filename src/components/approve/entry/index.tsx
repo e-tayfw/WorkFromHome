@@ -115,18 +115,11 @@ const ApproveEntry: React.FC<ApproveEntryProps> = ({
             requestId={requestId}
             requestorId={requestorId}
             dateRequested={dateRequested}
-            dateOfRequest={dateOfRequest}
             requestBatch={requestBatch}
             duration={duration}
             status={requestStatus}
-            onWithdraw={(id) => {
-              onRefreshRequests(); // Refresh all data after action
-            }}
-            onApprove={() => {
-              onRefreshRequests(); // Refresh all data after action
-            }}
-            onReject={() => {
-              onRefreshRequests(); // Refresh all data after action
+            onWithdraw={() => {
+              onRefreshRequests(); // Refresh all data after withdrawal
             }}
             isDisabled={willExceedProportion()}
             proportionAfterApproval={proportionAfterApproval()}

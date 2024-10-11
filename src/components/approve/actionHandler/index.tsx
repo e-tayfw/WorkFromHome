@@ -28,16 +28,17 @@ const ActionHandler: React.FC<ActionHandlerProps> = ({
   onWithdraw,
   isDisabled,
   proportionAfterApproval,
-  onRefreshRequests, // Destructure the new prop
+  onRefreshRequests,
 }) => {
   const employeeId = parseInt(useSelector((state: any) => state.auth.staffId), 10);
 
+  // Handle Approve for both regular and 'withdraw pending'
   const handleApprove = () => {
     const approvalConfirmationText =
       status.toLowerCase() === 'pending'
         ? `The proportion of staff working from home once accepted will be ${(proportionAfterApproval! * 100).toFixed(1)}%`
         : 'Do you want to approve this request?'; // Generic message for 'withdraw pending'
-  
+
     Swal.fire({
       title: 'Are you sure?',
       text: approvalConfirmationText,
@@ -53,13 +54,13 @@ const ActionHandler: React.FC<ActionHandlerProps> = ({
         const payload = {
           Request_ID: requestId,
           Approver_ID: employeeId,
-          Status: 'Approved',
+          Status: status.toLowerCase() === 'withdraw pending' ? 'Withdrawn' : 'Approved', // Set status for withdraw pending
           Date_Requested: dateRequested,
           Request_Batch: requestBatch,
           Duration: duration,
           Reason: result.value || null, // Add optional comments as Reason
         };
-  
+
         axios.post('http://127.0.0.1:8085/api/approveRequest', payload)
           .then((response) => {
             // Show success message from the response
@@ -78,9 +79,13 @@ const ActionHandler: React.FC<ActionHandlerProps> = ({
     });
   };
 
+  // Handle Reject for both regular and 'withdraw pending'
   const handleReject = () => {
+    const rejectionTitle =
+      status.toLowerCase() === 'withdraw pending' ? 'Reject Withdraw Request' : 'Please indicate a reason';
+
     Swal.fire({
-      title: 'Please indicate a reason',
+      title: rejectionTitle,
       input: 'text',
       inputPlaceholder: 'Enter your reason here...',
       showCancelButton: true,
@@ -98,7 +103,7 @@ const ActionHandler: React.FC<ActionHandlerProps> = ({
         const payload = {
           Request_ID: requestId,
           Approver_ID: employeeId,
-          Status: 'Rejected',
+          Status: status.toLowerCase() === 'withdraw pending' ? 'Withdraw Rejected' : 'Rejected', // Set status for withdraw pending
           Request_Batch: requestBatch,
           Reason: result.value,
         };
@@ -121,6 +126,7 @@ const ActionHandler: React.FC<ActionHandlerProps> = ({
     });
   };
 
+  // Handle Withdraw action
   const handleWithdraw = () => {
     onWithdraw(requestId);
     axios.post('http://127.0.0.1:8085/api/withdrawRequest', { Request_ID: requestId })
