@@ -127,4 +127,16 @@ class EmployeeController extends Controller
 
         return response()->json($result);
     }
+
+    public function getEmployeeFullNameByStaffID($staff_id)
+    {
+         $employee = Employee::where('Staff_ID', $staff_id)->first();
+
+        if ($employee) {
+            return response()->json($employee->Staff_FName . ' ' . $employee->Staff_LName);
+        } else {
+            return 'Employee not found';
+        }
+    }
+
 }
