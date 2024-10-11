@@ -1,4 +1,5 @@
 import "@/styles/globals.css";
+import 'flowbite/dist/flowbite.min.css';
 import React from "react";
 import type { AppProps } from "next/app";
 import { Provider } from 'react-redux';

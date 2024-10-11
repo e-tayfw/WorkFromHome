@@ -3,7 +3,6 @@ import React, { useState, useEffect } from "react";
 import { Body, H2, H1 } from "@/components/TextStyles";
 import { generateOwnSchedule } from "@/pages/api/scheduleApi";
 import moment from "moment";
-
 import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
 
@@ -13,7 +12,7 @@ interface ScheduleEntry {
 }
 
 interface Schedule {
-  [date: string]: number | undefined
+  [date: string]: number | undefined;
 }
 
 type ScheduleData = ScheduleEntry[]; // Array of ScheduleEntry
@@ -44,9 +43,9 @@ export const WFHCalendar: React.FC = () => {
   useEffect(() => {
     if (staffId) {
       fetchSchedule();
-      console.log(fetchSchedule())
+      console.log(fetchSchedule());
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // The effect will run only when staffId changes and is not null
 
   const getCurrentDate = () => {
@@ -243,11 +242,9 @@ export const WFHCalendar: React.FC = () => {
   };
 
   const groupScheduleByWeek = () => {
-    if (
-      !schedule || !schedule[0].schedule
-    ) {
+    if (!schedule || !schedule[0].schedule) {
       console.log("No schedule found");
-      return schedule
+      return schedule;
     }
     const weeksObj: { [key: string]: Schedule } = {};
     Object.keys(schedule[0].schedule).forEach((date: string) => {
@@ -263,9 +260,9 @@ export const WFHCalendar: React.FC = () => {
   };
 
   useEffect(() => {
-     if (schedule && schedule[0] && schedule[0].schedule) {
-       groupScheduleByWeek(); // Only call this when schedule is available
-     }
+    if (schedule && schedule[0] && schedule[0].schedule) {
+      groupScheduleByWeek(); // Only call this when schedule is available
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [schedule]);
 
@@ -468,4 +465,3 @@ export const WFHCalendar: React.FC = () => {
     </div>
   );
 };
-

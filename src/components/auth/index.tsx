@@ -23,6 +23,7 @@ export function Auth() {
     }
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const submitForm = async (_username: string, userType: string) => {
     return new Promise((resolve) => {
       setTimeout(() => {
