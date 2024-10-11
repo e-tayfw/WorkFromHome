@@ -7,6 +7,8 @@ import Swal from 'sweetalert2';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSort, faSortUp, faSortDown } from '@fortawesome/free-solid-svg-icons';
 import { RootState } from '@/redux/store';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 // Interface for request data
 interface Request {
@@ -36,20 +38,11 @@ export const RequestTable: React.FC = () => {
 
   // Function to fetch requests
   const fetchRequests = async () => {
-    Swal.fire({
-      title: 'Loading...',
-      html: 'Please wait while we fetch your requests',
-      allowOutsideClick: false,
-      didOpen: () => {
-        Swal.showLoading();
-      },
-    });
-
     try {
       if (!employeeId) {
         throw new Error("No employee ID found in session.");
       }
-
+  
       // Make Axios call using the employeeId
       const response = await axios.get(`http://127.0.0.1:8085/api/request/requestorId/${employeeId}`);
       
@@ -66,16 +59,16 @@ export const RequestTable: React.FC = () => {
       
       setRequests(mappedRequests);
       setLoading(false);
-      Swal.close();
+  
+      // Show success toast notification
+      toast.success('Requests loaded successfully!');
     } catch (err) {
       console.error('Error fetching requests:', err);
       setError('Failed to load requests');
       setLoading(false);
-      Swal.fire({
-        icon: 'error',
-        title: 'Oops...',
-        text: 'Failed to load requests, please try again!',
-      });
+  
+      // Show error toast notification
+      toast.error('Failed to load requests, please try again!');
     }
   };
 
@@ -161,6 +154,7 @@ export const RequestTable: React.FC = () => {
 
   return (
     <div className="container mx-auto p-4">
+      <ToastContainer />
       <H1 className="mb-6 text-primary">My Requests</H1>
 
       {/* Filter Dropdown */}
