@@ -6,6 +6,7 @@ import axios from 'axios';
 import Swal from 'sweetalert2';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSort, faSortUp, faSortDown } from '@fortawesome/free-solid-svg-icons';
+import { RootState } from '@/redux/store';
 
 // Interface for request data
 interface Request {
@@ -31,7 +32,7 @@ export const RequestTable: React.FC = () => {
   const [currentPage, setCurrentPage] = useState<number>(1); // For pagination
 
   // Retrieve staffId (which is employeeId) from Redux store
-  const employeeId = useSelector((state: any) => state.auth.staffId);
+  const employeeId = useSelector((state: RootState) => state.auth.staffId);
 
   // Function to fetch requests
   const fetchRequests = async () => {
@@ -90,10 +91,12 @@ export const RequestTable: React.FC = () => {
 
   // Sort requests
   const sortedRequests = useMemo(() => {
-    let sortableRequests = [...requests];
+    const sortableRequests = [...requests];
     if (sortConfig !== null) {
       sortableRequests.sort((a, b) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let aValue: any = a[sortConfig.key];
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let bValue: any = b[sortConfig.key];
 
         // Handle sorting for date fields
