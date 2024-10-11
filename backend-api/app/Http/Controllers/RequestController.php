@@ -58,11 +58,41 @@ class RequestController extends Controller
             ])->first();
 
             if ($existingRequest) {
-                return response()->json([
-                    'message' => 'A request for the same date already exists',
-                    'date' => $selectedDate,
-                    'success' => false
-                ]);
+                // Get existing arrangement from existing request
+                $existingArrangement = $existingRequest->Duration;
+
+                // Reject duplicate arrangement requests 
+                if(($existingArrangement == $arrangement)){
+                    return response()->json([
+                        'message' =>'Duplicate requests cannot be made',
+                        'existing' => $existingArrangement,
+                        'requested' => $arrangement,
+                        'date' => $selectedDate,
+                        'success' => false
+                    ]);
+                }
+
+                // Reject if a FD WFH already exists
+                elseif($existingArrangement == "FD" && ($arrangement != "FD")){
+                    return response()->json([
+                        'message' => 'Conflict with existing full day request',
+                        'existing' => $existingArrangement,
+                        'requested' => $arrangement,
+                        'date' => $selectedDate,
+                        'success' => false,
+                    ]);
+                }
+
+                // Reject if AM or PM exists but an FD is being requested
+                elseif(($existingArrangement == "AM" || $existingArrangement == "PM") && ($arrangement == "FD")){
+                    return response()->json([
+                        'message' => 'Full day being requested when a half day arrangement already exists',
+                        'existing' => $existingArrangement,
+                        'requested' => $arrangement,
+                        'date' => $selectedDate,
+                        'success' => false,
+                    ]);                    
+                }
             }
 
             $reportingManager = $employee->Reporting_Manager;
@@ -101,6 +131,7 @@ class RequestController extends Controller
                 'Request_ID' => $newRequest->Request_ID,
                 'date' => $selectedDate,
                 'arrangement' => $arrangement,
+                'reason' => $reason,
                 'reportingManager' => $reportingManager
             ]);
         } catch (ModelNotFoundException $e) {
