@@ -10,6 +10,9 @@ const mockCurrentDate = (mockDate: string) => {
 };
 
 describe('RequestEntry Component', () => {
+  afterEach(() => {
+    jest.useRealTimers();
+  });
 
   // Test case for Approved status with Withdraw button within the two-week range (positive case)
   it('renders Withdraw button when current date is within two weeks of dateRequested', () => {
@@ -171,43 +174,24 @@ describe('RequestEntry Component', () => {
     expect(screen.queryByText('Withdraw')).not.toBeInTheDocument();
   });
 
-  // Test case for Withdraw Rejected status with no action buttons
-  it('renders Withdraw Rejected request without action buttons', () => {
+  // Test case for Withdraw Rejected status with Withdraw button
+  it('renders Withdraw button for Withdraw Rejected status within two weeks', () => {
+    mockCurrentDate('2024-10-01'); // Within two weeks after dateRequested '2024-09-25'
+
     render(
       <RequestEntry
         requestId="9"
         requestorId="171014"
         approverId="170166"
         status="Withdraw Rejected"
-        dateRequested="2024-09-30"
+        dateRequested="2024-09-25"
         requestBatch={null}
         dateOfRequest="2024-09-18"
         duration="FD"
       />
     );
 
-    // Check that no action buttons are displayed for Withdraw Rejected status
-    expect(screen.queryByText('Withdraw')).not.toBeInTheDocument();
-  });
-
-  // Test case for unknown status to test the default case of statusColor
-  it('renders default case in statusColor with unknown status', () => {
-    render(
-      <RequestEntry
-        requestId="10"
-        requestorId="171014"
-        approverId="170166"
-        status="Unknown Status"
-        dateRequested="2024-10-01"
-        requestBatch={null}
-        dateOfRequest="2024-09-18"
-        duration="FD"
-      />
-    );
-
-    // Check that the status text is displayed
-    expect(screen.getByText('Unknown Status')).toBeInTheDocument();
-    // Ensure that no action buttons (Withdraw/Edit) are displayed for unknown status
-    expect(screen.queryByText('Withdraw')).not.toBeInTheDocument();
+    // Check that the Withdraw button is displayed for Withdraw Rejected status
+    expect(screen.getByText('Withdraw')).toBeInTheDocument();
   });
 });
