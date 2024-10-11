@@ -8,7 +8,7 @@ interface RequestEntryProps {
   approverId: string;
   status: string;
   dateRequested: string;
-  requestBatch: string;
+  requestBatch: string | null;
   dateOfRequest: string;
   duration: string;
   fetchRequests: () => void; // Include fetchRequests prop

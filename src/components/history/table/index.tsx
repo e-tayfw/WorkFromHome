@@ -12,9 +12,9 @@ import 'react-toastify/dist/ReactToastify.css';
 
 // Interface for request data
 interface Request {
-  requestId: number;
-  requestorId: number;
-  approverId: number;
+  requestId: string;
+  requestorId: string;
+  approverId: string;
   status: string;
   dateRequested: string;
   requestBatch: string | null;

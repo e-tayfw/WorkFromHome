@@ -4,7 +4,7 @@ import RequestEntry from '@/components/history/entry';
 import '@testing-library/jest-dom';
 
 // Mock the current date for testing boundary conditions
-const mockCurrentDate = (mockDate: string) => {
+const mockCurrentDate = (mockDate: string): void => {
   jest.useFakeTimers('modern');
   jest.setSystemTime(new Date(mockDate));
 };
@@ -77,7 +77,7 @@ describe('RequestEntry Component', () => {
   });
 
   // Test case for Approved status with no Withdraw button outside the two-week range (negative case)
-  it('does not render Withdraw button when current date is outside the two-week range', () => {
+  it('does not render Withdraw button when current date is just outside the two-week range', () => {
     mockCurrentDate('2024-10-10'); // Just outside the two-week range after dateRequested '2024-09-25'
 
     render(
@@ -97,11 +97,53 @@ describe('RequestEntry Component', () => {
     expect(screen.queryByText('Withdraw')).not.toBeInTheDocument();
   });
 
+  // Additional test case for a date much earlier than the two-week range
+  it('does not render Withdraw button when current date is well before two weeks from dateRequested', () => {
+    mockCurrentDate('2024-09-01'); // More than two weeks before dateRequested '2024-09-25'
+
+    render(
+      <RequestEntry
+        requestId="5"
+        requestorId="171014"
+        approverId="170166"
+        status="Approved"
+        dateRequested="2024-09-25"
+        requestBatch={null}
+        dateOfRequest="2024-09-18"
+        duration="FD"
+      />
+    );
+
+    // Check that the Withdraw button is not displayed
+    expect(screen.queryByText('Withdraw')).not.toBeInTheDocument();
+  });
+
+  // Additional test case for a date well beyond the two-week range
+  it('does not render Withdraw button when current date is well after two weeks from dateRequested', () => {
+    mockCurrentDate('2024-10-20'); // Well after two weeks beyond the dateRequested '2024-09-25'
+
+    render(
+      <RequestEntry
+        requestId="6"
+        requestorId="171014"
+        approverId="170166"
+        status="Approved"
+        dateRequested="2024-09-25"
+        requestBatch={null}
+        dateOfRequest="2024-09-18"
+        duration="FD"
+      />
+    );
+
+    // Check that the Withdraw button is not displayed
+    expect(screen.queryByText('Withdraw')).not.toBeInTheDocument();
+  });
+
   // Test case for Pending status with the Edit button
   it('renders Pending request with Edit button', () => {
     render(
       <RequestEntry
-        requestId="5"
+        requestId="7"
         requestorId="171014"
         approverId="170166"
         status="Pending"
@@ -120,7 +162,7 @@ describe('RequestEntry Component', () => {
   it('renders Withdrawn request without action buttons', () => {
     render(
       <RequestEntry
-        requestId="6"
+        requestId="8"
         requestorId="171014"
         approverId="170166"
         status="Withdrawn"
@@ -140,7 +182,7 @@ describe('RequestEntry Component', () => {
   it('renders Rejected request without action buttons', () => {
     render(
       <RequestEntry
-        requestId="7"
+        requestId="9"
         requestorId="171014"
         approverId="170166"
         status="Rejected"
@@ -159,7 +201,7 @@ describe('RequestEntry Component', () => {
   it('renders Withdraw Pending request without action buttons', () => {
     render(
       <RequestEntry
-        requestId="8"
+        requestId="10"
         requestorId="171014"
         approverId="170166"
         status="Withdraw Pending"
@@ -180,7 +222,7 @@ describe('RequestEntry Component', () => {
 
     render(
       <RequestEntry
-        requestId="9"
+        requestId="11"
         requestorId="171014"
         approverId="170166"
         status="Withdraw Rejected"
