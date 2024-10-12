@@ -52,36 +52,39 @@ class RequestController extends Controller
         try {
             $employee = Employee::where("Staff_ID", $staffId)->firstOrFail();
 
-            $existingRequest = Requests::where([
+            $existingRequests = Requests::where([
                 ['Requestor_ID', '=', $staffId],
                 ['Date_Requested', '=', $selectedDate]
-            ])->first();
-
-
-            if ($existingRequest) {
-                // Get existing arrangement from existing request
-                $existingArrangement = $existingRequest->Duration;
+            ])->get();
+            
+            if ($existingRequests->isNotEmpty()) {
                 $message = '';
+                $existingArrangements = $existingRequests->pluck('Duration')->toArray();
+                $two = false;
 
-                if ($existingArrangement == $arrangement) {
+                if (count($existingArrangements) === 2 && in_array('AM', $existingArrangements) && in_array('PM', $existingArrangements) && $arrangement === 'FD') {
+                    $message = 'Full day request is not needed when both AM and PM requests already exist';
+                    $two = true;
+                } elseif (in_array($arrangement, $existingArrangements)) {
                     $message = 'Duplicate requests cannot be made';
-                } elseif ($existingArrangement == "FD" && $arrangement != "FD") {
+                } elseif (in_array('FD', $existingArrangements)) {
                     $message = 'Conflict with existing full day request';
-                } elseif (($existingArrangement == "AM" || $existingArrangement == "PM") && $arrangement == "FD") {
+                } elseif ($arrangement === 'FD' && (in_array('AM', $existingArrangements) || in_array('PM', $existingArrangements))) {
                     $message = 'Full day being requested when a half day arrangement already exists';
                 }
-
+            
                 if ($message) {
                     return response()->json([
                         'message' => $message,
-                        'existing' => $existingArrangement,
+                        'existing' => implode(', ', $existingArrangements),
                         'requested' => $arrangement,
                         'date' => $selectedDate,
-                        'success' => false
+                        'success' => false,
+                        'two' => $two
                     ]);
                 }
-                
             }
+            
 
             $reportingManager = $employee->Reporting_Manager;
             if (!$reportingManager) {

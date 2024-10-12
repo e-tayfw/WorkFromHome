@@ -54,6 +54,26 @@ const Apply: React.FC = () => {
       reason: reason,
     };
 
+    // Helper function to format existing arrangements
+    const formatExistingArrangements = (existing: string) => {
+      const arrangements = existing.split(', ');
+      return arrangements.map(formatArrangement).join(', ');
+    };
+
+    // Helper function to format a single arrangement
+    const formatArrangement = (arrangement: string) => {
+      switch (arrangement) {
+        case 'FD':
+          return 'Full Day';
+        case 'AM':
+          return 'Half Day (AM)';
+        case 'PM':
+          return 'Half Day (PM)';
+        default:
+          return arrangement;
+      }
+    };
+
     try {
       const response = await axios.post("http://127.0.0.1:8085/api/request", submitData, {
         headers: {
@@ -72,8 +92,7 @@ const Apply: React.FC = () => {
             <div style="display: flex; justify-content: center;">
               <div style="text-align: left; display: inline-block;">
                 <p>Date: ${response.data.date}</p>
-                <p>Arrangement: ${response.data.arrangement === "FD" ? "Work-From-Home (Full Day)" : 
-                                  response.data.arrangement === "AM" ? "Work-From-Home (AM)" : "Work-From-Home (PM)"}</p>
+                <p>Arrangement: ${formatArrangement(response.data.requested)}</p>                                       
                 <p>Reason: ${response.data.reason}</p>
                 <p>Reporting Manager: ${response.data.reportingManager}</p>
               </div>
@@ -101,9 +120,11 @@ const Apply: React.FC = () => {
         } else if (response.data.existing === "FD" && response.data.requested !== "FD") {
           message = `You have already made a request for a Full Day WFH on ${response.data.date}`;
 
+        } else if (response.data.two == true){
+          message = "You already have an AM and PM WFH request.\nNo need to apply for a full day arrangement";
+        
         } else {
           message = `You already have a request for the same WFH arrangement on ${response.data.date}`;
-          resetDate = true;
         }
 
         Swal.fire({
@@ -116,10 +137,8 @@ const Apply: React.FC = () => {
             <div style="display: flex; justify-content: center;">
               <div style="text-align: left; display: inline-block;">
                 <p>Date: ${response.data.date}</p>
-                <p>Existing Arrangement: ${response.data.existing === "FD" ? "Work-From-Home (Full Day)" : 
-                                  response.data.existing === "AM" ? "Work-From-Home (AM)" : "Work-From-Home (PM)"}</p>
-                <p>Requested Arrangement: ${response.data.requested === "FD" ? "Work-From-Home (Full Day)" : 
-                                  response.data.requested === "AM" ? "Work-From-Home (AM)" : "Work-From-Home (PM)"}</p>                                   
+                <p>Existing Arrangement: ${formatExistingArrangements(response.data.existing)}</p>
+                <p>Requested Arrangement: ${formatArrangement(response.data.requested)}</p>                                       
               </div>
             </div>
           `,
@@ -128,11 +147,9 @@ const Apply: React.FC = () => {
         });
       
         setPreferredArrangement("");
-
-        if (resetDate) {
-          setSelectedDate("");
-          setReason("");
-        }
+        setSelectedDate("");
+        setReason("");
+        
       }
  
     } catch (error) {
