@@ -314,7 +314,7 @@ class ScheduleController extends Controller
                 $date->setTimezone('UTC');
 
                 // Format date as "ddmmyy"
-                $formattedDate = $date->format('Y-m-d H:i:s');
+                $formattedDate = $date->format('dmy');
 
                 // Check if there is an approved request for this team member on this date
                 $request = $approvedRequests->where('Requestor_ID', $member_id)
