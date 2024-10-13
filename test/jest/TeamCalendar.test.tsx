@@ -1,538 +1,442 @@
-// Mock the generateTeamSchedule Api
-jest.mock("@/pages/api/scheduleApi", () => ({
-  generateTeamSchedule: jest.fn(),
+// TeamCalendar.test.tsx
+
+import React from "react";
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { TeamCalendar } from "@/components/schedule/TeamCalendar"; // Adjust the import path as necessary
+import { useSelector } from "react-redux";
+import moment from "moment";
+
+interface Schedule {
+  [date: string]: number;
+}
+
+interface ScheduleData {
+  [userId: string]: Schedule;
+}
+
+// Mock Redux's useSelector
+jest.mock("react-redux", () => ({
+  useSelector: jest.fn(),
 }));
 
-// Mock the getEmployeeFullNameByStaffID Api
+// Mock the API calls
 jest.mock("@/pages/api/employeeApi", () => ({
   getEmployeeFullNameByStaffID: jest.fn(),
 }));
 
-/* eslint-disable testing-library/no-unnecessary-act */
-import React from "react";
-import {
-  act,
-  fireEvent,
-  render,
-  screen,
-  waitFor,
-} from "@testing-library/react";
-import "@testing-library/jest-dom";
-import { Provider } from "react-redux";
-import configureStore, { MockStoreEnhanced } from "redux-mock-store";
-import { RootState } from "@/redux/store";
-import { TeamCalendar } from "@/components/schedule/TeamCalendar";
-import moment from "moment";
-import { generateTeamSchedule } from "@/pages/api/scheduleApi";
-import { getEmployeeFullNameByStaffID } from "@/pages/api/employeeApi";
-
-// Now, import the mocked functions to set their implementations
-const mockedGenerateTeamSchedule = generateTeamSchedule as jest.MockedFunction<
-  typeof generateTeamSchedule
->;
-const mockedGetEmployeeFullNameByStaffID =
-  getEmployeeFullNameByStaffID as jest.MockedFunction<
-    typeof getEmployeeFullNameByStaffID
-  >;
-
-// Mock the store
-const mockStore = configureStore<Partial<RootState>, unknown>([]);
-
 describe("TeamCalendar", () => {
-  let store: MockStoreEnhanced<Partial<RootState>>;
-
   beforeAll(() => {
-    // Set the system time to August 8, 2024
-    jest.useFakeTimers().setSystemTime(new Date("2024-08-08"));
+    jest.useFakeTimers({ now: new Date("2023-01-01T00:00:00Z") });
+    jest.setSystemTime(new Date("2023-01-01T00:00:00Z"));
   });
 
   afterAll(() => {
-    // Restore the original timer implementation
     jest.useRealTimers();
   });
 
   beforeEach(() => {
-    // Create a mock store with initial state
-    const initialState: Partial<RootState> = {
-      auth: {
-        staffId: "123",
-        email: "test@example.com",
-        roleType: "Employee",
-      },
-    };
-
-    store = mockStore(initialState);
-
-    jest.resetAllMocks();
-
-    // Suppress console logs during tests
-    jest.spyOn(console, "log").mockImplementation(() => {});
-    jest.spyOn(console, "error").mockImplementation(() => {});
+    // Clear all mocks before each test
+    jest.clearAllMocks();
   });
 
-  afterEach(() => {
-    jest.restoreAllMocks();
-  });
+  test("renders without crashing", () => {
+    // Mock useSelector to return a staffId
+    (useSelector as unknown as jest.Mock).mockReturnValue("123");
 
-  // Helper function to format week range text
-  const getWeekRangeText = (weekMoment: moment.Moment) => {
-    const startOfWeek = weekMoment.clone().startOf("week");
-    const endOfWeek = weekMoment.clone().endOf("week");
-    return `${startOfWeek.format("DD/MM/YY")} - ${endOfWeek.format(
-      "DD/MM/YY"
-    )}`;
-  };
-
-  // Helper function to generate week dates array
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const getWeekDatesArray = (weekNumber: number) => {
-    const weekStart = moment().week(weekNumber).startOf("week");
-    const dates = [];
-    for (let i = 0; i < 7; i++) {
-      dates.push(weekStart.clone().add(i, "days"));
-    }
-    return dates;
-  };
-
-  it("should render the TeamCalendar component correctly", async () => {
-    const mockTeamScheduleData = {
-      team_schedule: {
-        "171009": {
-          "050824": 0,
-          "060824": 0,
-          "070824": 0,
-          "080824": 1,
-          "090824": 0,
-          "100824": 0,
-          "110824": 0,
-          "120824": 0,
-          "130824": 0,
-          "140824": 0,
-        },
-        "171014": {
-          "050824": 0,
-          "060824": 0,
-          "070824": 0,
-          "080824": 2,
-          "090824": 0,
-          "100824": 0,
-          "110824": 0,
-          "120824": 0,
-          "130824": 0,
-          "140824": 0,
-        },
-      },
+    // Sample selectedSchedule prop
+    const sampleSelectedSchedule: Record<string, Record<string, number>> = {
+      "1": { "010123": 1, "020123": 2 },
+      "2": { "010123": 3, "020123": 0 },
     };
 
-    // Mock the generateTeamSchedule function to resolve with mockTeamScheduleData
-    mockedGenerateTeamSchedule.mockResolvedValue(mockTeamScheduleData);
+    render(<TeamCalendar selectedSchedule={sampleSelectedSchedule} />);
 
-    // Mock getEmployeeFullNameByStaffID to return employee names
-    mockedGetEmployeeFullNameByStaffID.mockImplementation((userId: string) => {
-      const names: { [key: string]: string } = {
-        "171009": "Alice Smith",
-        "171014": "Bob Johnson",
-      };
-      return Promise.resolve(names[userId] || "Unknown User");
-    });
-
-    render(
-      <Provider store={store}>
-        <TeamCalendar />
-      </Provider>
-    );
-
-    // Verify initial elements are rendered properly
+    // Check that the component renders expected elements
     expect(screen.getByText("WFH Calendar")).toBeInTheDocument();
-    expect(
-      screen.getByRole("button", { name: /Toggle View/i })
-    ).toBeInTheDocument();
-
-    // Wait for schedule to be fetched
-    await waitFor(() => {
-      expect(mockedGenerateTeamSchedule).toHaveBeenCalledWith(123);
-    });
+    expect(screen.getByText("Toggle View")).toBeInTheDocument();
   });
 
-  // Toggle between day and week views and check for correct display
-  it("should toggle between day and week views", async () => {
-    const mockTeamScheduleData = {
-      team_schedule: {
-        "171009": {
-          "080824": 1,
-        },
-        "171014": {
-          "080824": 2,
-        },
+  test("toggles between day and week view", () => {
+    (useSelector as unknown as jest.Mock).mockReturnValue("123");
+    const sampleSelectedSchedule: ScheduleData = {
+      "1": { "010123": 1 },
+    };
+
+    render(<TeamCalendar selectedSchedule={sampleSelectedSchedule} />);
+
+    // Initially, should be in day view
+    expect(screen.getByText("Prev Day")).toBeInTheDocument();
+
+    // Click on Toggle View
+    fireEvent.click(screen.getByText("Toggle View"));
+
+    // Now, should be in week view
+    expect(screen.getByText("Prev Week")).toBeInTheDocument();
+
+    // Click again to toggle back
+    fireEvent.click(screen.getByText("Toggle View"));
+
+    // Should be back in day view
+    expect(screen.getByText("Prev Day")).toBeInTheDocument();
+  });
+
+  test("handles next day navigation", () => {
+    (useSelector as unknown as jest.Mock).mockReturnValue("123");
+
+    const sampleSelectedSchedule: Record<string, Record<string, number>> = {
+      "1": {
+        "010123": 1,
+        "020123": 2,
+        "030123": 3,
+        "040123": 0,
+        "050123": 0,
+        "060123": 0,
+        "070123": 0,
+        "080123": 1,
+      },
+    };
+    render(<TeamCalendar selectedSchedule={sampleSelectedSchedule} />);
+
+    const initialDate = moment().format("DD/MM/YY");
+    expect(screen.getByText(initialDate)).toBeInTheDocument();
+
+    // Click Next Day
+    fireEvent.click(screen.getByText("Next Day"));
+    const nextDate = moment().add(1, "days").format("DD/MM/YY");
+    expect(screen.getByText(nextDate)).toBeInTheDocument();
+  });
+
+  test("handles previous day navigation", () => {
+    (useSelector as unknown as jest.Mock).mockReturnValue("123");
+    const sampleSelectedSchedule: Record<string, Record<string, number>> = {
+      "1": {
+        "251222": 1,
+        "261222": 0,
+        "271222": 0,
+        "281222": 0,
+        "291222": 0,
+        "301222": 0,
+        "311222": 0,
+        "010123": 1,
+      },
+    };
+    render(<TeamCalendar selectedSchedule={sampleSelectedSchedule} />);
+    const initialDate = moment().format("DD/MM/YY");
+    // Click Prev Day twice
+    fireEvent.click(screen.getByText("Prev Day"));
+    const prevDate = moment().subtract(1, "days").format("DD/MM/YY");
+    expect(screen.getByText(prevDate)).toBeInTheDocument();
+  });
+
+  test("handles next week navigation", async () => {
+    (useSelector as unknown as jest.Mock).mockReturnValue("123");
+    const sampleSelectedSchedule = {
+      "1": { "010123": 1, "080123": 1, "150123": 1 }, // Include valid dates for navigation
+    };
+
+    render(<TeamCalendar selectedSchedule={sampleSelectedSchedule} />);
+
+    // Toggle to week view
+    fireEvent.click(screen.getByText("Toggle View"));
+
+    const currentWeekNumber = moment().week();
+    const weekStart = moment()
+      .week(currentWeekNumber)
+      .startOf("week")
+      .format("DD/MM/YY");
+    const weekEnd = moment()
+      .week(currentWeekNumber)
+      .endOf("week")
+      .format("DD/MM/YY");
+
+    // Wait for the current week's date range to appear
+    await waitFor(() =>
+      expect(screen.getByText(`${weekStart} - ${weekEnd}`)).toBeInTheDocument()
+    );
+
+    // Navigate to next week
+    fireEvent.click(screen.getByText("Next Week"));
+
+    const nextWeekNumber = currentWeekNumber + 1;
+    const nextWeekStart = moment()
+      .week(nextWeekNumber)
+      .startOf("week")
+      .format("DD/MM/YY");
+    const nextWeekEnd = moment()
+      .week(nextWeekNumber)
+      .endOf("week")
+      .format("DD/MM/YY");
+    console.log(nextWeekStart, nextWeekEnd);
+    // Wait for the next week's date range to appear
+    await waitFor(() =>
+      expect(
+        screen.getByText(`${nextWeekStart} - ${nextWeekEnd}`)
+      ).toBeInTheDocument()
+    );
+  });
+
+  test("handles previous week navigation", async () => {
+    (useSelector as unknown as jest.Mock).mockReturnValue("123");
+    const sampleSelectedSchedule = {
+      "1": { "251222": 1, "010123": 1, "080123": 1, "150123": 1 }, // Include valid dates for navigation
+    };
+
+    render(<TeamCalendar selectedSchedule={sampleSelectedSchedule} />);
+
+    // Toggle to week view
+    fireEvent.click(screen.getByText("Toggle View"));
+
+    const currentWeekNumber = moment().week();
+    const weekStart = moment()
+      .week(currentWeekNumber)
+      .startOf("week")
+      .format("DD/MM/YY");
+    const weekEnd = moment()
+      .week(currentWeekNumber)
+      .endOf("week")
+      .format("DD/MM/YY");
+
+    // Wait for the current week's date range to appear
+    await waitFor(() =>
+      expect(screen.getByText(`${weekStart} - ${weekEnd}`)).toBeInTheDocument()
+    );
+
+    // Navigate to previous week
+    fireEvent.click(screen.getByText("Prev Week"));
+
+    const prevWeekNumber = currentWeekNumber - 1;
+    const prevWeekStart = moment()
+      .week(prevWeekNumber)
+      .startOf("week")
+      .format("DD/MM/YY");
+    const prevWeekEnd = moment()
+      .week(prevWeekNumber)
+      .endOf("week")
+      .format("DD/MM/YY");
+
+    // Wait for the previous week's date range to appear
+    await waitFor(() =>
+      expect(
+        screen.getByText(`${prevWeekStart} - ${prevWeekEnd}`)
+      ).toBeInTheDocument()
+    );
+  });
+
+  test("disables next button appropriately", () => {
+    (useSelector as unknown as jest.Mock).mockReturnValue("123");
+
+    const today = moment().format("DDMMYY");
+    const tomorrow = moment().add(1, "days").format("DDMMYY");
+    const yesterday = moment().subtract(1, "days").format("DDMMYY");
+
+    const sampleSelectedSchedule = {
+      "1": {
+        [yesterday]: 0,
+        [today]: 1,
+        [tomorrow]: 2,
       },
     };
 
-    mockedGenerateTeamSchedule.mockResolvedValue(mockTeamScheduleData);
-    mockedGetEmployeeFullNameByStaffID.mockImplementation((userId: string) => {
-      const names: { [key: string]: string } = {
-        "171009": "Alice Smith",
-        "171014": "Bob Johnson",
-      };
-      return Promise.resolve(names[userId] || "Unknown User");
-    });
+    render(<TeamCalendar selectedSchedule={sampleSelectedSchedule} />);
 
-    render(
-      <Provider store={store}>
-        <TeamCalendar />
-      </Provider>
-    );
+    const prevDayButton = screen.getByText("Prev Day");
+    const nextDayButton = screen.getByText("Next Day");
+    fireEvent.click(nextDayButton);
 
-    // Wait for schedule to be fetched
-    await waitFor(() => {
-      expect(mockedGenerateTeamSchedule).toHaveBeenCalledWith(123);
-    });
-
-    const toggleButton = screen.getByRole("button", { name: /Toggle View/i });
-
-    // Click to switch to week view
-    await act(async () => {
-      fireEvent.click(toggleButton);
-    });
-
-    // Check for week range text
-    const currentWeek = moment().week();
-    const weekRange = getWeekRangeText(moment().week(currentWeek));
-    await waitFor(() => {
-      expect(screen.getByText(weekRange)).toBeInTheDocument();
-    });
-
-    // Click to switch back to day view
-    await act(async () => {
-      fireEvent.click(toggleButton);
-    });
-
-    // Check for day view date
-    const currentDate = moment().format("DD/MM/YY");
-    await waitFor(() => {
-      expect(screen.getByText(currentDate)).toBeInTheDocument();
-    });
+    // Next Day should be enabled
+    expect(nextDayButton).toBeDisabled();
   });
 
-  // Handle day navigation
-  it("should handle next and previous day navigation", async () => {
-    const mockTeamScheduleData = {
-      team_schedule: {
-        "171009": {
-          "080824": 1,
-          "090824": 2,
-        },
-        "171014": {
-          "080824": 3,
-        },
+  test("disables prev button appropriately", () => {
+    (useSelector as unknown as jest.Mock).mockReturnValue("123");
+
+    const today = moment().format("DDMMYY");
+    const tomorrow = moment().add(1, "days").format("DDMMYY");
+    const yesterday = moment().subtract(1, "days").format("DDMMYY");
+
+    const sampleSelectedSchedule = {
+      "1": {
+        [yesterday]: 0,
+        [today]: 1,
+        [tomorrow]: 2,
       },
     };
 
-    mockedGenerateTeamSchedule.mockResolvedValue(mockTeamScheduleData);
-    mockedGetEmployeeFullNameByStaffID.mockImplementation((userId: string) => {
-      const names: { [key: string]: string } = {
-        "171009": "Alice Smith",
-        "171014": "Bob Johnson",
-      };
-      return Promise.resolve(names[userId] || "Unknown User");
-    });
+    render(<TeamCalendar selectedSchedule={sampleSelectedSchedule} />);
 
-    render(
-      <Provider store={store}>
-        <TeamCalendar />
-      </Provider>
-    );
+    const prevDayButton = screen.getByText("Prev Day");
+    const nextDayButton = screen.getByText("Next Day");
 
-    await waitFor(() => {
-      expect(mockedGenerateTeamSchedule).toHaveBeenCalledWith(123);
-    });
+    fireEvent.click(prevDayButton);
 
-    const nextButton = screen.getByRole("button", { name: /Next Day/i });
-    const prevButton = screen.getByRole("button", { name: /Prev Day/i });
-
-    expect(nextButton).toBeEnabled();
-    expect(prevButton).toBeEnabled();
-
-    // Click next day button
-    await act(async () => {
-      fireEvent.click(nextButton);
-    });
-
-    await waitFor(() => {
-      const nextDate = moment().add(1, "day").format("DD/MM/YY");
-      expect(screen.getByText(nextDate)).toBeInTheDocument();
-    });
-
-    // Click previous day button
-    await act(async () => {
-      fireEvent.click(prevButton);
-    });
-
-    await waitFor(() => {
-      const currentDate = moment().format("DD/MM/YY");
-      expect(screen.getByText(currentDate)).toBeInTheDocument();
-    });
+    expect(prevDayButton).toBeDisabled();
   });
 
-  // Handling of next and previous week navigation
-  it("should handle next and previous week navigation", async () => {
-    const mockTeamScheduleData = {
-      team_schedule: {
-        "171009": {
-          "050824": 0,
-          "060824": 0,
-          "070824": 0,
-          "080824": 1,
-          "090824": 0,
-          "100824": 0,
-          "110824": 0,
-          "120824": 0,
-          "130824": 0,
-          "140824": 0,
-        },
-        "171014": {
-          "050824": 0,
-          "060824": 0,
-          "070824": 0,
-          "080824": 2,
-          "090824": 0,
-          "100824": 0,
-          "110824": 0,
-          "120824": 0,
-          "130824": 0,
-          "140824": 0,
-        },
-      },
+  test("opens and closes the modal correctly", async () => {
+    (useSelector as unknown as jest.Mock).mockReturnValue("123");
+
+    const today = moment().format("DDMMYY");
+    const sampleSelectedSchedule = {
+      "1": { [today]: 1 },
     };
 
-    mockedGenerateTeamSchedule.mockResolvedValue(mockTeamScheduleData);
-    mockedGetEmployeeFullNameByStaffID.mockImplementation((userId: string) => {
-      const names: { [key: string]: string } = {
-        "171009": "Alice Smith",
-        "171014": "Bob Johnson",
-      };
-      return Promise.resolve(names[userId] || "Unknown User");
-    });
+    render(<TeamCalendar selectedSchedule={sampleSelectedSchedule} />);
 
-    render(
-      <Provider store={store}>
-        <TeamCalendar />
-      </Provider>
+    const eyeIcon = screen.getByTestId(
+      `eye-icon-${moment().format("YYYY-MM-DD")}`
     );
 
-    await waitFor(() => {
-      expect(mockedGenerateTeamSchedule).toHaveBeenCalledWith(123);
-    });
+    // Click on the eye icon
+    fireEvent.click(eyeIcon);
 
-    // Switch to week view
-    const toggleButton = screen.getByRole("button", { name: /Toggle View/i });
-    await act(async () => {
-      fireEvent.click(toggleButton);
-    });
+    // The modal should open
+    expect(await screen.findByText(/WFH Schedule/i)).toBeInTheDocument();
 
-    const nextWeekButton = screen.getByRole("button", { name: /Next Week/i });
-    const prevWeekButton = screen.getByRole("button", { name: /Prev Week/i });
-
-    // Initially, Prev Week should be disabled (since it's the first week)
-    expect(prevWeekButton).toBeDisabled();
-
-    // Next Week should be disabled because we have only one week of data
-    expect(nextWeekButton).toBeDisabled();
-
-    // If you have multiple weeks of data, adjust the mock accordingly and test the button states
-  });
-
-  // WFH details should be displayed with no users
-  it("should display WFH details in modal when Eye icon is clicked with no users", async () => {
-    const mockTeamScheduleData = {
-      team_schedule: {
-        "171009": {
-          "080824": 0,
-          "090824": 0,
-          "070824": 0,
-          "060824": 0,
-          "050824": 0,
-        },
-      },
-    };
-
-    mockedGenerateTeamSchedule.mockResolvedValue(mockTeamScheduleData);
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    mockedGetEmployeeFullNameByStaffID.mockImplementation((userId: string) => {
-      // No users are on WFH, so employeeNames remain empty or "Unknown User"
-      return Promise.resolve("Unknown User");
-    });
-
-    render(
-      <Provider store={store}>
-        <TeamCalendar />
-      </Provider>
-    );
-
-    await waitFor(() => {
-      expect(mockedGenerateTeamSchedule).toHaveBeenCalledWith(123);
-    });
-
-    const eyeIcon = screen.getByTestId("eye-icon-2024-08-08");
-
-    await act(async () => {
-      fireEvent.click(eyeIcon);
-    });
-
-    // Wait for modal to appear and check for correct text
-    await waitFor(() => {
-      expect(screen.getByText(/No Users on AM WFH/i)).toBeInTheDocument();
-    });
-
-    await waitFor(() => {
-      expect(screen.getByText(/No Users on PM WFH/i)).toBeInTheDocument();
-    });
-
-    await waitFor(() => {
-      expect(screen.getByText(/No Users on Full Day WFH/i)).toBeInTheDocument();
-    });
-  });
-
-  it("should display correct WFH users in modal when Eye icon is clicked", async () => {
-    const mockTeamScheduleData = {
-      team_schedule: {
-        "171009": {
-          "080824": 1, // AM WFH
-          "090824": 2, // PM WFH
-          "100824": 3, // Full Day WFH
-        },
-        "171014": {
-          "080824": 1, // AM WFH
-          "090824": 2, // PM WFH
-        },
-      },
-    };
-
-    // Mock the generateTeamSchedule function to resolve with mockTeamScheduleData
-    mockedGenerateTeamSchedule.mockResolvedValue(mockTeamScheduleData);
-
-    // Mock getEmployeeFullNameByStaffID to return employee names
-    mockedGetEmployeeFullNameByStaffID.mockImplementation((userId: string) => {
-      const names: { [key: string]: string } = {
-        171009: "Alice Smith",
-        171014: "Bob Johnson",
-      };
-      return Promise.resolve(names[userId] || "Unknown User");
-    });
-
-    render(
-      <Provider store={store}>
-        <TeamCalendar />
-      </Provider>
-    );
-
-    // Wait for schedule to be fetched
-    await waitFor(() => {
-      expect(mockedGenerateTeamSchedule).toHaveBeenCalledWith(123);
-    });
-
-    // Find the Eye Icon for date "2024-08-08"
-    const eyeIcon = screen.getByTestId("eye-icon-2024-08-08");
-
-    // Click the Eye Icon to open the modal
-    await act(async () => {
-      fireEvent.click(eyeIcon);
-    });
-
-    // Verify that the "Loading..." text is present
-    expect(screen.getByText(/Loading/i)).toBeInTheDocument();
-  });
-
-  // Modal closes correctly when Close button is clicked
-  test("should close the modal when Close button is clicked", async () => {
-    const mockTeamScheduleData = {
-      team_schedule: {
-        "171009": {
-          "080824": 1, // AM WFH
-        },
-      },
-    };
-
-    mockedGenerateTeamSchedule.mockResolvedValue(mockTeamScheduleData);
-    mockedGetEmployeeFullNameByStaffID.mockImplementation((userId: string) => {
-      const names: { [key: string]: string } = {
-        "171009": "Alice Smith",
-      };
-      return Promise.resolve(names[userId] || "Unknown User");
-    });
-
-    render(
-      <Provider store={store}>
-        <TeamCalendar />
-      </Provider>
-    );
-
-    await waitFor(() => {
-      expect(mockedGenerateTeamSchedule).toHaveBeenCalledWith(123);
-    });
-
-    const eyeIcon = screen.getByTestId("eye-icon-2024-08-08");
-
-    await act(async () => {
-      fireEvent.click(eyeIcon);
-    });
-
-    // Click the Close button
+    // Click on the close button
     const closeButton = screen.getByTestId("close-modal");
-    await act(async () => {
-      fireEvent.click(closeButton);
-    });
+    fireEvent.click(closeButton);
 
-    // Verify that the modal is no longer in the document
+    // The modal should close
     await waitFor(() => {
-      expect(screen.queryByText("Alice Smith")).not.toBeInTheDocument();
+      expect(screen.queryByText(/WFH Schedule/i)).not.toBeInTheDocument();
     });
   });
 
-  // Handle API errors gracefully when fetching team schedule
-  it("should handle API errors gracefully when fetching team schedule", async () => {
-    // Mock generateTeamSchedule to reject with an error
-    mockedGenerateTeamSchedule.mockRejectedValue(new Error("API Error"));
+  test("fetches and displays correct data in modal", async () => {
+    (useSelector as unknown as jest.Mock).mockReturnValue("123");
 
-    // Spy on console.error to verify error handling
-    const consoleErrorSpy = jest
-      .spyOn(console, "error")
-      .mockImplementation(() => {});
+    const { getEmployeeFullNameByStaffID } = require("@/pages/api/employeeApi");
+    getEmployeeFullNameByStaffID.mockResolvedValue("John Doe");
 
-    render(
-      <Provider store={store}>
-        <TeamCalendar />
-      </Provider>
+    const today = moment().format("DDMMYY");
+    const sampleSelectedSchedule = {
+      "1": { [today]: 3 }, // Full day WFH
+    };
+
+    render(<TeamCalendar selectedSchedule={sampleSelectedSchedule} />);
+
+    const eyeIcon = screen.getByTestId(
+      `eye-icon-${moment().format("YYYY-MM-DD")}`
     );
+    fireEvent.click(eyeIcon);
 
-    // Wait for the component to attempt fetching the schedule
-    await waitFor(() => {
-      expect(mockedGenerateTeamSchedule).toHaveBeenCalledWith(123);
-    });
+    // Wait for modal to open and data to load
+    expect(await screen.findByText(/John Doe/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/Staff on Full Day WFH: John Doe/)
+    ).toBeInTheDocument();
+  });
 
-    // Since the API call failed, the component should display zero counts
-    const currentDate = moment().format("DD/MM/YY");
-    await waitFor(() => {
-      expect(screen.getByText(currentDate)).toBeInTheDocument();
-    });
-    await waitFor(() => {
-      expect(screen.getByText(/AM WFH: 0/i)).toBeInTheDocument();
-    });
-    await waitFor(() => {
-      expect(screen.getByText(/PM WFH: 0/i)).toBeInTheDocument();
-    });
-    await waitFor(() => {
-      expect(screen.getByText(/Full Day WFH: 0/i)).toBeInTheDocument();
-    });
-    await waitFor(() => {
-      expect(screen.getByText(/Total Strength: 0/i)).toBeInTheDocument();
+  test("search within modal works", async () => {
+    (useSelector as unknown as jest.Mock).mockReturnValue("123");
+
+    const { getEmployeeFullNameByStaffID } = require("@/pages/api/employeeApi");
+    getEmployeeFullNameByStaffID.mockImplementation((staffId: string) => {
+      const names: { [key: string]: string } = {
+        "1": "John Doe",
+        "2": "Jane Smith",
+      };
+      return Promise.resolve(names[staffId] || "Unknown User");
     });
 
-    // Verify that console.error was called
-    expect(consoleErrorSpy).toHaveBeenCalledWith(
-      "Error fetching schedule:",
-      expect.any(Error)
+    const today = moment().format("DDMMYY");
+    const sampleSelectedSchedule = {
+      "1": { [today]: 3 },
+      "2": { [today]: 3 },
+    };
+
+    render(<TeamCalendar selectedSchedule={sampleSelectedSchedule} />);
+
+    const eyeIcon = screen.getByTestId(
+      `eye-icon-${moment().format("YYYY-MM-DD")}`
     );
+    fireEvent.click(eyeIcon);
 
-    consoleErrorSpy.mockRestore();
+    // Wait for names to be displayed
+    await screen.findByText(/John Doe, Jane Smith/i);
+
+    // Type in the search input
+    const searchInput = screen.getByPlaceholderText("Search by name");
+    fireEvent.change(searchInput, { target: { value: "Jane" } });
+
+    // Check that only Jane Smith is displayed
+    expect(await screen.queryByText(/John Doe/i)).not.toBeInTheDocument();
+    expect(await screen.findByText(/Jane Smith/i)).toBeInTheDocument();
+  });
+
+  test("renders correct data for day view", () => {
+    (useSelector as unknown as jest.Mock).mockReturnValue("123");
+
+    const today = moment().format("DDMMYY");
+    const sampleSelectedSchedule = {
+      "1": { [today]: 1 },
+      "2": { [today]: 2 },
+      "3": { [today]: 3 },
+      "4": { [today]: 0 },
+    };
+
+    render(<TeamCalendar selectedSchedule={sampleSelectedSchedule} />);
+
+    expect(screen.getByText(`AM WFH: 1`)).toBeInTheDocument();
+    expect(screen.getByText(`PM WFH: 1`)).toBeInTheDocument();
+    expect(screen.getByText(`Full Day WFH: 1`)).toBeInTheDocument();
+    expect(screen.getByText(`Total Strength: 1`)).toBeInTheDocument();
+  });
+
+  test("renders correct data for week view", () => {
+    (useSelector as unknown as jest.Mock).mockReturnValue("123");
+
+    const sampleSelectedSchedule = {
+      "1": { "010123": 1 },
+      "2": { "020123": 2 },
+      "3": { "030123": 3 },
+      "4": { "040123": 0 },
+    };
+
+    render(<TeamCalendar selectedSchedule={sampleSelectedSchedule} />);
+
+    // Toggle to week view
+    fireEvent.click(screen.getByText("Toggle View"));
+
+    // Check that the days are rendered with correct data
+    const amWfhElements = screen.getAllByText(/AM WFH: \d+/);
+    const pmWfhElements = screen.getAllByText(/PM WFH: \d+/);
+    const fullDayWfhElements = screen.getAllByText(/Full Day WFH: \d+/);
+    const totalStrengthElements = screen.getAllByText(/Total Strength: \d+/);
+
+    expect(amWfhElements.length).toBeGreaterThan(0);
+    expect(pmWfhElements.length).toBeGreaterThan(0);
+    expect(fullDayWfhElements.length).toBeGreaterThan(0);
+    expect(totalStrengthElements.length).toBeGreaterThan(0);
+  });
+
+  test("displays message when there are no users on WFH", async () => {
+    (useSelector as unknown as jest.Mock).mockReturnValue("123");
+
+    const today = moment().format("DDMMYY");
+    const sampleSelectedSchedule = {
+      "1": { [today]: 0 }, // No WFH
+    };
+
+    render(<TeamCalendar selectedSchedule={sampleSelectedSchedule} />);
+
+    const eyeIcon = screen.getByTestId(
+      `eye-icon-${moment().format("YYYY-MM-DD")}`
+    );
+    fireEvent.click(eyeIcon);
+
+    // Wait for modal to open
+    expect(await screen.findByText(/WFH Schedule/i)).toBeInTheDocument();
+
+    // Check that the messages indicate no users on WFH
+    expect(
+      screen.getByText("Staff on AM WFH: No Users on AM WFH")
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText("Staff on PM WFH: No Users on PM WFH")
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText("Staff on Full Day WFH: No Users on Full Day WFH")
+    ).toBeInTheDocument();
   });
 });
