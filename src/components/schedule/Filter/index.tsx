@@ -138,7 +138,7 @@ export const Filter: React.FC<FilterProps> = ({ onSelect, filterType }) => {
     return (
       <div className="flex flex-col items-center">
         <div className="flex flex-row items-center justify-center">
-          <Label className="mr-2">Select Manager's Team:</Label>
+          <Label className="mr-2">Select Manager&apos;s Team:</Label>
           <select
             name="team"
             id="team"
