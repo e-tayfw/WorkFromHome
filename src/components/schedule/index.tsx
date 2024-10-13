@@ -1,6 +1,6 @@
 import { Display } from "@/components/TextStyles";
-import { WFHCalendar } from "@/components/Schedule/Calendar";
-import { TeamCalendar } from "@/components/Schedule/TeamCalendar";
+import { WFHCalendar } from "@/components/schedule/Calendar";
+import { TeamCalendar } from "@/components/schedule/TeamCalendar";
 import { useRouter } from "next/router";
 import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
