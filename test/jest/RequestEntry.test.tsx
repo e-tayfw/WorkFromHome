@@ -5,11 +5,13 @@ import '@testing-library/jest-dom';
 
 // Mock the current date for testing boundary conditions
 const mockCurrentDate = (mockDate: string): void => {
-  jest.useFakeTimers('modern');
+  jest.useFakeTimers();
   jest.setSystemTime(new Date(mockDate));
 };
 
 describe('RequestEntry Component', () => {
+  const mockFetchRequests = jest.fn(); // Mock implementation for fetchRequests
+
   afterEach(() => {
     jest.useRealTimers();
   });
@@ -28,6 +30,7 @@ describe('RequestEntry Component', () => {
         requestBatch={null}
         dateOfRequest="2024-09-18"
         duration="FD"
+        fetchRequests={mockFetchRequests}  // Added mock fetchRequests prop
       />
     );
 
@@ -49,6 +52,7 @@ describe('RequestEntry Component', () => {
         requestBatch={null}
         dateOfRequest="2024-09-18"
         duration="FD"
+        fetchRequests={mockFetchRequests}  // Added mock fetchRequests prop
       />
     );
 
@@ -69,6 +73,7 @@ describe('RequestEntry Component', () => {
         requestBatch={null}
         dateOfRequest="2024-09-18"
         duration="FD"
+        fetchRequests={mockFetchRequests}  // Added mock fetchRequests prop
       />
     );
 
@@ -90,6 +95,7 @@ describe('RequestEntry Component', () => {
         requestBatch={null}
         dateOfRequest="2024-09-18"
         duration="FD"
+        fetchRequests={mockFetchRequests}  // Added mock fetchRequests prop
       />
     );
 
@@ -111,6 +117,7 @@ describe('RequestEntry Component', () => {
         requestBatch={null}
         dateOfRequest="2024-09-18"
         duration="FD"
+        fetchRequests={mockFetchRequests}  // Added mock fetchRequests prop
       />
     );
 
@@ -132,6 +139,7 @@ describe('RequestEntry Component', () => {
         requestBatch={null}
         dateOfRequest="2024-09-18"
         duration="FD"
+        fetchRequests={mockFetchRequests}  // Added mock fetchRequests prop
       />
     );
 
@@ -151,6 +159,7 @@ describe('RequestEntry Component', () => {
         requestBatch={null}
         dateOfRequest="2024-09-18"
         duration="FD"
+        fetchRequests={mockFetchRequests}  // Added mock fetchRequests prop
       />
     );
 
@@ -170,6 +179,7 @@ describe('RequestEntry Component', () => {
         requestBatch={null}
         dateOfRequest="2024-09-18"
         duration="PM"
+        fetchRequests={mockFetchRequests}  // Added mock fetchRequests prop
       />
     );
 
@@ -190,6 +200,7 @@ describe('RequestEntry Component', () => {
         requestBatch={null}
         dateOfRequest="2024-09-18"
         duration="FD"
+        fetchRequests={mockFetchRequests}  // Added mock fetchRequests prop
       />
     );
 
@@ -209,6 +220,7 @@ describe('RequestEntry Component', () => {
         requestBatch={null}
         dateOfRequest="2024-09-18"
         duration="FD"
+        fetchRequests={mockFetchRequests}  // Added mock fetchRequests prop
       />
     );
 
@@ -230,6 +242,7 @@ describe('RequestEntry Component', () => {
         requestBatch={null}
         dateOfRequest="2024-09-18"
         duration="FD"
+        fetchRequests={mockFetchRequests}  // Added mock fetchRequests prop
       />
     );
 
