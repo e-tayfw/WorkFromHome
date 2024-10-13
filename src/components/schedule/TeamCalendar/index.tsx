@@ -20,11 +20,19 @@ interface Schedule {
   [date: string]: number;
 }
 
-export const TeamCalendar: React.FC = () => {
-  const [schedule, setSchedule] = useState<ScheduleData | null>(null);
+interface TeamCalendarProps {
+  selectedSchedule: ScheduleData; // Accepting schedule from the parent
+}
+
+export const TeamCalendar: React.FC<TeamCalendarProps> = ({
+  selectedSchedule,
+}) => {
   const staffId = useSelector((state: RootState) => state.auth.staffId);
   const [employeeNames, setEmployeeNames] = useState<{ [key: string]: string }>(
     {}
+  );
+  const [schedule, setSchedule] = useState<ScheduleData | null>(
+    selectedSchedule
   );
 
   const [searchQuery, setSearchQuery] = useState("");
@@ -32,18 +40,18 @@ export const TeamCalendar: React.FC = () => {
   const [modalDate, setModalDate] = useState<string>("");
 
   // Function to fetch the schedule and update state
-  const fetchSchedule = useCallback(async () => {
-    if (staffId) {
-      try {
-        const fetchedSchedule = await generateTeamSchedule(Number(staffId));
-        setSchedule(fetchedSchedule.team_schedule);
-      } catch (error) {
-        console.error("Error fetching schedule:", error);
-      }
-    } else {
-      console.error("No staffId found in Redux store");
-    }
-  }, [staffId]);
+  // const fetchSchedule = useCallback(async () => {
+  //   if (staffId) {
+  //     try {
+  //       const fetchedSchedule = await generateTeamSchedule(Number(staffId));
+  //       setSchedule(fetchedSchedule.team_schedule);
+  //     } catch (error) {
+  //       console.error("Error fetching schedule:", error);
+  //     }
+  //   } else {
+  //     console.error("No staffId found in Redux store");
+  //   }
+  // }, [staffId]);
 
   const fetchEmployeeNames = async (userIds: string[]) => {
     const names: { [key: string]: string } = { ...employeeNames };
@@ -86,13 +94,16 @@ export const TeamCalendar: React.FC = () => {
     setModalOpen(true);
     setSearchQuery("");
   };
+  useEffect(() => {
+    setSchedule(selectedSchedule);
+  }, [selectedSchedule]);
 
   // Fetch schedule in useEffect after re-render
-  useEffect(() => {
-    if (staffId) {
-      fetchSchedule();
-    }
-  }, [fetchSchedule, staffId]);
+  // useEffect(() => {
+  //   if (staffId) {
+  //     fetchSchedule();
+  //   }
+  // }, [fetchSchedule, staffId]);
 
   const [currentView, setCurrentView] = useState<"day" | "week">("day");
 
