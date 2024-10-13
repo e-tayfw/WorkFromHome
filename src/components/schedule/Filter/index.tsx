@@ -53,6 +53,7 @@ export const Filter: React.FC<FilterProps> = ({ onSelect, filterType }) => {
       };
       fetchDepartments();
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   const handleDepartmentChange = async (
     event: React.ChangeEvent<HTMLSelectElement>
