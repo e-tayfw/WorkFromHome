@@ -33,3 +33,5 @@ Route::get(uri: '/generateOwnSchedule/{staff_id}', action: [ScheduleController::
 Route::get(uri: '/generateTeamSchedule/{staff_id}', action: [ScheduleController::class, 'generateTeamSchedule']);
 Route::get(uri: '/generateTeamScheduleByManager/{reportingManager}', action:[ScheduleController::class, 'generateTeamScheduleByManager']);
 Route::get(uri: '/generateDepartmentSchedule/{dept}', action:[ScheduleController::class, 'generateDepartmentSchedule']);
+Route::get('/generateHRScheduleByDepartment', [ScheduleController::class, 'generateHRScheduleByDepartment']);
+Route::get('/generateHRScheduleByTeam' , [ScheduleController::class, 'generateHRScheduleByTeam']);
