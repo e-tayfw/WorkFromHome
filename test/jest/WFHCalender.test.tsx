@@ -43,6 +43,8 @@ describe("WFHCalendar", () => {
         staffId: "123",
         email: "test@example.com",
         roleType: "Employee",
+        role: "2",
+        dept: "Finance"
       },
     };
 
