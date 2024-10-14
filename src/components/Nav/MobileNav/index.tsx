@@ -1,7 +1,9 @@
 import { FC, useState } from "react";
 import { motion } from "framer-motion";
 import { useRouter } from "next/router";
-import { FiMenu, FiX } from "react-icons/fi"; 
+import { FiMenu, FiX } from "react-icons/fi";
+import { logout } from '@/redux/slices/authSlice'; // Import the logout action from the authSlice
+import { useDispatch } from 'react-redux';
 import NextLink from "next/link";
 import { NavLink } from "..";
 // import { Body } from "@/components/TextStyles";
@@ -20,12 +22,14 @@ export const mobileMenuLinks: NavLink[] = [
       {
         title: "My Schedule",
         path: "/schedule",
-        imgUrl: "https://workfromhomebucket.s3.ap-southeast-2.amazonaws.com/Nav/my-schedule-simu.png",
+        imgUrl:
+          "https://workfromhomebucket.s3.ap-southeast-2.amazonaws.com/Nav/my-schedule-simu.png",
       },
       {
         title: "Team Schedule",
         path: "/schedule?team=team",
-        imgUrl: "https://workfromhomebucket.s3.ap-southeast-2.amazonaws.com/Nav/team-schedule-simu.png",
+        imgUrl:
+          "https://workfromhomebucket.s3.ap-southeast-2.amazonaws.com/Nav/team-schedule-simu.png",
       },
     ],
   },
@@ -54,7 +58,6 @@ export const mobileMenuLinks: NavLink[] = [
       },
     ],
   },
-
 ];
 
 export const MobileMenu: FC<MobileMenuProps> = ({ scrollPos, isHomePage }) => {
@@ -62,6 +65,7 @@ export const MobileMenu: FC<MobileMenuProps> = ({ scrollPos, isHomePage }) => {
   const router = useRouter();
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [showNumber, setShowNumber] = useState(false);
+  const dispatch = useDispatch();
 
   const containerVariants = {
     hidden: { opacity: 0, scale: 0.8 },
@@ -78,6 +82,12 @@ export const MobileMenu: FC<MobileMenuProps> = ({ scrollPos, isHomePage }) => {
     hidden: { x: -10, opacity: 0 },
     visible: { x: 0, opacity: 1 },
   };
+  function handleSignOut(): void {
+    localStorage.removeItem("userType");
+
+    dispatch(logout());
+    router.push("/");
+  }
 
   return (
     <>
@@ -87,8 +97,7 @@ export const MobileMenu: FC<MobileMenuProps> = ({ scrollPos, isHomePage }) => {
         }`}
         onClick={() => router.push("/")}
         role="button"
-      >
-      </div>
+      ></div>
       <div
         className={`w-6 h-6 cursor-pointer ${
           scrollPos > 0.01 || !isHomePage ? "text-black" : "text-white"
@@ -120,9 +129,7 @@ export const MobileMenu: FC<MobileMenuProps> = ({ scrollPos, isHomePage }) => {
                 >
                   {link.childPaths ? (
                     <details className="w-full">
-                      <summary
-                        className="font-bold text-3xl text-black cursor-pointer"
-                      >
+                      <summary className="font-bold text-3xl text-black cursor-pointer">
                         {link.title}
                       </summary>
                       <div className="flex flex-col gap-2 pl-4 mt-2">
@@ -157,6 +164,9 @@ export const MobileMenu: FC<MobileMenuProps> = ({ scrollPos, isHomePage }) => {
                   )}
                 </motion.div>
               ))}
+              <button onClick={handleSignOut} className="sign-out-button">
+                Sign Out
+              </button>
             </motion.div>
           </div>
         </div>
@@ -164,4 +174,3 @@ export const MobileMenu: FC<MobileMenuProps> = ({ scrollPos, isHomePage }) => {
     </>
   );
 };
-

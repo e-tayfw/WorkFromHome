@@ -7,7 +7,7 @@ interface RequestEntryProps {
   approverId: string;
   status: string | undefined;
   dateRequested: string; 
-  requestBatch: string;
+  requestBatch: string | null;
   dateOfRequest: string;
   duration: string;
 }

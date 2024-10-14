@@ -21,7 +21,6 @@ export const WFHCalendar: React.FC = () => {
   const [schedule, setSchedule] = useState<ScheduleData | null>(null); // To store fetched schedule data
   // Step 1: Access the staffId from the Redux store
   const staffId = useSelector((state: RootState) => state.auth.staffId);
-  console.log(staffId);
 
   // Function to fetch the schedule and update state
   const fetchSchedule = async () => {
@@ -29,7 +28,6 @@ export const WFHCalendar: React.FC = () => {
       // Make sure staffId exists before fetching
       try {
         const fetchedSchedule = await generateOwnSchedule(Number(staffId));
-        console.log("Fetched schedule data:", fetchedSchedule); // Log the fetched data
         setSchedule([fetchedSchedule]); // Update the schedule state with the fetched data
       } catch (error) {
         console.error("Error fetching schedule:", error);
@@ -43,7 +41,6 @@ export const WFHCalendar: React.FC = () => {
   useEffect(() => {
     if (staffId) {
       fetchSchedule();
-      console.log(fetchSchedule());
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // The effect will run only when staffId changes and is not null
@@ -243,7 +240,6 @@ export const WFHCalendar: React.FC = () => {
 
   const groupScheduleByWeek = () => {
     if (!schedule || !schedule[0].schedule) {
-      console.log("No schedule found");
       return schedule;
     }
     const weeksObj: { [key: string]: Schedule } = {};

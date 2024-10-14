@@ -6,6 +6,7 @@
     "plugin:jest-dom/recommended"
   ],
   "rules": {
-    "jest-dom/prefer-in-document": "off"  // Disable the rule globally
+    "jest-dom/prefer-in-document": "off", // Disable the rule globally
+    "@typescript-eslint/no-explicit-any": "off"
   }
 }

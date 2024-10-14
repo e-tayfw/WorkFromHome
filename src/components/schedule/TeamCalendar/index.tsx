@@ -5,7 +5,6 @@ import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
 import { EyeIcon } from "@/components/Svgs/eye";
 import { CloseIcon } from "@/components/Svgs/close";
-import { generateTeamSchedule } from "@/pages/api/scheduleApi";
 import { getEmployeeFullNameByStaffID } from "@/pages/api/employeeApi";
 
 interface TeamMember {
@@ -20,30 +19,80 @@ interface Schedule {
   [date: string]: number;
 }
 
-export const TeamCalendar: React.FC = () => {
-  const [schedule, setSchedule] = useState<ScheduleData | null>(null);
+interface TeamCalendarProps {
+  selectedSchedule: ScheduleData; // Accepting schedule from the parent
+}
+
+export const TeamCalendar: React.FC<TeamCalendarProps> = ({
+  selectedSchedule,
+}) => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const staffId = useSelector((state: RootState) => state.auth.staffId);
   const [employeeNames, setEmployeeNames] = useState<{ [key: string]: string }>(
     {}
+  );
+  const [schedule, setSchedule] = useState<ScheduleData | null>(
+    selectedSchedule
   );
 
   const [searchQuery, setSearchQuery] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
   const [modalDate, setModalDate] = useState<string>("");
 
-  // Function to fetch the schedule and update state
-  const fetchSchedule = useCallback(async () => {
-    if (staffId) {
-      try {
-        const fetchedSchedule = await generateTeamSchedule(Number(staffId));
-        setSchedule(fetchedSchedule.team_schedule);
-      } catch (error) {
-        console.error("Error fetching schedule:", error);
-      }
-    } else {
-      console.error("No staffId found in Redux store");
+  const [currentView, setCurrentView] = useState<"day" | "week">("day");
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [weeks, setWeeks] = useState<{ [key: string]: Schedule }>({});
+  const [selectedDate, setSelectedDate] = useState<string>(
+    moment().format("YYYY-MM-DD")
+  );
+
+  const minDate = moment().subtract(2, "months");
+  const maxDate = moment().add(3, "months");
+
+  const isNextDisabled = () => {
+    const currentDate = moment(selectedDate);
+    const nextDayDate = currentDate.clone().add(1, "day");
+    return nextDayDate.isAfter(maxDate, "day");
+  };
+
+  const isPrevDisabled = () => {
+    const currentDate = moment(selectedDate);
+    const prevDayDate = currentDate.clone().subtract(1, "day");
+    return prevDayDate.isBefore(minDate, "day");
+  };
+
+  const isNextWeekDisabled = () => {
+    const nextWeekEndDate = moment(selectedDate)
+      .clone()
+      .add(1, "week")
+      .endOf("week");
+    return nextWeekEndDate.isAfter(maxDate, "day");
+  };
+
+  const isPrevWeekDisabled = () => {
+    const prevWeekStartDate = moment(selectedDate)
+      .clone()
+      .subtract(1, "week")
+      .startOf("week");
+    return prevWeekStartDate.isBefore(minDate, "day");
+  };
+
+  const getWeekDates = () => {
+    const weekStart = moment(selectedDate).startOf("week");
+    const weekEnd = moment(selectedDate).endOf("week");
+
+    return `${weekStart.format("DD/MM/YY")} - ${weekEnd.format("DD/MM/YY")}`;
+  };
+
+  const getEmployeeName = async (staffId: number) => {
+    try {
+      const response = await getEmployeeFullNameByStaffID(staffId.toString());
+      return response;
+    } catch (error) {
+      console.error("Error fetching employee name:", error);
+      return "Unknown User";
     }
-  }, [staffId]);
+  };
 
   const fetchEmployeeNames = async (userIds: string[]) => {
     const names: { [key: string]: string } = { ...employeeNames };
@@ -87,116 +136,20 @@ export const TeamCalendar: React.FC = () => {
     setSearchQuery("");
   };
 
-  // Fetch schedule in useEffect after re-render
   useEffect(() => {
-    if (staffId) {
-      fetchSchedule();
-    }
-  }, [fetchSchedule, staffId]);
-
-  const [currentView, setCurrentView] = useState<"day" | "week">("day");
-
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [weeks, setWeeks] = useState<{ [key: string]: Schedule }>({});
-  const [selectedDate, setSelectedDate] = useState<string>(
-    moment().format("YYYY-MM-DD")
-  );
-  const [currentWeek, setCurrentWeek] = useState<number>(
-    moment(selectedDate).week()
-  );
-
-  const isNextDisabled = () => {
-    if (!schedule) return false;
-    const dates = Object.values(schedule)
-      .flatMap((userSchedule) => Object.keys(userSchedule))
-      .sort((a, b) =>
-        moment(a, "DDMMYY").isBefore(moment(b, "DDMMYY")) ? -1 : 1
-      );
-    const lastDate = dates.pop();
-    if (!lastDate) return false;
-    const currentDate = moment(selectedDate);
-    const lastDateObject = moment(lastDate, "DDMMYY");
-
-    return currentDate.isSameOrAfter(lastDateObject, "day");
-  };
-
-  const isPrevDisabled = () => {
-    if (!schedule) return false;
-    const dates = Object.values(schedule)
-      .flatMap((userSchedule) => Object.keys(userSchedule))
-      .sort((a, b) =>
-        moment(a, "DDMMYY").isBefore(moment(b, "DDMMYY")) ? -1 : 1
-      );
-    const firstDate = dates.shift();
-    if (!firstDate) return false;
-    const currentDate = moment(selectedDate);
-    const firstDateObject = moment(firstDate, "DDMMYY");
-
-    return currentDate.isSameOrBefore(firstDateObject, "day");
-  };
-
-  const isNextWeekDisabled = () => {
-    if (!schedule) return false;
-    const dates = Object.values(schedule)
-      .flatMap((userSchedule) => Object.keys(userSchedule))
-      .sort((a, b) =>
-        moment(a, "DDMMYY").isBefore(moment(b, "DDMMYY")) ? -1 : 1
-      );
-    const lastDate = dates.pop();
-    if (!lastDate) return false;
-
-    const currentDate = moment(selectedDate);
-    const lastDateObject = moment(lastDate, "DDMMYY");
-    const nextWeekDate = currentDate.clone().add(7, "days");
-
-    return nextWeekDate.isAfter(lastDateObject, "day");
-  };
-
-  const isPrevWeekDisabled = () => {
-    if (!schedule) return false;
-    const dates = Object.values(schedule)
-      .flatMap((userSchedule) => Object.keys(userSchedule))
-      .sort((a, b) =>
-        moment(a, "DDMMYY").isBefore(moment(b, "DDMMYY")) ? -1 : 1
-      );
-    const firstDate = dates.shift();
-    if (!firstDate) return false;
-
-    const currentDate = moment(selectedDate);
-    const firstDateObject = moment(firstDate, "DDMMYY");
-    const prevWeekDate = currentDate.clone().subtract(7, "days");
-
-    return prevWeekDate.isBefore(firstDateObject, "day");
-  };
-
-  const getWeekDates = (weekNumber: number) => {
-    const weekStart = moment().week(weekNumber).startOf("week");
-    const weekEnd = moment().week(weekNumber).endOf("week");
-
-    return `${weekStart.format("DD/MM/YY")} - ${weekEnd.format("DD/MM/YY")}`;
-  };
-
-  const getEmployeeName = async (staffId: number) => {
-    try {
-      const response = await getEmployeeFullNameByStaffID(staffId.toString());
-      return response;
-    } catch (error) {
-      console.error("Error fetching employee name:", error);
-      return "Unknown User";
-    }
-  };
+    setSchedule(selectedSchedule);
+  }, [selectedSchedule]);
 
   const handleNextWeek = () => {
-    const newWeek = currentWeek + 1;
-    setCurrentWeek(newWeek);
-    const newDate = moment(selectedDate).add(7, "days");
+    const newDate = moment(selectedDate).clone().add(1, "week").startOf("week");
     setSelectedDate(newDate.format("YYYY-MM-DD"));
   };
 
   const handlePrevWeek = () => {
-    const newWeek = currentWeek - 1;
-    setCurrentWeek(newWeek);
-    const newDate = moment(selectedDate).subtract(7, "days");
+    const newDate = moment(selectedDate)
+      .clone()
+      .subtract(1, "week")
+      .startOf("week");
     setSelectedDate(newDate.format("YYYY-MM-DD"));
   };
 
@@ -280,8 +233,8 @@ export const TeamCalendar: React.FC = () => {
     };
   };
 
-  const getWeekDatesArray = (weekNumber: number) => {
-    const weekStart = moment().week(weekNumber).startOf("week");
+  const getWeekDatesArray = () => {
+    const weekStart = moment(selectedDate).startOf("week");
     const dates = [];
     for (let i = 0; i < 7; i++) {
       dates.push(weekStart.clone().add(i, "days"));
@@ -289,7 +242,7 @@ export const TeamCalendar: React.FC = () => {
     return dates;
   };
 
-  const weekDates = getWeekDatesArray(currentWeek);
+  const weekDates = getWeekDatesArray();
 
   return (
     <div className="container mx-auto p-5 max-w-[95%] lg:max-w-[80%]">
@@ -435,9 +388,7 @@ export const TeamCalendar: React.FC = () => {
             >
               Prev Week
             </button>
-            <H2 className="text-lg text-center font-bold">
-              {getWeekDates(currentWeek)}
-            </H2>
+            <H2 className="text-lg text-center font-bold">{getWeekDates()}</H2>
             <button
               className={`bg-primary hover:bg-secondary text-white font-bold py-2 px-4 rounded-xl ${
                 isNextWeekDisabled() ? "opacity-50 cursor-not-allowed" : ""
