@@ -36,9 +36,12 @@ const ApproveTable: React.FC<ApproveTableProps> = ({ employees }) => {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [allDataLoaded, setAllDataLoaded] = useState<boolean>(false);
+  const [filterStatus, setFilterStatus] = useState<string>('all'); // Status filter state
+  const [pagination, setPagination] = useState<{ [staffId: number]: number }>({});
   const [isClient, setIsClient] = useState(false); 
 
   const staffId = useSelector((state: any) => state.auth.staffId);
+  const requestsPerPage = 5;
 
   // Define fetchRequests to refresh data and collapse expanded tables
   const fetchRequests = async () => {
@@ -86,8 +89,16 @@ const ApproveTable: React.FC<ApproveTableProps> = ({ employees }) => {
     }
   }, [allDataLoaded]);
 
-  const sortedRequests = useMemo(() => {
+  // Apply sorting and filtering
+  const filteredRequests = useMemo(() => {
     let sortableRequests = [...requests];
+
+    // Apply status filter
+    if (filterStatus !== 'all') {
+      sortableRequests = sortableRequests.filter((request) => request.status.toLowerCase() === filterStatus.toLowerCase());
+    }
+
+    // Apply sorting
     if (sortConfig !== null) {
       sortableRequests.sort((a, b) => {
         let aValue: any = a[sortConfig.key];
@@ -108,7 +119,7 @@ const ApproveTable: React.FC<ApproveTableProps> = ({ employees }) => {
       });
     }
     return sortableRequests;
-  }, [requests, sortConfig]);
+  }, [requests, sortConfig, filterStatus]);
 
   const requestSort = (key: keyof Request) => {
     let direction = 'ascending';
@@ -137,16 +148,58 @@ const ApproveTable: React.FC<ApproveTableProps> = ({ employees }) => {
   };
 
   const getEmployeeRequests = (employeeId: number) => {
-    return sortedRequests.filter((request) => request.requestorId === employeeId);
+    return filteredRequests.filter((request) => request.requestorId === employeeId);
   };
+
+  // Handle pagination
+  const paginate = (requests: Request[], staffId: number) => {
+    const currentPage = pagination[staffId] || 1;
+    const startIndex = (currentPage - 1) * requestsPerPage;
+    const endIndex = startIndex + requestsPerPage;
+    return requests.slice(startIndex, endIndex);
+  };
+
+  const handlePageChange = (staffId: number, newPage: number) => {
+    setPagination((prev) => ({ ...prev, [staffId]: newPage }));
+  };
+
+  // Reset pagination when filter is applied
+  useEffect(() => {
+    setPagination({});
+  }, [filterStatus]);
 
   return (
     <div className="container mx-auto p-4">
       {/* Conditionally render ToastContainer only if it's client-side */}
       {isClient && <ToastContainer position="top-right" autoClose={5000} hideProgressBar={false} newestOnTop closeOnClick />}
 
+      {/* Filter Dropdown */}
+      <div className="mb-6 flex items-center space-x-4">
+        <label htmlFor="statusFilter" className="text-lg font-semibold text-primary">Filter by Status:</label>
+        <div className="relative">
+          <select
+            id="statusFilter"
+            value={filterStatus}
+            onChange={(e) => setFilterStatus(e.target.value)}
+            className="block appearance-none w-full bg-white border border-gray-300 text-gray-700 py-2 px-4 pr-8 rounded-md shadow-sm leading-tight focus:outline-none focus:ring-primary focus:border-primary"
+          >
+            <option value="all">All</option>
+            <option value="approved">Approved</option>
+            <option value="pending">Pending</option>
+            <option value="withdrawn">Withdrawn</option>
+            <option value="withdraw pending">Withdraw Pending</option>
+            <option value="withdraw rejected">Withdraw Rejected</option>
+            <option value="rejected">Rejected</option>
+          </select>
+          <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700" />
+        </div>
+      </div>
+
       {employees.map((employee) => {
         const employeeRequests = getEmployeeRequests(employee.Staff_ID);
+        const paginatedRequests = paginate(employeeRequests, employee.Staff_ID);
+        const currentPage = pagination[employee.Staff_ID] || 1;
+        const totalPages = Math.ceil(employeeRequests.length / requestsPerPage);
         const isExpanded = expandedStaff.includes(employee.Staff_ID);
 
         return (
@@ -165,45 +218,74 @@ const ApproveTable: React.FC<ApproveTableProps> = ({ employees }) => {
             {/* Staff Request Table - Only display if expanded */}
             {isExpanded && (
               <>
-                <table className="table-auto w-full border-collapse mt-4">
-                  <thead>
-                    <tr className="bg-secondary text-text">
-                      <th className="px-4 py-2 text-left cursor-pointer" onClick={() => requestSort('dateRequested')}>
-                        <BodyLarge className="text-primary">Date Requested {getSortIcon('dateRequested')}</BodyLarge>
-                      </th>
-                      <th className="px-4 py-2 text-left cursor-pointer" onClick={() => requestSort('duration')}>
-                        <BodyLarge className="text-primary">Duration {getSortIcon('duration')}</BodyLarge>
-                      </th>
-                      <th className="px-4 py-2 text-left cursor-pointer" onClick={() => requestSort('dateOfRequest')}>
-                        <BodyLarge className="text-primary">Date Of Request {getSortIcon('dateOfRequest')}</BodyLarge>
-                      </th>
-                      <th className="px-4 py-2 text-left cursor-pointer" onClick={() => requestSort('status')}>
-                        <BodyLarge className="text-primary">Status {getSortIcon('status')}</BodyLarge>
-                      </th>
-                      <th className="px-4 py-2 text-left">
-                        <BodyLarge className="text-primary">Action</BodyLarge>
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {employeeRequests.map((request) => (
-                      <ApproveEntry
-                        key={request.requestId}
-                        requestId={request.requestId}
-                        requestorName={`${employee.Staff_FName} ${employee.Staff_LName}`}
-                        requestorId={request.requestorId}
-                        approverId={request.approverId}
-                        status={request.status}
-                        dateRequested={request.dateRequested}
-                        requestBatch={request.requestBatch}
-                        dateOfRequest={request.dateOfRequest}
-                        duration={request.duration}
-                        teamSize={employees.length}
-                        onRefreshRequests={fetchRequests} // Pass fetchRequests to ApproveEntry
-                      />
-                    ))}
-                  </tbody>
-                </table>
+                {employeeRequests.length === 0 ? (
+                  <div className="text-center text-primary mt-4">
+                    Staff has no requests of '{filterStatus}' status
+                  </div>
+                ) : (
+                  <>
+                    <table className="table-auto w-full border-collapse mt-4">
+                      <thead>
+                        <tr className="bg-secondary text-text">
+                          <th className="px-4 py-2 text-left cursor-pointer" onClick={() => requestSort('dateRequested')}>
+                            <BodyLarge className="text-primary">Date Requested {getSortIcon('dateRequested')}</BodyLarge>
+                          </th>
+                          <th className="px-4 py-2 text-left cursor-pointer" onClick={() => requestSort('duration')}>
+                            <BodyLarge className="text-primary">Duration {getSortIcon('duration')}</BodyLarge>
+                          </th>
+                          <th className="px-4 py-2 text-left cursor-pointer" onClick={() => requestSort('dateOfRequest')}>
+                            <BodyLarge className="text-primary">Date Of Request {getSortIcon('dateOfRequest')}</BodyLarge>
+                          </th>
+                          <th className="px-4 py-2 text-left cursor-pointer" onClick={() => requestSort('status')}>
+                            <BodyLarge className="text-primary">Status {getSortIcon('status')}</BodyLarge>
+                          </th>
+                          <th className="px-4 py-2 text-left">
+                            <BodyLarge className="text-primary">Action</BodyLarge>
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {paginatedRequests.map((request) => (
+                          <ApproveEntry
+                            key={request.requestId}
+                            requestId={request.requestId}
+                            requestorName={`${employee.Staff_FName} ${employee.Staff_LName}`}
+                            requestorId={request.requestorId}
+                            approverId={request.approverId}
+                            status={request.status}
+                            dateRequested={request.dateRequested}
+                            requestBatch={request.requestBatch}
+                            dateOfRequest={request.dateOfRequest}
+                            duration={request.duration}
+                            teamSize={employees.length}
+                            onRefreshRequests={fetchRequests} // Pass fetchRequests to ApproveEntry
+                          />
+                        ))}
+                      </tbody>
+                    </table>
+
+                    {/* Pagination Controls */}
+                    <div className="flex justify-center items-center mt-4 space-x-4">
+                      <button
+                        className="bg-primary text-white py-2 px-4 rounded-md disabled:bg-gray-400 disabled:cursor-not-allowed"
+                        disabled={currentPage === 1}
+                        onClick={() => handlePageChange(employee.Staff_ID, currentPage - 1)}
+                      >
+                        Previous
+                      </button>
+                      <span className="text-primary font-semibold">
+                        Page {currentPage} of {totalPages}
+                      </span>
+                      <button
+                        className="bg-primary text-white py-2 px-4 rounded-md disabled:bg-gray-400 disabled:cursor-not-allowed"
+                        disabled={currentPage === totalPages || totalPages === 0}
+                        onClick={() => handlePageChange(employee.Staff_ID, currentPage + 1)}
+                      >
+                        Next
+                      </button>
+                    </div>
+                  </>
+                )}
 
                 {/* Grey Divider between Staff Sections */}
                 <hr className="my-8 border-t-2 border-gray-300" />
