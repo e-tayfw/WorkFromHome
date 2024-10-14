@@ -9,6 +9,15 @@ import { H1, H2 } from '@/components/TextStyles'; // Import H1 for main heading
 
 const localizer = momentLocalizer(moment); // Localizer for the calendar using moment.js
 
+// Define the CalendarEvent interface to type the event object
+interface CalendarEvent {
+  title: string;
+  start: Date;
+  end: Date;
+  dateKey: string;
+  duration: 'AM' | 'PM' | 'FD';
+}
+
 // Custom toolbar to style the month/year header (like "October 2024")
 const CustomToolbar = (toolbar: any) => {
   const goToBack = () => {
@@ -25,9 +34,7 @@ const CustomToolbar = (toolbar: any) => {
 
   const label = () => {
     const date = moment(toolbar.date);
-    return (
-      <H1 className="text-primary mb-6">{date.format('MMMM YYYY')}</H1>
-    );
+    return <H1 className="text-primary mb-6">{date.format('MMMM YYYY')}</H1>;
   };
 
   return (
@@ -47,7 +54,7 @@ const CustomToolbar = (toolbar: any) => {
 };
 
 const CalendarView: React.FC = () => {
-  const [events, setEvents] = useState([]); // Events for the calendar
+  const [events, setEvents] = useState<CalendarEvent[]>([]); // Events for the calendar
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [requestsByDay, setRequestsByDay] = useState<any>({}); // Store requests grouped by day
@@ -85,6 +92,11 @@ const CalendarView: React.FC = () => {
           // Correctly map the requestor's name from the employee details
           const requestorName = employees[item.Requestor_ID] || 'Unknown';
 
+          // Skip requests that have 'Unknown' in requestor name or status
+          if (requestorName === 'Unknown' || item.Status === 'Unknown') {
+            return;
+          }
+
           if (!groupedRequests[dateKey]) {
             groupedRequests[dateKey] = { AM: [], PM: [], FD: [] };
           }
@@ -115,7 +127,7 @@ const CalendarView: React.FC = () => {
   }, [staffId]);
 
   // Custom event style using Tailwind colors from your config
-  const eventStyleGetter = (event: any) => {
+  const eventStyleGetter = (event: CalendarEvent) => {
     let backgroundColor = 'bg-primary'; // Default tailwind primary color
     switch (event.duration) {
       case 'AM':
@@ -139,22 +151,28 @@ const CalendarView: React.FC = () => {
   // Handle event click to show details of requests for the selected time period (AM/PM/FD)
   const handleDurationClick = (date: string, duration: 'AM' | 'PM' | 'FD') => {
     const requests = requestsByDay[date][duration];
-    
-    // Add spacing between requests in the modal content
+
     const content = requests
-      .map((request: any) => `
+      .map(
+        (request: any) => `
         <div class="mb-4">
           <b>${request.requestorName}:</b> ${request.status}
         </div>
-      `)
+      `
+      )
       .join('');
-  
+
     Swal.fire({
       title: `Requests for ${duration} on ${date}`,
       html: content,
       icon: 'info',
       confirmButtonColor: '#072040',
     });
+  };
+
+  // Handle event selection with properly typed event object
+  const handleSelectEvent = (event: CalendarEvent) => {
+    handleDurationClick(event.dateKey, event.duration); // Show modal for AM/PM/FD
   };
 
   // Convert grouped requests into calendar events
@@ -173,12 +191,12 @@ const CalendarView: React.FC = () => {
     const pmPending = pmRequests.filter((req: any) => req.status.toLowerCase() === 'pending').length;
     const fdPending = fdRequests.filter((req: any) => req.status.toLowerCase() === 'pending').length;
 
-    // Create events for AM, PM, and FD
+    // Create events for AM, PM, and FD with specific time slots
     const amEvent = amApproved > 0 || amPending > 0
       ? {
           title: `AM: ${amApproved} (pending: ${amPending})`,
-          start: new Date(date),
-          end: new Date(date),
+          start: new Date(`${date}T09:00:00`),
+          end: new Date(`${date}T14:00:00`),
           dateKey: date,
           duration: 'AM',
         }
@@ -187,8 +205,8 @@ const CalendarView: React.FC = () => {
     const pmEvent = pmApproved > 0 || pmPending > 0
       ? {
           title: `PM: ${pmApproved} (pending: ${pmPending})`,
-          start: new Date(date),
-          end: new Date(date),
+          start: new Date(`${date}T14:00:00`),
+          end: new Date(`${date}T18:00:00`),
           dateKey: date,
           duration: 'PM',
         }
@@ -197,8 +215,8 @@ const CalendarView: React.FC = () => {
     const fdEvent = fdApproved > 0 || fdPending > 0
       ? {
           title: `FD: ${fdApproved} (pending: ${fdPending})`,
-          start: new Date(date),
-          end: new Date(date),
+          start: new Date(`${date}T09:00:00`),
+          end: new Date(`${date}T18:00:00`),
           dateKey: date,
           duration: 'FD',
         }
@@ -220,14 +238,14 @@ const CalendarView: React.FC = () => {
             events={calendarEvents}
             startAccessor="start"
             endAccessor="end"
-            views={{ month: true, week: true }} // Limit views to Month and Week
+            views={{ month: true, week: true, day: true }} // Enable Month, Week, Day views
             style={{ height: 600 }}
+            min={new Date(1970, 1, 1, 9, 0, 0)} // Start time 9:00 AM
+            max={new Date(1970, 1, 1, 18, 0, 0)} // End time 6:00 PM
             eventPropGetter={eventStyleGetter}
-            onSelectEvent={(event) => {
-              handleDurationClick(event.dateKey, event.duration); // Directly show modal for AM/PM/FD
-            }}
+            onSelectEvent={handleSelectEvent} // Updated with explicit typing
             components={{
-              toolbar: CustomToolbar, // Apply custom toolbar for month/year header
+              toolbar: CustomToolbar,
             }}
           />
         </>
