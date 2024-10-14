@@ -11,7 +11,7 @@ describe("Filter Component - Department Mode", () => {
   test("displays loading spinner while fetching departments", async () => {
     (getDepartmentList as jest.Mock).mockResolvedValueOnce({ HR_department_schedule: {} });
 
-    render(<Filter onSelect={jest.fn()} filterType="department" />);
+    render(<Filter onSelect={jest.fn()} />);
 
     // Ensure the loading message is displayed
     expect(
@@ -34,7 +34,7 @@ describe("Filter Component - Department Mode", () => {
     };
     (getDepartmentList as jest.Mock).mockResolvedValueOnce(mockDepartmentData);
 
-    render(<Filter onSelect={jest.fn()} filterType="department" />);
+    render(<Filter onSelect={jest.fn()} />);
 
     expect(await screen.findByText(/Select Department:/i)).toBeInTheDocument();
     expect(await screen.findByRole("option", { name: "-- Select a department --" })).toBeInTheDocument();
@@ -51,7 +51,7 @@ describe("Filter Component - Department Mode", () => {
     };
     (getDepartmentList as jest.Mock).mockResolvedValueOnce(mockDepartmentData);
 
-    render(<Filter onSelect={mockOnSelect} filterType="department" />);
+    render(<Filter onSelect={mockOnSelect} />);
 
     expect(await screen.findByRole("combobox")).toBeInTheDocument();
 

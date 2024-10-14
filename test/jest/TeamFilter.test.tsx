@@ -11,7 +11,7 @@ describe("Filter Component - Team Mode", () => {
   test("displays loading while fetching teams", async () => {
     (getTeamList as jest.Mock).mockResolvedValueOnce({ HR_team_schedule: {} });
 
-    render(<Filter onSelect={jest.fn()} filterType="team" />);
+    render(<Filter onSelect={jest.fn()} />);
 
     // Ensure the loading message is displayed
     expect(
@@ -34,7 +34,7 @@ describe("Filter Component - Team Mode", () => {
     };
     (getTeamList as jest.Mock).mockResolvedValueOnce(mockTeamData);
 
-    render(<Filter onSelect={jest.fn()} filterType="team" />);
+    render(<Filter onSelect={jest.fn()} />);
 
     // Ensure the team select is rendered
     await waitFor(() => {
@@ -71,7 +71,7 @@ describe("Filter Component - Team Mode", () => {
     };
     (getTeamList as jest.Mock).mockResolvedValueOnce(mockTeamData);
 
-    render(<Filter onSelect={mockOnSelect} filterType="team" />);
+    render(<Filter onSelect={mockOnSelect} />);
 
     // Wait for the combobox (select element) to be rendered
     expect(await screen.findByRole("combobox")).toBeInTheDocument();

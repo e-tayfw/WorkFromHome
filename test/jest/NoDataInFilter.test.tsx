@@ -15,7 +15,7 @@ describe("Filter Component - No Data", () => {
   test("displays appropriate message when no teams are found", async () => {
     (getTeamList as jest.Mock).mockResolvedValueOnce({ HR_team_schedule: {} });
 
-    render(<Filter onSelect={jest.fn()} filterType="team" />);
+    render(<Filter onSelect={jest.fn()} />);
 
     await waitFor(() => {
       expect(screen.getByText("-- Select a team --")).toBeInTheDocument();
@@ -29,7 +29,7 @@ describe("Filter Component - No Data", () => {
   test("displays appropriate message when no departments are found", async () => {
     (getDepartmentList as jest.Mock).mockResolvedValueOnce({ HR_department_schedule: {} });
 
-    render(<Filter onSelect={jest.fn()} filterType="department" />);
+    render(<Filter onSelect={jest.fn()} />);
 
     await waitFor(() => {
         expect(screen.getByText("-- Select a department --")).toBeInTheDocument();

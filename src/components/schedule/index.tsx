@@ -51,7 +51,9 @@ const Schedule: React.FC = () => {
   // Fetch the initial schedule for the user's team on mount
   useEffect(() => {
     fetchSchedule();
+    // console.log(team)
   }, [fetchSchedule]);
+
 
   const handleTeamSelect = (teamSchedule: any) => {
     setScheduleData(teamSchedule); // Update the state with the selected team's schedule
@@ -87,10 +89,10 @@ const Schedule: React.FC = () => {
       </div>
       {((role === 1 && team)) && (
         <div className="max-w-8xl w-full px-[16px] md:px-[128px] pt-[60px] pb-[30px] md:pt-[50px]">
-          <Filter filterType="department" onSelect={handleDepartmentSelect} />
+          <Filter onSelect={handleDepartmentSelect} />
         </div>
       )}
-      {(role === 3 || (role === 1 && team)) && (
+      {/* {(role === 3 || (role === 1 && team)) && (
         <div className="max-w-8xl w-full px-[16px] md:px-[128px] pt-[60px] pb-[30px] md:pt-[50px]">
           <Filter filterType="team" onSelect={handleTeamSelect} />
           <div className="flex flex-row justify-center mt-6">
@@ -102,11 +104,11 @@ const Schedule: React.FC = () => {
             </button>
           </div>
         </div>
-      )}
+      )} */}
 
 
       <div className="max-w-8xl w-full px-[16px] md:px-[128px] pt-[60px] pb-[30px] md:pt-[50px]">
-        {scheduleData ? ( // Ensure scheduleData is not null before rendering
+        {team ? ( // Ensure scheduleData is not null before rendering
           <TeamCalendar selectedSchedule={scheduleData} />
         ) : (
           <WFHCalendar />
