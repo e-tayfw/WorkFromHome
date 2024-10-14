@@ -7,12 +7,14 @@ import Swal from 'sweetalert2';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSort, faSortUp, faSortDown } from '@fortawesome/free-solid-svg-icons';
 import { RootState } from '@/redux/store';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 // Interface for request data
 interface Request {
-  requestId: number;
-  requestorId: number;
-  approverId: number;
+  requestId: string;
+  requestorId: string;
+  approverId: string;
   status: string;
   dateRequested: string;
   requestBatch: string | null;
@@ -34,60 +36,46 @@ export const RequestTable: React.FC = () => {
   // Retrieve staffId (which is employeeId) from Redux store
   const employeeId = useSelector((state: RootState) => state.auth.staffId);
 
-  // Fetch requests using Axios and SweetAlert2 loader
-  useEffect(() => {
-    const fetchRequests = async () => {
-      Swal.fire({
-        title: 'Loading...',
-        html: 'Please wait while we fetch your requests',
-        allowOutsideClick: false,
-        didOpen: () => {
-          Swal.showLoading();
-        },
-      });
-
-      try {
-        if (!employeeId) {
-          throw new Error("No employee ID found in session.");
-        }
-
-        // Make Axios call using the employeeId
-        const response = await axios.get(`http://127.0.0.1:8085/api/request/requestorId/${employeeId}`);
-        
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const mappedRequests = response.data.map((item: any) => ({
-          requestId: item.Request_ID,
-          requestorId: item.Requestor_ID,
-          approverId: item.Approver_ID,
-          status: item.Status,
-          dateRequested: item.Date_Requested,
-          requestBatch: item.Request_Batch,
-          dateOfRequest: item.Date_Of_Request,
-          duration: item.Duration
-        }));
-        
-        setRequests(mappedRequests);
-        setLoading(false);
-        Swal.close();
-      } catch (err) {
-        console.error('Error fetching requests:', err);
-        setError('Failed to load requests');
-        setLoading(false);
-        Swal.fire({
-          icon: 'error',
-          title: 'Oops...',
-          text: 'Failed to load requests, please try again!',
-        });
+  // Function to fetch requests
+  const fetchRequests = async () => {
+    try {
+      if (!employeeId) {
+        throw new Error("No employee ID found in session.");
       }
-    };
+  
+      // Make Axios call using the employeeId
+      const response = await axios.get(`http://127.0.0.1:8085/api/request/requestorId/${employeeId}`);
+      
+      const mappedRequests = response.data.map((item: any) => ({
+        requestId: item.Request_ID,
+        requestorId: item.Requestor_ID,
+        approverId: item.Approver_ID,
+        status: item.Status,
+        dateRequested: item.Date_Requested,
+        requestBatch: item.Request_Batch,
+        dateOfRequest: new Date(item.created_at).toISOString().split('T')[0],
+        duration: item.Duration
+      }));
+      
+      setRequests(mappedRequests);
+      setLoading(false);
+  
+      // Show success toast notification
+      toast.success('Requests loaded successfully!');
+    } catch (err) {
+      console.error('Error fetching requests:', err);
+      setError('Failed to load requests');
+      setLoading(false);
+  
+      // Show error toast notification
+      toast.error('Failed to load requests, please try again!');
+    }
+  };
 
+  // Fetch requests when the component mounts
+  useEffect(() => {
     fetchRequests();
   }, [employeeId]);
-
-  // Reset current page to 1 whenever the filter changes
-  useEffect(() => {
-    setCurrentPage(1); // Reset to page 1 when filterStatus changes
-  }, [filterStatus]);
 
   // Reset current page to 1 whenever the filter changes
   useEffect(() => {
@@ -166,6 +154,7 @@ export const RequestTable: React.FC = () => {
 
   return (
     <div className="container mx-auto p-4">
+      <ToastContainer />
       <H1 className="mb-6 text-primary">My Requests</H1>
 
       {/* Filter Dropdown */}
@@ -223,6 +212,7 @@ export const RequestTable: React.FC = () => {
               duration={request.duration}
               requestBatch={request.requestBatch}
               dateOfRequest={request.dateOfRequest}
+              fetchRequests={fetchRequests}
             />
           ))}
         </tbody>
