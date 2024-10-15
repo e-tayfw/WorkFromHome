@@ -52,14 +52,22 @@ export const TeamCalendar: React.FC<TeamCalendarProps> = ({
   // isNextDisabled and isPrevDisabled functions remain the same
   const isNextDisabled = () => {
     const currentDate = moment(selectedDate);
-    const nextDayDate = currentDate.clone().add(1, "day");
-    return nextDayDate.isAfter(maxDate, "day");
+    const nextDayDate = currentDate.clone().add(1, "day").format("DDMMYY");
+    // Check if any user has schedule data for nextDayDate
+    const hasScheduleForNextDay = Object.values(schedule || {}).some(
+      (userSchedule) => userSchedule[nextDayDate] !== undefined
+    );
+    return !hasScheduleForNextDay || currentDate.isSameOrAfter(maxDate, "day");
   };
 
   const isPrevDisabled = () => {
     const currentDate = moment(selectedDate);
-    const prevDayDate = currentDate.clone().subtract(1, "day");
-    return prevDayDate.isBefore(minDate, "day");
+    const prevDayDate = currentDate.clone().subtract(1, "day").format("DDMMYY");
+    // Check if any user has schedule data for prevDayDate
+    const hasScheduleForPrevDay = Object.values(schedule || {}).some(
+      (userSchedule) => userSchedule[prevDayDate] !== undefined
+    );
+    return !hasScheduleForPrevDay || currentDate.isSameOrBefore(minDate, "day");
   };
 
   // isNextWeekDisabled and isPrevWeekDisabled functions

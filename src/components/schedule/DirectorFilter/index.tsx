@@ -1,84 +1,58 @@
 import React, { useState, useEffect } from "react";
 import { Label, Body } from "@/components/TextStyles";
-import { getDepartmentList } from "@/pages/api/departmentApi"; // Adjust the import paths
-import { getTeamList } from "@/pages/api/teamApi"; // Adjust the import paths
+import { generateDirectorTeamSchedule } from "@/pages/api/scheduleApi"; // Adjust the import paths
 import { SpinnerIcon } from "@/components/Svgs/spinner";
 import { generateTeamSchedule } from "@/pages/api/scheduleApi";
 import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
 
-interface FilterProps { 
+interface FilterProps {
   onSelect: (teamSchedule: any) => void; // Update type according to the expected schedule type
 }
 
-export const Filter: React.FC<FilterProps> = ({ onSelect }) => {
+export const DirectorFilter: React.FC<FilterProps> = ({ onSelect }) => {
   const [teams, setTeams] = useState<string[]>([]);
-  const [departments, setDepartments] = useState<string[]>([]);
   const [loadingTeams, setLoadingTeams] = useState<boolean>(false);
-  const [loadingDepartments, setLoadingDepartments] = useState<boolean>(false);
-  const [loadingDefaultTeam, setLoadingDefaultTeam] = useState<boolean>(false);
+  const [loadingDefaultTeam, setLoadingDefaultTeam] = useState<boolean>(true);
   const [selectedDepartment, setSelectedDepartment] = useState<string>("");
   const [selectedTeam, setSelectedTeam] = useState<string>("");
   const [masterTeamData, setMasterTeamData] = useState<any>(null);
-  const [masterDepartmentData, setMasterDepartmentData] = useState<any>(null);
 
   // retrieve staff id from the redux store
-    const staffId = useSelector((state: RootState) => state.auth.staffId);
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const role = useSelector((state: RootState) => state.auth.role);
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const dept = useSelector((state: RootState) => state.auth.dept);
+  const staffId = useSelector((state: RootState) => state.auth.staffId);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const role = useSelector((state: RootState) => state.auth.role);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const dept = useSelector((state: RootState) => state.auth.dept);
 
   useEffect(() => {
     const fetchTeams = async () => {
       setLoadingTeams(true);
       try {
-        const fetchedTeamSchedule = await getTeamList();
+        // Fetch the default team schedule on initial load
+        const defaultTeamScheduleResponse = await generateTeamSchedule(
+          Number(staffId)
+        );
+        const defaultTeamSchedule = defaultTeamScheduleResponse.team_schedule;
+        // Update the parent component with the default team schedule
+        onSelect(defaultTeamSchedule);
+        const fetchedTeamSchedule = await generateDirectorTeamSchedule(
+          Number(staffId)
+        );
         setMasterTeamData(fetchedTeamSchedule);
-        setTeams(Object.keys(fetchedTeamSchedule["HR_team_schedule"]));
+        setTeams(Object.keys(fetchedTeamSchedule["director_schedule"]));
       } catch (error) {
-        console.error("Error fetching team list:", error);
+        console.error("Error fetching director's team list:", error);
       } finally {
         setLoadingTeams(false);
-      }
-    };
-
-    const fetchDepartments = async () => {
-      setLoadingDepartments(true);
-      try {
-        const fetchedDepartmentSchedule = await getDepartmentList();
-        setMasterDepartmentData(fetchedDepartmentSchedule);
-        setDepartments(
-          Object.keys(fetchedDepartmentSchedule["HR_department_schedule"])
-        );
-      } catch (error) {
-        console.error("Error fetching department list:", error);
-      } finally {
-        setLoadingDepartments(false);
+        setLoadingDefaultTeam(false);
       }
     };
 
     fetchTeams();
-    fetchDepartments();
-  }, []);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [staffId]);
 
-  const handleDepartmentChange = async (
-    event: React.ChangeEvent<HTMLSelectElement>
-  ) => {
-    const departmentName = event.target.value;
-    setSelectedDepartment(departmentName);
-    // Clear the team selection
-    setSelectedTeam("");
-
-    if (departmentName) {
-      const departmentSchedule =
-        masterDepartmentData["HR_department_schedule"][departmentName];
-      onSelect(departmentSchedule);
-    } else {
-      // If no department is selected, reset to default schedule if needed
-      // onSelect(defaultSchedule);
-    }
-  };
 
   const handleTeamChange = async (
     event: React.ChangeEvent<HTMLSelectElement>
@@ -89,7 +63,7 @@ export const Filter: React.FC<FilterProps> = ({ onSelect }) => {
     setSelectedDepartment("");
 
     if (teamName) {
-      const teamSchedule = masterTeamData["HR_team_schedule"][teamName];
+      const teamSchedule = masterTeamData["director_schedule"][teamName];
       onSelect(teamSchedule);
     } else {
       // If no team is selected, reset to default schedule if needed
@@ -97,10 +71,8 @@ export const Filter: React.FC<FilterProps> = ({ onSelect }) => {
     }
   };
 
-
   const handleClearFilters = async () => {
     setSelectedTeam("");
-    setSelectedDepartment("");
     setLoadingDefaultTeam(true);
 
     try {
@@ -121,32 +93,8 @@ export const Filter: React.FC<FilterProps> = ({ onSelect }) => {
     }
   };
 
-
   return (
     <div className="flex flex-col items-center">
-      {loadingDepartments ? (
-        <div className="flex flex-row items-center justify-center">
-          Loading the departments available <SpinnerIcon />
-        </div>
-      ) : (
-        <div className="flex flex-row items-center justify-center mb-4">
-          <Label className="mr-2">Select Department:</Label>
-          <select
-            name="department"
-            id="department"
-            className="rounded-md p-2"
-            value={selectedDepartment}
-            onChange={handleDepartmentChange}
-          >
-            <option value="">-- Select a department --</option>
-            {departments.map((departmentName: string) => (
-              <option key={departmentName} value={departmentName}>
-                {departmentName}
-              </option>
-            ))}
-          </select>
-        </div>
-      )}
       {loadingTeams ? (
         <div className="flex flex-row items-center justify-center">
           Loading the teams available <SpinnerIcon />
@@ -187,11 +135,6 @@ export const Filter: React.FC<FilterProps> = ({ onSelect }) => {
         </button>
       </div>
 
-      {selectedDepartment && (
-        <div className="mt-4">
-          <Body>Selected Department: {selectedDepartment}</Body>
-        </div>
-      )}
       {selectedTeam && (
         <div className="mt-4">
           <Body>Selected Team: {selectedTeam}</Body>

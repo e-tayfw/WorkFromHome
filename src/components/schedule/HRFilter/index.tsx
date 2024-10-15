@@ -11,7 +11,7 @@ interface FilterProps {
   onSelect: (teamSchedule: any) => void; // Update type according to the expected schedule type
 }
 
-export const Filter: React.FC<FilterProps> = ({ onSelect }) => {
+export const HRFilter: React.FC<FilterProps> = ({ onSelect }) => {
   const [teams, setTeams] = useState<string[]>([]);
   const [departments, setDepartments] = useState<string[]>([]);
   const [loadingTeams, setLoadingTeams] = useState<boolean>(false);
@@ -132,6 +132,7 @@ export const Filter: React.FC<FilterProps> = ({ onSelect }) => {
         <div className="flex flex-row items-center justify-center mb-4">
           <Label className="mr-2">Select Department:</Label>
           <select
+            data-testid="department-select"
             name="department"
             id="department"
             className="rounded-md p-2"
@@ -155,6 +156,7 @@ export const Filter: React.FC<FilterProps> = ({ onSelect }) => {
         <div className="flex flex-row items-center justify-center mb-4">
           <Label className="mr-2">Select Team:</Label>
           <select
+            data-testid="team-select"
             name="team"
             id="team"
             className="rounded-md p-2"
