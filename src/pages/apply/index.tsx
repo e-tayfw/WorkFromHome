@@ -1,11 +1,11 @@
-import React, { useState } from "react";
-import { Apply } from "@/components/Apply";
-import axios from 'axios'
+import React from "react";
+import { Apply } from "@/components/apply";
+
 
 const ApplyPage: React.FC = ({}) => {
   return (
     <div>
-      <Apply />
+      <Apply onSubmitData />
     </div>
   );
 };
