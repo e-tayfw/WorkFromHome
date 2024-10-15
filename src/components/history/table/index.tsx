@@ -46,13 +46,12 @@ export const RequestTable: React.FC = () => {
         Swal.showLoading();
       },
     });
-
+  
     try {
       if (!employeeId) {
         throw new Error("No employee ID found in session.");
       }
   
-      // Make Axios call using the employeeId
       const response = await axios.get(`http://127.0.0.1:8085/api/request/requestorId/${employeeId}`);
       
       const mappedRequests = response.data.map((item: any) => ({
@@ -65,16 +64,22 @@ export const RequestTable: React.FC = () => {
         dateOfRequest: new Date(item.created_at).toISOString().split('T')[0],
         duration: item.Duration
       }));
-      
+  
       setRequests(mappedRequests);
       setLoading(false);
   
+      // Close SweetAlert after loading
+      Swal.close();
+      
       // Show success toast notification
       toast.success('Requests loaded successfully!');
     } catch (err) {
       console.error('Error fetching requests:', err);
       setError('Failed to load requests');
       setLoading(false);
+      
+      // Close SweetAlert after error
+      Swal.close();
   
       // Show error toast notification
       toast.error('Failed to load requests, please try again!');
