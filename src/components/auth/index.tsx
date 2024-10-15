@@ -4,7 +4,7 @@ import { useRouter } from "next/router";
 import { useDispatch } from "react-redux";
 import { setAuthData } from "@/redux/slices/authSlice";
 import { getEmployeeDataByEmail } from "@/pages/api/employeeApi";
-
+import { Label } from "@/components/TextStyles";
 export function Auth() {
   const userTypes = ["HR", "Director", "Manager", "Employee"];
   const [username, setUsername] = useState<string>("");
@@ -23,6 +23,7 @@ export function Auth() {
     }
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const submitForm = async (_username: string, userType: string) => {
     return new Promise((resolve) => {
       setTimeout(() => {
@@ -42,7 +43,6 @@ export function Auth() {
 
         // Step 1: Retrieve employee data using the email
         const employeeData = await getEmployeeDataByEmail(username);
-        console.log(employeeData);
 
         // Step 2: Extract the Staff_ID from the retrieved employee data
         const staffId = employeeData.Staff_ID;
@@ -81,12 +81,11 @@ export function Auth() {
           </div>
           <form className="space-y-6 mt-10" action="#" onSubmit={handleSubmit}>
             <div>
-              <label
-                htmlFor="username"
+              <Label
                 className="block text-sm font-medium leading-6 text-black"
               >
                 Username
-              </label>
+              </Label>
               <div className="mt-2">
                 <input
                   id="username"

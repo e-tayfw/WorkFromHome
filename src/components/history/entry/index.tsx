@@ -8,18 +8,22 @@ interface RequestEntryProps {
   approverId: string;
   status: string;
   dateRequested: string;
-  requestBatch: string;
+  requestBatch: string | null;
   dateOfRequest: string;
   duration: string;
   fetchRequests: () => void; // Include fetchRequests prop
 }
 
 const RequestEntry: React.FC<RequestEntryProps> = ({
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   requestId,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   requestorId,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   approverId,
   status,
   dateRequested,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   requestBatch,
   dateOfRequest,
   duration,

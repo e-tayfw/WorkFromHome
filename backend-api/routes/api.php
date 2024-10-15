@@ -18,6 +18,7 @@ Route::get('/employee/email/{email}', [EmployeeController::class, 'getEmployeeBy
 Route::get('/employee/department/{department}', [EmployeeController::class, 'getEmployeeByDepartment']);
 Route::get('/employee/team/manager/{reportingManager}', [EmployeeController::class, 'getEmployeeTeamByManager']);
 Route::get('/employee/team/member/{teamMember}', [EmployeeController::class, 'getEmployeeTeamByMember']);
+Route::get('/employee/name/{id}', [EmployeeController::class, 'getEmployeeFullNameByStaffID']);
 Route::get(uri: '/testScheduleData', action: [TestScheduleController::class, 'getSchedule']);
 
 // Request
@@ -40,3 +41,7 @@ Route::post(uri: '/approveRequest', action: [RequestController::class, 'approveR
 
 // Request Rejection
 Route::post(uri: '/rejectRequest', action: [RequestController::class, 'rejectRequest']);
+Route::get(uri: '/generateTeamScheduleByManager/{reportingManager}', action:[ScheduleController::class, 'generateTeamScheduleByManager']);
+Route::get(uri: '/generateDepartmentSchedule/{dept}', action:[ScheduleController::class, 'generateDepartmentSchedule']);
+Route::get('/generateHRScheduleByDepartment', [ScheduleController::class, 'generateHRScheduleByDepartment']);
+Route::get('/generateHRScheduleByTeam' , [ScheduleController::class, 'generateHRScheduleByTeam']);

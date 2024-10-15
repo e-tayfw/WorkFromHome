@@ -6,12 +6,15 @@ import axios from 'axios';
 import Swal from 'sweetalert2';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSort, faSortUp, faSortDown } from '@fortawesome/free-solid-svg-icons';
+import { RootState } from '@/redux/store';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 // Interface for request data
 interface Request {
-  requestId: number;
-  requestorId: number;
-  approverId: number;
+  requestId: string;
+  requestorId: string;
+  approverId: string;
   status: string;
   dateRequested: string;
   requestBatch: string | null;
@@ -31,7 +34,7 @@ export const RequestTable: React.FC = () => {
   const [currentPage, setCurrentPage] = useState<number>(1); // For pagination
 
   // Retrieve staffId (which is employeeId) from Redux store
-  const employeeId = useSelector((state: any) => state.auth.staffId);
+  const employeeId = useSelector((state: RootState) => state.auth.staffId);
 
   // Function to fetch requests
   const fetchRequests = async () => {
@@ -48,7 +51,7 @@ export const RequestTable: React.FC = () => {
       if (!employeeId) {
         throw new Error("No employee ID found in session.");
       }
-
+  
       // Make Axios call using the employeeId
       const response = await axios.get(`http://127.0.0.1:8085/api/request/requestorId/${employeeId}`);
       
@@ -65,16 +68,16 @@ export const RequestTable: React.FC = () => {
       
       setRequests(mappedRequests);
       setLoading(false);
-      Swal.close();
+  
+      // Show success toast notification
+      toast.success('Requests loaded successfully!');
     } catch (err) {
       console.error('Error fetching requests:', err);
       setError('Failed to load requests');
       setLoading(false);
-      Swal.fire({
-        icon: 'error',
-        title: 'Oops...',
-        text: 'Failed to load requests, please try again!',
-      });
+  
+      // Show error toast notification
+      toast.error('Failed to load requests, please try again!');
     }
   };
 
@@ -90,10 +93,12 @@ export const RequestTable: React.FC = () => {
 
   // Sort requests
   const sortedRequests = useMemo(() => {
-    let sortableRequests = [...requests];
+    const sortableRequests = [...requests];
     if (sortConfig !== null) {
       sortableRequests.sort((a, b) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let aValue: any = a[sortConfig.key];
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let bValue: any = b[sortConfig.key];
 
         // Handle sorting for date fields
@@ -158,6 +163,7 @@ export const RequestTable: React.FC = () => {
 
   return (
     <div className="container mx-auto p-4">
+      <ToastContainer />
       <H1 className="mb-6 text-primary">My Requests</H1>
 
       {/* Filter Dropdown */}

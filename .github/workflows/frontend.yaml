@@ -2,7 +2,9 @@ name: Unit Tests
 
 on: 
   pull_request:
-    branches: [main]
+    branches: 
+      - main
+      - dev_wfh
 
 jobs:
   tests:
