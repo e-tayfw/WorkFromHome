@@ -97,8 +97,7 @@ class ScheduleController extends Controller
         }
 
         // Step 2: Get all team members who belong to the same department and report to the same manager
-        $teamMembers = Employee::where('Dept', $employee->Dept)
-            ->where('Reporting_Manager', $employee->Reporting_Manager)
+        $teamMembers = Employee::where('Reporting_Manager', $employee->Reporting_Manager)
             ->where('Staff_ID', '!=', $staff_id) // Exclude the employee themselves
             ->pluck('Staff_ID'); // Retrieve only team member IDs
 
@@ -107,10 +106,6 @@ class ScheduleController extends Controller
             $teamMembers = $teamMembers->filter(function ($value) use ($employee) {
                 return $value != $employee->Reporting_Manager;
             });
-        }
-
-        if ($teamMembers->isEmpty()) {
-            return response()->json(['message' => 'No team members found'], 404);
         }
 
         // Step 3: Fetch all approved requests for the team members
@@ -280,8 +275,7 @@ class ScheduleController extends Controller
         }
 
         // Step 2: Get all team members who belong to the same department and report to the same manager
-        $teamMembers = Employee::where('Dept', $manager->Dept)
-            ->where('Reporting_Manager', $manager->Staff_ID)
+        $teamMembers = Employee::where('Reporting_Manager', $manager->Staff_ID)
             ->pluck('Staff_ID'); // Retrieve only team member IDs
 
         if ($teamMembers->isEmpty()) {
@@ -314,7 +308,7 @@ class ScheduleController extends Controller
                 $date->setTimezone('UTC');
 
                 // Format date as "ddmmyy"
-                $formattedDate = $date->format('Y-m-d H:i:s');
+                $formattedDate = $date->format('dmy');
 
                 // Check if there is an approved request for this team member on this date
                 $request = $approvedRequests->where('Requestor_ID', $member_id)
@@ -356,5 +350,97 @@ class ScheduleController extends Controller
         } else {
             return response()->json(['message' => 'Team schedule could not be found or is empty'], 404);
         }
+    }
+
+    public function generateHRScheduleByDepartment()
+    {
+        // Step 1: Get all unique departments from Employee Table
+        $departments = Employee::select('Dept')->distinct()->pluck('Dept');
+
+        // Step 2: Initialise the result for schedule grouped by department
+        $departmentSchedule = [];
+
+        // Loop through every single department and retrieve the schedule of all team members in that specific department as a dictionary
+        foreach ($departments as $dept) {
+            // Step 3: Get the schedule for the department
+            $deptSchedule = $this->generateDepartmentSchedule($dept);
+             // If $deptSchedule is a JsonResponse, decode it into an array
+            if ($deptSchedule instanceof \Illuminate\Http\JsonResponse) {
+                $deptScheduleArray = $deptSchedule->getData(true); // Decode the JSON response to an array
+            } else {
+                $deptScheduleArray = $deptSchedule; // In case it's already an array
+            }
+
+            // Check if 'dept_schedule' exists in the decoded array
+            if (isset($deptScheduleArray['dept_schedule'])) {
+                $innerDeptSchedule = $deptScheduleArray['dept_schedule'];
+            } else {
+                // Handle the case where 'dept_schedule' is not present
+                $innerDeptSchedule = [];
+            }
+
+            // Add the schedule to the result array
+            $departmentSchedule[$dept] = $innerDeptSchedule;
+        }
+
+        return response()->json(['HR_department_schedule' => $departmentSchedule]);
+    }
+
+    public function generateHRScheduleByTeam()
+    {
+        // Step 1: Get all unique employees who are listed as Reporting Managers
+        // This query ensures that we only get employees whose Staff_ID is listed as a Reporting_Manager
+        $managers = Employee::select('Staff_ID', 'Staff_FName', 'Staff_LName')
+            ->whereIn('Staff_ID', function($query) {
+                $query->select('Reporting_Manager')
+                    ->from('Employee');  // Replace 'employees' with your actual table name if needed
+            })
+            ->distinct()
+            ->get();
+
+        // Step 2: Initialise the result for schedule grouped by reporting manager
+        $managerSchedule = [];
+
+        // Step 3: For each manager, get the schedule of their team members and own schedule
+        foreach ($managers as $manager) {
+
+            // Get the team schedule (ensure it's decoded from a JsonResponse if applicable)
+            $managerTeamSchedule = $this->generateTeamScheduleByManager($manager->Staff_ID);
+            if ($managerTeamSchedule instanceof \Illuminate\Http\JsonResponse) {
+                $managerTeamScheduleArray = $managerTeamSchedule->getData(true);  // Decode JSON response to array
+            } else {
+                $managerTeamScheduleArray = $managerTeamSchedule;  // Use it as is if already an array
+            }
+
+            // Check if the 'team_schedule' key exists
+            if (isset($managerTeamScheduleArray['team_schedule'])) {
+                $innerTeamSchedule = $managerTeamScheduleArray['team_schedule'];
+            } else {
+                // Handle missing 'team_schedule' key by setting an empty schedule
+                $innerTeamSchedule = [];
+            }
+
+            // Store the team's schedule under the manager's name
+            $managerSchedule[$manager->Staff_FName . ' ' . $manager->Staff_LName] = $innerTeamSchedule;
+
+            // Get the manager's own schedule (ensure it's decoded from a JsonResponse if applicable)
+            $managerOwnSchedule = $this->generateOwnSchedule($manager->Staff_ID);
+            if ($managerOwnSchedule instanceof \Illuminate\Http\JsonResponse) {
+                $managerOwnScheduleArray = $managerOwnSchedule->getData(true);  // Decode JSON response to array
+            } else {
+                $managerOwnScheduleArray = $managerOwnSchedule;  // Use it as is if already an array
+            }
+
+            // Check if 'schedule' exists in manager's own schedule
+            if (isset($managerOwnScheduleArray['schedule'])) {
+                // Step 5: Add manager's own schedule inside the key Staff_FName + Staff_LName
+                $managerSchedule[$manager->Staff_FName . ' ' . $manager->Staff_LName][$manager->Staff_ID] = $managerOwnScheduleArray['schedule'];
+            } else {
+                $managerSchedule[$manager->Staff_FName . ' ' . $manager->Staff_LName][$manager->Staff_ID] = [];
+            }
+
+        }
+
+        return response()->json(['HR_team_schedule' => $managerSchedule]);        
     }
 }
