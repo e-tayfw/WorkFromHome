@@ -5,7 +5,7 @@ import { useRouter } from "next/router";
 import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
 import React, { useState, useEffect, useCallback } from "react";
-import { getEmployeeDataByEmail } from "@/pages/api/employeeApi";
+// import { getEmployeeDataByEmail } from "@/pages/api/employeeApi";
 import { HRFilter } from "@/components/schedule/HRFilter";
 import { SpinnerIcon } from "@/components/Svgs/spinner";
 import {
@@ -19,7 +19,7 @@ import { ManagerView } from "./ManagerView";
 const Schedule: React.FC = () => {
   const router = useRouter();
   const { team } = router.query;
-  const staffUsername = useSelector((state: RootState) => state.auth.email);
+  // const staffUsername = useSelector((state: RootState) => state.auth.email);
   const staffId = useSelector((state: RootState) => state.auth.staffId);
   const [loading, setLoading] = useState<boolean>(false);
   const [scheduleData, setScheduleData] = useState<any>(null); // Adjust this type according to ScheduleData type
@@ -58,7 +58,7 @@ const Schedule: React.FC = () => {
       console.error("No staffId found in Redux store");
       setLoading(false);
     }
-  }, [staffId]);
+  }, [staffId, role, dept]);
 
   // Fetch the initial schedule for the user's team on mount
   useEffect(() => {
@@ -95,7 +95,7 @@ const Schedule: React.FC = () => {
         <div className="px-[16px] lg:px-[128px]">
           <div className="py-[10px] lg:py-[60px] text-[50px] lg:text-[80px] leading-[60px] lg:leading-[95px] font-bold ">
             <span className="block animate-slide-up1 mt-[60px] md:mt-[100px]">
-              <Display>Let's Get at it!</Display>
+              <Display>Let&apos;s Get at it!</Display>
             </span>
           </div>
         </div>
