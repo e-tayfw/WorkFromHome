@@ -98,7 +98,6 @@ class ScheduleController extends Controller
 
         // Step 2: Get all team members who belong to the same department and report to the same manager
         $teamMembers = Employee::where('Reporting_Manager', $employee->Reporting_Manager)
-        $teamMembers = Employee::where('Reporting_Manager', $employee->Reporting_Manager)
             ->where('Staff_ID', '!=', $staff_id) // Exclude the employee themselves
             ->pluck('Staff_ID'); // Retrieve only team member IDs
 
