@@ -54,7 +54,8 @@ class RequestController extends Controller
 
             $existingRequests = Requests::where([
                 ['Requestor_ID', '=', $staffId],
-                ['Date_Requested', '=', $selectedDate]
+                ['Date_Requested', '=', $selectedDate],
+                ['Status', 'in', ['Pending', 'Approved', 'Withdraw Rejected', 'Withdraw Pending']]
             ])->get();
             
             if ($existingRequests->isNotEmpty()) {
@@ -81,14 +82,24 @@ class RequestController extends Controller
                         'date' => $selectedDate,
                         'success' => false,
                         'two' => $two
-                    ]);
+                    ], 400);
                 }
             }
             
 
             $reportingManager = $employee->Reporting_Manager;
+            $reportingManagerFName = "";
+            $reportingManagerLName = "";
+            $reportingManagerName = "";
+
             if (!$reportingManager) {
                 return response()->json(['message' => 'Reporting manager not found', 'success' => false], 404);
+            }
+            else{
+                $reportingManagerRow = Employee::where("Staff_ID", $reportingManager)->firstOrFail();
+                $reportingManagerFName = $reportingManagerRow-> Staff_FName;
+                $reportingManagerLName = $reportingManagerRow-> Staff_LName;
+                $reportingManagerName = $reportingManagerFName . " " . $reportingManagerLName;
             }
 
             DB::beginTransaction();
@@ -123,7 +134,7 @@ class RequestController extends Controller
                 'date' => $selectedDate,
                 'arrangement' => $arrangement,
                 'reason' => $reason,
-                'reportingManager' => $reportingManager
+                'reportingManager' => $reportingManagerName
             ]);
         } catch (ModelNotFoundException $e) {
             return response()->json(['message' => 'Employee not found', 'success' => false], 404);

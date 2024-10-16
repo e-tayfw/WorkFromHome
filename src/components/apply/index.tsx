@@ -92,7 +92,7 @@ const Apply: React.FC = () => {
             <div style="display: flex; justify-content: center;">
               <div style="text-align: left; display: inline-block;">
                 <p>Date: ${response.data.date}</p>
-                <p>Arrangement: ${formatArrangement(response.data.requested)}</p>                                       
+                <p>Arrangement: ${formatArrangement(response.data.arrangement)}</p>                                       
                 <p>Reason: ${response.data.reason}</p>
                 <p>Reporting Manager: ${response.data.reportingManager}</p>
               </div>
