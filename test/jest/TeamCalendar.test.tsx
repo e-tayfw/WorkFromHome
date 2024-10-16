@@ -26,8 +26,8 @@ jest.mock("@/pages/api/employeeApi", () => ({
 
 describe("TeamCalendar", () => {
   beforeAll(() => {
-    jest.useFakeTimers({ now: new Date("2023-01-01T00:00:00Z") });
-    jest.setSystemTime(new Date("2023-01-01T00:00:00Z"));
+    jest.useFakeTimers({ now: new Date("2023-01-01") });
+    jest.setSystemTime(new Date("2023-01-01"));
   });
 
   afterAll(() => {

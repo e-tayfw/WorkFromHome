@@ -5,39 +5,51 @@ import { useRouter } from "next/router";
 import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
 import React, { useState, useEffect, useCallback } from "react";
-import { getEmployeeDataByEmail } from "@/pages/api/employeeApi";
-import { Filter } from "./Filter";
+// import { getEmployeeDataByEmail } from "@/pages/api/employeeApi";
+import { HRFilter } from "@/components/schedule/HRFilter";
 import { SpinnerIcon } from "@/components/Svgs/spinner";
-import { generateTeamSchedule } from "@/pages/api/scheduleApi";
+import {
+  generateDirectorTeamSchedule,
+  generateManagerTeamSchedule,
+  generateTeamSchedule,
+} from "@/pages/api/scheduleApi";
+import { DirectorFilter } from "./DirectorFilter";
+import { ManagerView } from "./ManagerView";
 
 const Schedule: React.FC = () => {
   const router = useRouter();
   const { team } = router.query;
-  const staffUsername = useSelector((state: RootState) => state.auth.email);
+  // const staffUsername = useSelector((state: RootState) => state.auth.email);
   const staffId = useSelector((state: RootState) => state.auth.staffId);
-  const [role, setRole] = useState<number | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [scheduleData, setScheduleData] = useState<any>(null); // Adjust this type according to ScheduleData type
 
-  useEffect(() => {
-    const fetchStaffData = async () => {
-      if (staffUsername) {
-        const data = await getEmployeeDataByEmail(staffUsername);
-        setRole(data.Role);
-      }
-    };
-
-    fetchStaffData();
-  }, [staffUsername]);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const role = useSelector((state: RootState) => state.auth.role);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const dept = useSelector((state: RootState) => state.auth.dept);
 
   const fetchSchedule = useCallback(async () => {
     if (staffId) {
       try {
         setLoading(true);
-        const fetchedSchedule = await generateTeamSchedule(Number(staffId));
-        setScheduleData(fetchedSchedule.team_schedule); // Set the fetched data
-        setLoading(false);
-
+        if (role == "1" && dept != "HR") {
+          const fetchedSchedule = await generateDirectorTeamSchedule(
+            Number(staffId)
+          );
+          setScheduleData(fetchedSchedule.director_schedule); // Set the fetched data
+          setLoading(false);
+        } else if (role == "3") {
+          const fetchedSchedule = await generateManagerTeamSchedule(
+            Number(staffId)
+          );
+          setScheduleData(fetchedSchedule.team_schedule); // Set the fetched data
+          setLoading(false);
+        } else {
+          const fetchedSchedule = await generateTeamSchedule(Number(staffId));
+          setScheduleData(fetchedSchedule.team_schedule); // Set the fetched data
+          setLoading(false);
+        }
       } catch (error) {
         console.error("Error fetching schedule:", error);
       } finally {
@@ -46,11 +58,12 @@ const Schedule: React.FC = () => {
       console.error("No staffId found in Redux store");
       setLoading(false);
     }
-  }, [staffId]);
+  }, [staffId, role, dept]);
 
   // Fetch the initial schedule for the user's team on mount
   useEffect(() => {
     fetchSchedule();
+    // console.log(team)
   }, [fetchSchedule]);
 
   const handleTeamSelect = (teamSchedule: any) => {
@@ -58,7 +71,7 @@ const Schedule: React.FC = () => {
   };
   const handleDepartmentSelect = (departmentSchedule: any) => {
     setScheduleData(departmentSchedule); // Update the state with the selected department's schedule
-  }
+  };
 
   if (loading) {
     return (
@@ -66,7 +79,9 @@ const Schedule: React.FC = () => {
         <div className="px-[16px] lg:px-[128px]">
           <div className="py-[10px] lg:py-[60px] text-[50px] lg:text-[80px] leading-[60px] lg:leading-[95px] font-bold ">
             <span className="block animate-slide-up1 mt-[60px] md:mt-[100px]">
-              <Display>Loading <SpinnerIcon/> </Display>
+              <Display>
+                Loading <SpinnerIcon />{" "}
+              </Display>
             </span>
           </div>
         </div>
@@ -80,33 +95,29 @@ const Schedule: React.FC = () => {
         <div className="px-[16px] lg:px-[128px]">
           <div className="py-[10px] lg:py-[60px] text-[50px] lg:text-[80px] leading-[60px] lg:leading-[95px] font-bold ">
             <span className="block animate-slide-up1 mt-[60px] md:mt-[100px]">
-              <Display>Let's Get at it!</Display>
+              <Display>Let&apos;s Get at it!</Display>
             </span>
           </div>
         </div>
       </div>
-      {((role === 1 && team)) && (
+      {role == "1" && team && dept == "HR" && (
         <div className="max-w-8xl w-full px-[16px] md:px-[128px] pt-[60px] pb-[30px] md:pt-[50px]">
-          <Filter filterType="department" onSelect={handleDepartmentSelect} />
+          <HRFilter onSelect={handleDepartmentSelect} />
         </div>
       )}
-      {(role === 3 || (role === 1 && team)) && (
+      {role == "1" && team && dept != "HR" && (
         <div className="max-w-8xl w-full px-[16px] md:px-[128px] pt-[60px] pb-[30px] md:pt-[50px]">
-          <Filter filterType="team" onSelect={handleTeamSelect} />
-          <div className="flex flex-row justify-center mt-6">
-            <button
-              className="bg-primary rounded-lg text-white p-4"
-              onClick={fetchSchedule} // Fetch the user's team schedule
-            >
-              Show My Team Schedule
-            </button>
-          </div>
+          <DirectorFilter onSelect={handleTeamSelect} />
         </div>
       )}
-
+      {role == "3" && team && (
+        <div className="max-w-8xl w-full px-[16px] md:px-[128px] pt-[60px] pb-[30px] md:pt-[50px]">
+          <ManagerView onSelect={handleTeamSelect} />
+        </div>
+      )}
 
       <div className="max-w-8xl w-full px-[16px] md:px-[128px] pt-[60px] pb-[30px] md:pt-[50px]">
-        {scheduleData ? ( // Ensure scheduleData is not null before rendering
+        {team ? ( // Ensure scheduleData is not null before rendering
           <TeamCalendar selectedSchedule={scheduleData} />
         ) : (
           <WFHCalendar />

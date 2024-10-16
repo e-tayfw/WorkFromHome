@@ -1,9 +1,9 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useSelector } from 'react-redux';
 import { H1, BodyLarge } from '@/components/TextStyles';
 import RequestEntry from '@/components/history/entry';
 import axios from 'axios';
-import Swal from 'sweetalert2';
+// import Swal from 'sweetalert2';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSort, faSortUp, faSortDown } from '@fortawesome/free-solid-svg-icons';
 import { RootState } from '@/redux/store';
@@ -37,6 +37,7 @@ export const RequestTable: React.FC = () => {
   const employeeId = useSelector((state: RootState) => state.auth.staffId);
 
   // Function to fetch requests
+
   const fetchRequests = async () => {
     Swal.fire({
       title: 'Loading...',
@@ -84,12 +85,12 @@ export const RequestTable: React.FC = () => {
       // Show error toast notification
       toast.error('Failed to load requests, please try again!');
     }
-  };
+  }, [employeeId]);
 
   // Fetch requests when the component mounts
   useEffect(() => {
     fetchRequests();
-  }, [employeeId]);
+  }, [employeeId, fetchRequests]);
 
   // Reset current page to 1 whenever the filter changes
   useEffect(() => {

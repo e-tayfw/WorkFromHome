@@ -6,8 +6,8 @@ interface RequestEntryProps {
   requestId: string;
   requestorId: string;
   approverId: string;
-  status: string;
-  dateRequested: string;
+  status: string | undefined;
+  dateRequested: string; 
   requestBatch: string | null;
   dateOfRequest: string;
   duration: string;

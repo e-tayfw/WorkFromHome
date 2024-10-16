@@ -443,4 +443,68 @@ class ScheduleController extends Controller
 
         return response()->json(['HR_team_schedule' => $managerSchedule]);        
     }
+
+    public function generateTeamScheduleByDirector($directorId)
+    {
+       // Step 1: Retrieve the Director's direct team schedule
+        $directorResponse = $this->generateTeamScheduleByManager($directorId);
+
+        if ($directorResponse->getStatusCode() !== 200) {
+            // Handle error response from generateTeamScheduleByManager
+            return $directorResponse;
+        }
+
+        $directorData = $directorResponse->getData(true);
+
+        // Get director's full name
+        $director = Employee::find($directorId);
+        if (!$director) {
+            return response()->json(['message' => 'Director not found'], 404);
+        }
+        $directorName = $director->Staff_FName . ' ' . $director->Staff_LName;
+
+        // Step 1.2: Replace the 'team_schedule' key with the director's name
+        $combinedSchedule = [];
+        if (array_key_exists('team_schedule', $directorData)) {
+            $combinedSchedule[$directorName] = $directorData['team_schedule'];
+        } else {
+            $combinedSchedule[$directorName] = [];
+        }
+
+        // Step 2: Get all managers who report to the director and have Role number 3
+        $managers = Employee::where('Reporting_Manager', $directorId)
+            ->where('Role', 3)
+            ->get();
+
+        if ($managers->isEmpty()) {
+            $managers = [];
+        }
+        else {
+            // Step 3: Loop through each manager and get their team schedule
+            foreach ($managers as $manager){
+                $managerId = $manager->Staff_ID;
+                $managerName = $manager->Staff_FName . ' ' . $manager->Staff_LName;
+
+                // Get the manager's team schedule
+                $managerResponse = $this->generateTeamScheduleByManager($managerId);
+
+                if ($managerResponse->getStatusCode() !== 200) {
+                    // Handle error response
+                    $combinedSchedule[$managerName] = ['error' => 'Unable to retrieve schedule'];
+                    continue;
+                }
+                $managerData = $managerResponse->getData(true);
+
+                // Replace 'team_schedule' key with manager's name
+                if (array_key_exists('team_schedule', $managerData)) {
+                    $combinedSchedule[$managerName] = $managerData['team_schedule'];
+                } else {
+                    $combinedSchedule[$managerName] = [];
+                }
+        }
+        }
+
+        // Return the combined schedule in JSON format
+        return response()->json(['director_schedule' => $combinedSchedule]);
+    }
 }

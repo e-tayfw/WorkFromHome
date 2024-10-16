@@ -50,12 +50,18 @@ export function Auth() {
         // Step 3: Store the employee ID (Staff_ID) in localStorage
         localStorage.setItem("employeeId", staffId.toString());
 
+        // Step 4: Store role and Dept
+        const role = employeeData.Role;;
+        const dept = employeeData.Dept;
+
         // Step 4: Dispatch the employee data to Redux store
         dispatch(
           setAuthData({
             email: employeeData.Email, // e.g., Chandra.Kong@allinone.com.sg
             roleType: userType,
             staffId: staffId.toString(),
+            role: role,
+            dept: dept,
           })
         );
 
