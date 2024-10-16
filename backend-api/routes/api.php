@@ -25,12 +25,22 @@ Route::get(uri: '/testScheduleData', action: [TestScheduleController::class, 'ge
 Route::get(uri: '/request', action: [RequestController::class, 'getAllRequests']);
 Route::get(uri: '/request/requestorId/{employee_id}', action: [RequestController::class, 'getRequestsByRequestorID']);
 Route::get(uri: '/request/approverID/{employee_id}', action: [RequestController::class, 'getRequestsByApproverID']);
-Route::post(uri:'/request', action: [RequestController::class, 'createRequest']);
+Route::post(uri: '/request', action: [RequestController::class, 'createRequest']);
+Route::get(uri: '/request/proportionOfTeam/{approver_id}', action: [RequestController::class, 'getProportionOfTeam']);
+Route::get(uri: '/request/proportionOfTeam/date/{approver_id}/{date}', action: [RequestController::class, 'getProportionOfTeamOnDate']);
 Route::post('/request/withdraw', [RequestController::class, 'withdrawRequest']);
 
 // Schedule
 Route::get(uri: '/generateOwnSchedule/{staff_id}', action: [ScheduleController::class, 'generateOwnSchedule']);
 Route::get(uri: '/generateTeamSchedule/{staff_id}', action: [ScheduleController::class, 'generateTeamSchedule']);
+Route::get(uri: '/generateTeamScheduleByManager/{reportingManager}', action: [ScheduleController::class, 'generateTeamScheduleByManager']);
+Route::get(uri: '/generateDepartmentSchedule/{dept}', action: [ScheduleController::class, 'generateDepartmentSchedule']);
+
+// Request Approval
+Route::post(uri: '/approveRequest', action: [RequestController::class, 'approveRequest']);
+
+// Request Rejection
+Route::post(uri: '/rejectRequest', action: [RequestController::class, 'rejectRequest']);
 Route::get(uri: '/generateTeamScheduleByManager/{reportingManager}', action:[ScheduleController::class, 'generateTeamScheduleByManager']);
 Route::get(uri: '/generateDepartmentSchedule/{dept}', action:[ScheduleController::class, 'generateDepartmentSchedule']);
 Route::get('/generateHRScheduleByDepartment', [ScheduleController::class, 'generateHRScheduleByDepartment']);

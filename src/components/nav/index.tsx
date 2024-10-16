@@ -55,7 +55,7 @@ export const navLinks: NavLink[] = [
       },
       {
         title: "Approve Requests",
-        path: "/request",
+        path: "/approve",
         imgUrl:
           "https://workfromhomebucket.s3.ap-southeast-2.amazonaws.com/Nav/approve-request-simu.png",
       },
