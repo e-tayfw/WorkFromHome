@@ -328,6 +328,10 @@ class RequestController extends Controller
             return response()->json(['message' => "You are not allowed to approve this request"], 400);
         }
 
+        if (strlen($reason) > 255) {
+            $reason = substr($reason, 0, 255);
+        }
+
         if ($requestDB->Status == 'Withdraw Pending' && $status == 'Withdrawn') {
             $newRequestLog = new RequestLog();
             $newRequestLog->Request_ID = $requestDB->Request_ID;
@@ -457,6 +461,10 @@ class RequestController extends Controller
         // check for reason provided
         if ($reason == "") {
             return response()->json(['message' => "Reason was not provided"], 401);
+        }
+
+        if (strlen($reason) > 255) {
+            $reason = substr($reason, 0, 255);
         }
 
         // check if the requst is already rejected
