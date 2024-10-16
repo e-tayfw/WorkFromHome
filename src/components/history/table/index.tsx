@@ -9,6 +9,7 @@ import { faSort, faSortUp, faSortDown } from '@fortawesome/free-solid-svg-icons'
 import { RootState } from '@/redux/store';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import Swal from 'sweetalert2';
 
 // Interface for request data
 interface Request {
@@ -27,34 +28,37 @@ const REQUESTS_PER_PAGE = 5;
 
 export const RequestTable: React.FC = () => {
   const [requests, setRequests] = useState<Request[]>([]);
-  const [sortConfig, setSortConfig] = useState<{ key: keyof Request; direction: string } | null>(null);
-  const [filterStatus, setFilterStatus] = useState<string>('all');
+  const [sortConfig, setSortConfig] = useState<{
+    key: keyof Request;
+    direction: string;
+  } | null>(null);
+  const [filterStatus, setFilterStatus] = useState<string>("all");
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState<number>(1); // For pagination
 
-  // Retrieve staffId (which is employeeId) from Redux store
+  // Retrieve employeeId (staffId) from Redux store
   const employeeId = useSelector((state: RootState) => state.auth.staffId);
 
-  // Function to fetch requests
-
-  const fetchRequests = async () => {
+  const fetchRequests = useCallback(async () => {
     Swal.fire({
-      title: 'Loading...',
-      html: 'Please wait while we fetch your requests',
+      title: "Loading...",
+      html: "Please wait while we fetch your requests",
       allowOutsideClick: false,
       didOpen: () => {
         Swal.showLoading();
       },
     });
-  
+
     try {
       if (!employeeId) {
         throw new Error("No employee ID found in session.");
       }
-  
-      const response = await axios.get(`http://127.0.0.1:8085/api/request/requestorId/${employeeId}`);
-      
+
+      const response = await axios.get(
+        `http://127.0.0.1:8085/api/request/requestorId/${employeeId}`
+      );
+
       const mappedRequests = response.data.map((item: any) => ({
         requestId: item.Request_ID,
         requestorId: item.Requestor_ID,
@@ -62,28 +66,28 @@ export const RequestTable: React.FC = () => {
         status: item.Status,
         dateRequested: item.Date_Requested,
         requestBatch: item.Request_Batch,
-        dateOfRequest: new Date(item.created_at).toISOString().split('T')[0],
-        duration: item.Duration
+        dateOfRequest: new Date(item.created_at).toISOString().split("T")[0],
+        duration: item.Duration,
       }));
-  
+
       setRequests(mappedRequests);
       setLoading(false);
-  
+
       // Close SweetAlert after loading
       Swal.close();
-      
+
       // Show success toast notification
-      toast.success('Requests loaded successfully!');
+      toast.success("Requests loaded successfully!");
     } catch (err) {
-      console.error('Error fetching requests:', err);
-      setError('Failed to load requests');
+      console.error("Error fetching requests:", err);
+      setError("Failed to load requests");
       setLoading(false);
-      
+
       // Close SweetAlert after error
       Swal.close();
-  
+
       // Show error toast notification
-      toast.error('Failed to load requests, please try again!');
+      toast.error("Failed to load requests, please try again!");
     }
   }, [employeeId]);
 
@@ -108,16 +112,19 @@ export const RequestTable: React.FC = () => {
         let bValue: any = b[sortConfig.key];
 
         // Handle sorting for date fields
-        if (sortConfig.key === 'dateRequested' || sortConfig.key === 'dateOfRequest') {
+        if (
+          sortConfig.key === "dateRequested" ||
+          sortConfig.key === "dateOfRequest"
+        ) {
           aValue = new Date(aValue);
           bValue = new Date(bValue);
         }
 
         if (aValue < bValue) {
-          return sortConfig.direction === 'ascending' ? -1 : 1;
+          return sortConfig.direction === "ascending" ? -1 : 1;
         }
         if (aValue > bValue) {
-          return sortConfig.direction === 'ascending' ? 1 : -1;
+          return sortConfig.direction === "ascending" ? 1 : -1;
         }
         return 0;
       });
@@ -127,22 +134,31 @@ export const RequestTable: React.FC = () => {
 
   // Filter requests
   const filteredRequests = useMemo(() => {
-    if (filterStatus === 'all') {
+    if (filterStatus === "all") {
       return sortedRequests;
     }
-    return sortedRequests.filter(request => request.status.toLowerCase() === filterStatus.toLowerCase());
+    return sortedRequests.filter(
+      (request) => request.status.toLowerCase() === filterStatus.toLowerCase()
+    );
   }, [filterStatus, sortedRequests]);
 
   // Pagination logic
   const startIndex = (currentPage - 1) * REQUESTS_PER_PAGE;
-  const currentRequests = filteredRequests.slice(startIndex, startIndex + REQUESTS_PER_PAGE);
+  const currentRequests = filteredRequests.slice(
+    startIndex,
+    startIndex + REQUESTS_PER_PAGE
+  );
   const totalPages = Math.ceil(filteredRequests.length / REQUESTS_PER_PAGE);
 
   // Function to handle sorting
   const requestSort = (key: keyof Request) => {
-    let direction = 'ascending';
-    if (sortConfig && sortConfig.key === key && sortConfig.direction === 'ascending') {
-      direction = 'descending';
+    let direction = "ascending";
+    if (
+      sortConfig &&
+      sortConfig.key === key &&
+      sortConfig.direction === "ascending"
+    ) {
+      direction = "descending";
     }
     setSortConfig({ key, direction });
   };
@@ -152,7 +168,7 @@ export const RequestTable: React.FC = () => {
     if (!sortConfig || sortConfig.key !== key) {
       return <FontAwesomeIcon icon={faSort} />;
     }
-    if (sortConfig.direction === 'ascending') {
+    if (sortConfig.direction === "ascending") {
       return <FontAwesomeIcon icon={faSortUp} />;
     }
     return <FontAwesomeIcon icon={faSortDown} />;
@@ -174,7 +190,12 @@ export const RequestTable: React.FC = () => {
 
       {/* Filter Dropdown */}
       <div className="mb-6 flex items-center space-x-4">
-        <label htmlFor="statusFilter" className="text-lg font-semibold text-primary">Filter by Status:</label>
+        <label
+          htmlFor="statusFilter"
+          className="text-lg font-semibold text-primary"
+        >
+          Filter by Status:
+        </label>
         <div className="relative">
           <select
             id="statusFilter"
@@ -198,17 +219,37 @@ export const RequestTable: React.FC = () => {
       <table className="table-auto w-full border-collapse">
         <thead>
           <tr className="bg-secondary text-text">
-            <th className="px-4 py-2 text-left cursor-pointer" onClick={() => requestSort('dateRequested')}>
-              <BodyLarge className="text-primary">Date {getSortIcon('dateRequested')}</BodyLarge>
+            <th
+              className="px-4 py-2 text-left cursor-pointer"
+              onClick={() => requestSort("dateRequested")}
+            >
+              <BodyLarge className="text-primary">
+                Date {getSortIcon("dateRequested")}
+              </BodyLarge>
             </th>
-            <th className="px-4 py-2 text-left cursor-pointer" onClick={() => requestSort('duration')}>
-              <BodyLarge className="text-primary">Arrangement {getSortIcon('duration')}</BodyLarge>
+            <th
+              className="px-4 py-2 text-left cursor-pointer"
+              onClick={() => requestSort("duration")}
+            >
+              <BodyLarge className="text-primary">
+                Arrangement {getSortIcon("duration")}
+              </BodyLarge>
             </th>
-            <th className="px-4 py-2 text-left cursor-pointer" onClick={() => requestSort('dateOfRequest')}>
-              <BodyLarge className="text-primary">Date Of Request {getSortIcon('dateOfRequest')}</BodyLarge>
+            <th
+              className="px-4 py-2 text-left cursor-pointer"
+              onClick={() => requestSort("dateOfRequest")}
+            >
+              <BodyLarge className="text-primary">
+                Date Of Request {getSortIcon("dateOfRequest")}
+              </BodyLarge>
             </th>
-            <th className="px-4 py-2 text-left cursor-pointer" onClick={() => requestSort('status')}>
-              <BodyLarge className="text-primary">Status {getSortIcon('status')}</BodyLarge>
+            <th
+              className="px-4 py-2 text-left cursor-pointer"
+              onClick={() => requestSort("status")}
+            >
+              <BodyLarge className="text-primary">
+                Status {getSortIcon("status")}
+              </BodyLarge>
             </th>
             <th className="px-4 py-2 text-left">
               <BodyLarge className="text-primary">Action</BodyLarge>

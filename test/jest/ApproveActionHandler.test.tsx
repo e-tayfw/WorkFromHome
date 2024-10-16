@@ -7,12 +7,14 @@ import Swal from 'sweetalert2';
 import { toast } from 'react-toastify';
 import ActionHandler from '@/components/approve/actionHandler';
 import { Provider } from 'react-redux';
-import { createStore } from 'redux';
+import { configureStore } from "@reduxjs/toolkit";
 
 // Mock the Redux store
-const mockStore = createStore(() => ({
-  auth: { staffId: '12345' },
-}));
+const mockStore = configureStore({
+  reducer: {
+    auth: () => ({ staffId: "12345" }),
+  },
+});
 
 // Mock React Toastify
 jest.mock('react-toastify', () => ({

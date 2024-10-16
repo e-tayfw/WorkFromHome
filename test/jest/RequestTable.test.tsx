@@ -71,10 +71,8 @@ describe('RequestTable Component', () => {
     expect(screen.queryByText('You have no requests!')).not.toBeInTheDocument();
 
     // Verify that the first request data is displayed correctly
-    await waitFor(() => {
-      expect(screen.getByText('2024-10-01')).toBeInTheDocument(); // Check mapped Date_Requested
-      expect(screen.getByText('approved')).toBeInTheDocument();  // Check `status`
-    });
+    expect(await screen.findByText('2024-10-01')).toBeInTheDocument(); // Check mapped Date_Requested
+    expect(await screen.findByText('approved')).toBeInTheDocument();  // Check `status`
   });
 
   it('verifies pagination controls are working with 6 mock entries', async () => {
@@ -160,10 +158,8 @@ describe('RequestTable Component', () => {
     fireEvent.click(nextButton);
 
     // Wait for the last request to appear in the document
-    await waitFor(() => {
-      expect(screen.getByText('2024-10-01')).toBeInTheDocument(); // Check the earliest request's Date_Requested
-      expect(screen.getByText('approved')).toBeInTheDocument(); // Check the earliest request's status
-    });
+    expect(await screen.findByText('2024-10-01')).toBeInTheDocument(); // Check the earliest request's Date_Requested
+    expect(await screen.findByText('approved')).toBeInTheDocument(); // Check the earliest request's status
   });
 
   it('filters requests by status correctly', async () => {
@@ -208,10 +204,8 @@ describe('RequestTable Component', () => {
     fireEvent.change(statusFilter, { target: { value: 'pending' } });
 
     // Wait for only pending requests to be shown
-    await waitFor(() => {
-      expect(screen.getByText('2024-10-02')).toBeInTheDocument(); // Pending request Date_Requested
-      expect(screen.getByText('pending')).toBeInTheDocument(); // Pending request status
-    });
+    expect(await screen.findByText('2024-10-02')).toBeInTheDocument(); // Pending request Date_Requested
+    expect(screen.getByText('pending')).toBeInTheDocument(); // Pending request status
 
     // Ensure no other statuses are shown
     expect(screen.queryByText('approved')).not.toBeInTheDocument();

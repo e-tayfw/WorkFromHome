@@ -20,7 +20,6 @@ interface ApproveEntryProps {
 
 const ApproveEntry: React.FC<ApproveEntryProps> = ({
   requestId,
-  requestorName,
   requestorId,
   approverId,
   status,
@@ -33,22 +32,22 @@ const ApproveEntry: React.FC<ApproveEntryProps> = ({
 }) => {
   const [proportion, setProportion] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [requestStatus, setRequestStatus] = useState(status);
-
-  const fetchProportion = async () => {
-    try {
-      const response = await axios.get(`http://127.0.0.1:8085/api/request/proportionOfTeam/${approverId}`);
-      const proportions = response.data;
-      const proportionForDateAndDuration = proportions[dateRequested]?.[duration] || 0;
-      setProportion(proportionForDateAndDuration);
-    } catch (err) {
-      console.error('Error fetching team proportion:', err);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const [requestStatus] = useState(status);
 
   useEffect(() => {
+    const fetchProportion = async () => {
+      try {
+        const response = await axios.get(`http://127.0.0.1:8085/api/request/proportionOfTeam/${approverId}`);
+        const proportions = response.data;
+        const proportionForDateAndDuration = proportions[dateRequested]?.[duration] || 0;
+        setProportion(proportionForDateAndDuration);
+      } catch (err) {
+        console.error('Error fetching team proportion:', err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
     fetchProportion();
   }, [dateRequested, duration, approverId]);
 

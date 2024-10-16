@@ -3,11 +3,10 @@ import { Datecomponent } from "@/components/apply/datepicker";
 import { Selection } from "@/components/apply/selection";
 import { Reason } from "@/components/apply/reason";
 import { Submit } from "@/components/apply/submit";
-import { H1, BodyLarge, Body, Display } from "@/components/TextStyles";
+import { Body, Display } from "@/components/TextStyles";
 import Swal from 'sweetalert2';
 import { useSelector } from "react-redux";
 import axios from 'axios';
-import { toast } from "react-toastify";
 
 type ArrangementType = 'AM' | 'PM' | 'FD' | '';
 
@@ -44,7 +43,7 @@ const Apply: React.FC = () => {
     setReason(text);
   }, []);
 
-  const handleSubmit = useCallback(async (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+  const handleSubmit = useCallback(async () => {
     setIsLoading(true);
 
     const submitData: SubmitData = {
@@ -110,9 +109,10 @@ const Apply: React.FC = () => {
       }
       else if(response.data.success == false){
         
-        let title = 'Request Rejected';
+        const title = 'Request Rejected';
         let message = '';
-        let resetDate = false;
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const resetDate = false;
 
         if ((response.data.existing === "AM" || response.data.existing === "PM") && response.data.requested === "FD") {
           message = `You can't apply for a full day request when a same-day request already exists`;

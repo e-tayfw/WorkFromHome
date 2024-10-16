@@ -1,7 +1,7 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import axios from 'axios';
 import ApproveEntry from '@/components/approve/entry';
-import { H1, BodyLarge } from '@/components/TextStyles';
+import { BodyLarge } from '@/components/TextStyles';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSort, faSortUp, faSortDown, faChevronDown, faChevronRight } from '@fortawesome/free-solid-svg-icons';
 import { ToastContainer, toast } from 'react-toastify';
@@ -33,6 +33,7 @@ const ApproveTable: React.FC<ApproveTableProps> = ({ employees }) => {
   const [requests, setRequests] = useState<Request[]>([]);
   const [expandedStaff, setExpandedStaff] = useState<number[]>([]); // Track expanded staff tables
   const [sortConfig, setSortConfig] = useState<{ key: keyof Request; direction: string } | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [allDataLoaded, setAllDataLoaded] = useState<boolean>(false);
@@ -46,7 +47,7 @@ const ApproveTable: React.FC<ApproveTableProps> = ({ employees }) => {
   const requestsPerPage = 5;
 
   // Define fetchRequests to refresh data and collapse expanded tables
-  const fetchRequests = async () => {
+  const fetchRequests = useCallback(async () => {
     try {
       const requestRes = await axios.get(`http://127.0.0.1:8085/api/request/approverID/${staffId}`);
 
@@ -78,12 +79,12 @@ const ApproveTable: React.FC<ApproveTableProps> = ({ employees }) => {
       setLoading(false);
       toast.error('Failed to load approvals, please try again!');
     }
-  };
+  }, [staffId, employees]);
 
   useEffect(() => {
     setIsClient(true);
     fetchRequests();
-  }, [staffId, employees]);
+  }, [staffId, employees, fetchRequests]);
 
   useEffect(() => {
     if (allDataLoaded) {
@@ -283,7 +284,9 @@ const ApproveTable: React.FC<ApproveTableProps> = ({ employees }) => {
                 <h2 className="text-xl font-semibold text-primary">
                   {employee.Staff_FName} {employee.Staff_LName}
                 </h2>
-                <FontAwesomeIcon icon={isExpanded ? faChevronDown : faChevronRight} />
+                <FontAwesomeIcon
+                  icon={isExpanded ? faChevronDown : faChevronRight}
+                />
               </div>
 
               {/* Staff Request Table - Only display if expanded */}
@@ -291,27 +294,49 @@ const ApproveTable: React.FC<ApproveTableProps> = ({ employees }) => {
                 <>
                   {employeeRequests.length === 0 ? (
                     <div className="text-center text-primary mt-4">
-                      Staff has no requests of '{filterStatus}' status
+                      Staff has no requests of &apos;{filterStatus}&apos; status
                     </div>
                   ) : (
                     <>
                       <table className="table-auto w-full border-collapse mt-4">
                         <thead>
                           <tr className="bg-secondary text-text">
-                            <th className="px-4 py-2 text-left cursor-pointer" onClick={() => requestSort('dateRequested')}>
-                              <BodyLarge className="text-primary">Date Requested {getSortIcon('dateRequested')}</BodyLarge>
+                            <th
+                              className="px-4 py-2 text-left cursor-pointer"
+                              onClick={() => requestSort("dateRequested")}
+                            >
+                              <BodyLarge className="text-primary">
+                                Date Requested {getSortIcon("dateRequested")}
+                              </BodyLarge>
                             </th>
-                            <th className="px-4 py-2 text-left cursor-pointer" onClick={() => requestSort('duration')}>
-                              <BodyLarge className="text-primary">Duration {getSortIcon('duration')}</BodyLarge>
+                            <th
+                              className="px-4 py-2 text-left cursor-pointer"
+                              onClick={() => requestSort("duration")}
+                            >
+                              <BodyLarge className="text-primary">
+                                Duration {getSortIcon("duration")}
+                              </BodyLarge>
                             </th>
-                            <th className="px-4 py-2 text-left cursor-pointer" onClick={() => requestSort('dateOfRequest')}>
-                              <BodyLarge className="text-primary">Date Of Request {getSortIcon('dateOfRequest')}</BodyLarge>
+                            <th
+                              className="px-4 py-2 text-left cursor-pointer"
+                              onClick={() => requestSort("dateOfRequest")}
+                            >
+                              <BodyLarge className="text-primary">
+                                Date Of Request {getSortIcon("dateOfRequest")}
+                              </BodyLarge>
                             </th>
-                            <th className="px-4 py-2 text-left cursor-pointer" onClick={() => requestSort('status')}>
-                              <BodyLarge className="text-primary">Status {getSortIcon('status')}</BodyLarge>
+                            <th
+                              className="px-4 py-2 text-left cursor-pointer"
+                              onClick={() => requestSort("status")}
+                            >
+                              <BodyLarge className="text-primary">
+                                Status {getSortIcon("status")}
+                              </BodyLarge>
                             </th>
                             <th className="px-4 py-2 text-left">
-                              <BodyLarge className="text-primary">Action</BodyLarge>
+                              <BodyLarge className="text-primary">
+                                Action
+                              </BodyLarge>
                             </th>
                           </tr>
                         </thead>
@@ -340,7 +365,9 @@ const ApproveTable: React.FC<ApproveTableProps> = ({ employees }) => {
                         <button
                           className="bg-primary text-white py-2 px-4 rounded-md disabled:bg-gray-400 disabled:cursor-not-allowed"
                           disabled={currentPage === 1}
-                          onClick={() => handlePageChange(employee.Staff_ID, currentPage - 1)}
+                          onClick={() =>
+                            handlePageChange(employee.Staff_ID, currentPage - 1)
+                          }
                         >
                           Previous
                         </button>
@@ -349,8 +376,12 @@ const ApproveTable: React.FC<ApproveTableProps> = ({ employees }) => {
                         </span>
                         <button
                           className="bg-primary text-white py-2 px-4 rounded-md disabled:bg-gray-400 disabled:cursor-not-allowed"
-                          disabled={currentPage === totalPages || totalPages === 0}
-                          onClick={() => handlePageChange(employee.Staff_ID, currentPage + 1)}
+                          disabled={
+                            currentPage === totalPages || totalPages === 0
+                          }
+                          onClick={() =>
+                            handlePageChange(employee.Staff_ID, currentPage + 1)
+                          }
                         >
                           Next
                         </button>

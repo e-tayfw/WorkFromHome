@@ -54,6 +54,7 @@ const CustomToolbar = (toolbar: any) => {
 };
 
 const CalendarView: React.FC = () => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [events, setEvents] = useState<CalendarEvent[]>([]); // Events for the calendar
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -126,26 +127,28 @@ const CalendarView: React.FC = () => {
     fetchData();
   }, [staffId]);
 
-  // Custom event style using Tailwind colors from your config
   const eventStyleGetter = (event: CalendarEvent) => {
-    let backgroundColor = 'bg-primary'; // Default tailwind primary color
+    let backgroundColor = "#2176FF"; // Default color
     switch (event.duration) {
-      case 'AM':
-        backgroundColor = 'bg-accent'; // Tailwind accent color for AM
+      case "AM":
+        backgroundColor = "#FFC107"; // Color for AM
         break;
-      case 'PM':
-        backgroundColor = 'bg-secondary'; // Tailwind secondary color for PM
+      case "PM":
+        backgroundColor = "#FF5722"; // Color for PM
         break;
-      case 'FD':
-        backgroundColor = 'bg-text'; // Tailwind text color for FD
+      case "FD":
+        backgroundColor = "#4CAF50"; // Color for FD
         break;
       default:
-        backgroundColor = 'bg-primary'; // Fallback to primary color
+        backgroundColor = "#2176FF"; // Fallback color
     }
     const style = {
-      className: `${backgroundColor} text-white rounded-lg p-2`,
+      backgroundColor,
+      color: "white",
+      borderRadius: "5px",
+      padding: "5px",
     };
-    return { style };
+    return { style }; // Return CSS style, not className
   };
 
   // Handle event click to show details of requests for the selected time period (AM/PM/FD)
@@ -222,7 +225,9 @@ const CalendarView: React.FC = () => {
         }
       : null;
 
-    return [amEvent, pmEvent, fdEvent].filter(Boolean); // Only return non-null events
+    return [amEvent, pmEvent, fdEvent].filter(
+      (event): event is CalendarEvent => event !== null
+    ); // Only return non-null events
   });
 
   return (
