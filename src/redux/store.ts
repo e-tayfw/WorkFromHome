@@ -1,19 +1,21 @@
+// src/redux/store.ts
 import { configureStore } from "@reduxjs/toolkit";
-import authReducer from "@/redux/slices/authSlice"; // Make sure your slice is correctly imported
+import authReducer from "@/redux/slices/authSlice"; // Ensure correct import path
 import { persistStore, persistReducer } from "redux-persist";
-import storage from "redux-persist/lib/storage"; // defaults to localStorage for web
+import storage from "redux-persist/lib/storage"; // Defaults to localStorage for web
 import { combineReducers } from "redux";
-// import logger from "redux-logger";
-import { thunk } from "redux-thunk";
 
 // Define persist config
 const persistConfig = {
   key: "root",
-  storage
+  storage,
+  whitelist: ["auth"], // Specify which reducers you want to persist
 };
 
+// Combine reducers
 const rootReducer = combineReducers({
   auth: authReducer,
+  // Add other reducers here if needed
 });
 
 // Create a persisted reducer
@@ -22,10 +24,10 @@ const persistedReducer = persistReducer(persistConfig, rootReducer);
 // Create the Redux store
 const store = configureStore({
   reducer: persistedReducer,
-  middleware: (getDefaultMiddleware) =>
+  middleware: (getDefaultMiddleware: any) =>
     getDefaultMiddleware({
-      serializableCheck: false,
-    }).concat(thunk),
+      serializableCheck: false, 
+    }),
 });
 
 // Create a persistor to sync with localStorage

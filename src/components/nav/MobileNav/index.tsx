@@ -2,10 +2,10 @@ import { FC, useState } from "react";
 import { motion } from "framer-motion";
 import { useRouter } from "next/router";
 import { FiMenu, FiX } from "react-icons/fi";
-import { logout } from '@/redux/slices/authSlice'; // Import the logout action from the authSlice
-import { useDispatch } from 'react-redux';
+import { logout } from "@/redux/slices/authSlice"; // Import the logout action from the authSlice
+import { useDispatch } from "react-redux";
 import NextLink from "next/link";
-import { NavLink } from "..";
+import { NavLink } from "@/components/nav";
 // import { Body } from "@/components/TextStyles";
 // import Link from "next/link";
 

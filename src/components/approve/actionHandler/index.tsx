@@ -20,7 +20,6 @@ interface ActionHandlerProps {
 
 const ActionHandler: React.FC<ActionHandlerProps> = ({
   requestId,
-  requestorId,
   dateRequested,
   requestBatch,
   duration,

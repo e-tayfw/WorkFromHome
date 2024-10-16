@@ -142,18 +142,39 @@ class RequestController extends Controller
         try {
             $employee = Employee::where("Staff_ID", $staffId)->firstOrFail();
 
-            $existingRequest = Requests::where([
+            $existingRequests = Requests::where([
                 ['Requestor_ID', '=', $staffId],
                 ['Date_Requested', '=', $selectedDate]
-            ])->first();
+            ])->get();
+            
+            if ($existingRequests->isNotEmpty()) {
+                $message = '';
+                $existingArrangements = $existingRequests->pluck('Duration')->toArray();
+                $two = false;
 
-            if ($existingRequest) {
-                return response()->json([
-                    'message' => 'A request for the same date already exists',
-                    'date' => $selectedDate,
-                    'success' => false
-                ]);
+                if (count($existingArrangements) === 2 && in_array('AM', $existingArrangements) && in_array('PM', $existingArrangements) && $arrangement === 'FD') {
+                    $message = 'Full day request is not needed when both AM and PM requests already exist';
+                    $two = true;
+                } elseif (in_array($arrangement, $existingArrangements)) {
+                    $message = 'Duplicate requests cannot be made';
+                } elseif (in_array('FD', $existingArrangements)) {
+                    $message = 'Conflict with existing full day request';
+                } elseif ($arrangement === 'FD' && (in_array('AM', $existingArrangements) || in_array('PM', $existingArrangements))) {
+                    $message = 'Full day being requested when a half day arrangement already exists';
+                }
+            
+                if ($message) {
+                    return response()->json([
+                        'message' => $message,
+                        'existing' => implode(', ', $existingArrangements),
+                        'requested' => $arrangement,
+                        'date' => $selectedDate,
+                        'success' => false,
+                        'two' => $two
+                    ]);
+                }
             }
+            
 
             $reportingManager = $employee->Reporting_Manager;
             if (!$reportingManager) {
@@ -191,6 +212,7 @@ class RequestController extends Controller
                 'Request_ID' => $newRequest->Request_ID,
                 'date' => $selectedDate,
                 'arrangement' => $arrangement,
+                'reason' => $reason,
                 'reportingManager' => $reportingManager
             ]);
         } catch (ModelNotFoundException $e) {

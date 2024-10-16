@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import { Body, H2, H1, BodySmall } from "@/components/TextStyles";
 import moment from "moment";
 import { useSelector } from "react-redux";
@@ -15,6 +15,7 @@ interface ScheduleData {
   [userId: string]: TeamMember;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 interface Schedule {
   [date: string]: number;
 }
@@ -40,41 +41,72 @@ export const TeamCalendar: React.FC<TeamCalendarProps> = ({
   const [modalDate, setModalDate] = useState<string>("");
 
   const [currentView, setCurrentView] = useState<"day" | "week">("day");
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [weeks, setWeeks] = useState<{ [key: string]: Schedule }>({});
   const [selectedDate, setSelectedDate] = useState<string>(
     moment().format("YYYY-MM-DD")
   );
 
-  const minDate = moment().subtract(2, "months");
-  const maxDate = moment().add(3, "months");
+  // Define minDate and maxDate
+  const minDate = moment().subtract(2, "months").startOf("day");
+  const maxDate = moment().add(3, "months").endOf("day");
 
+  // isNextDisabled and isPrevDisabled functions remain the same
   const isNextDisabled = () => {
     const currentDate = moment(selectedDate);
-    const nextDayDate = currentDate.clone().add(1, "day");
-    return nextDayDate.isAfter(maxDate, "day");
+    const nextDayDate = currentDate.clone().add(1, "day").format("DDMMYY");
+    // Check if any user has schedule data for nextDayDate
+    const hasScheduleForNextDay = Object.values(schedule || {}).some(
+      (userSchedule) => userSchedule[nextDayDate] !== undefined
+    );
+    return !hasScheduleForNextDay || currentDate.isSameOrAfter(maxDate, "day");
   };
 
   const isPrevDisabled = () => {
     const currentDate = moment(selectedDate);
-    const prevDayDate = currentDate.clone().subtract(1, "day");
-    return prevDayDate.isBefore(minDate, "day");
+    const prevDayDate = currentDate.clone().subtract(1, "day").format("DDMMYY");
+    // Check if any user has schedule data for prevDayDate
+    const hasScheduleForPrevDay = Object.values(schedule || {}).some(
+      (userSchedule) => userSchedule[prevDayDate] !== undefined
+    );
+    return !hasScheduleForPrevDay || currentDate.isSameOrBefore(minDate, "day");
   };
 
-  const isNextWeekDisabled = () => {
-    const nextWeekEndDate = moment(selectedDate)
-      .clone()
-      .add(1, "week")
-      .endOf("week");
-    return nextWeekEndDate.isAfter(maxDate, "day");
-  };
-
+  // isNextWeekDisabled and isPrevWeekDisabled functions
   const isPrevWeekDisabled = () => {
     const prevWeekStartDate = moment(selectedDate)
       .clone()
       .subtract(1, "week")
       .startOf("week");
-    return prevWeekStartDate.isBefore(minDate, "day");
+
+    // Check if any date in the previous week is within the allowed range
+    for (let i = 0; i < 7; i++) {
+      const date = prevWeekStartDate.clone().add(i, "days");
+      if (
+        date.isSameOrAfter(minDate, "day") &&
+        date.isSameOrBefore(maxDate, "day")
+      ) {
+        return false; // At least one date is within the range
+      }
+    }
+    return true; // All dates are out of range
+  };
+
+  const isNextWeekDisabled = () => {
+    const nextWeekStartDate = moment(selectedDate)
+      .clone()
+      .add(1, "week")
+      .startOf("week");
+
+    // Check if any date in the next week is within the allowed range
+    for (let i = 0; i < 7; i++) {
+      const date = nextWeekStartDate.clone().add(i, "days");
+      if (
+        date.isSameOrAfter(minDate, "day") &&
+        date.isSameOrBefore(maxDate, "day")
+      ) {
+        return false; // At least one date is within the range
+      }
+    }
+    return true; // All dates are out of range
   };
 
   const getWeekDates = () => {
@@ -153,34 +185,6 @@ export const TeamCalendar: React.FC<TeamCalendarProps> = ({
     setSelectedDate(newDate.format("YYYY-MM-DD"));
   };
 
-  const groupScheduleByWeek = useCallback(() => {
-    if (!schedule) {
-      return;
-    }
-    const weeksObj: { [key: string]: Schedule } = {};
-
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    Object.entries(schedule).forEach(([userId, userSchedule]) => {
-      Object.keys(userSchedule).forEach((date: string) => {
-        const weekNumber = moment(date, "DDMMYY").week().toString();
-        if (!weeksObj[weekNumber]) {
-          weeksObj[weekNumber] = {};
-        }
-        if (!weeksObj[weekNumber][date]) {
-          weeksObj[weekNumber][date] = 0;
-        }
-        weeksObj[weekNumber][date] += userSchedule[date] || 0;
-      });
-    });
-    setWeeks(weeksObj);
-  }, [schedule]);
-
-  useEffect(() => {
-    if (schedule) {
-      groupScheduleByWeek();
-    }
-  }, [groupScheduleByWeek, schedule]);
-
   const handlePrevDay = () => {
     const prevDate = moment(selectedDate).subtract(1, "days");
     setSelectedDate(prevDate.format("YYYY-MM-DD"));
@@ -233,11 +237,16 @@ export const TeamCalendar: React.FC<TeamCalendarProps> = ({
     };
   };
 
+  // Updated getWeekDatesArray function
   const getWeekDatesArray = () => {
     const weekStart = moment(selectedDate).startOf("week");
     const dates = [];
     for (let i = 0; i < 7; i++) {
-      dates.push(weekStart.clone().add(i, "days"));
+      const currentDate = weekStart.clone().add(i, "days");
+      const isWithinRange =
+        currentDate.isSameOrAfter(minDate, "day") &&
+        currentDate.isSameOrBefore(maxDate, "day");
+      dates.push({ date: currentDate, isWithinRange });
     }
     return dates;
   };
@@ -402,13 +411,13 @@ export const TeamCalendar: React.FC<TeamCalendarProps> = ({
           <BodySmall className="font-bold">
             Click the eye icon to view WFH users
           </BodySmall>
-          {
-            <div className="week-schedule flex flex-col lg:flex-row justify-center lg:space-x-4 space-y-3">
-              {weekDates.map((dateMoment) => {
-                const dateStr = dateMoment.format("YYYY-MM-DD");
-                const displayDate = dateMoment.format("DD/MM/YY");
-                const scheduleData = getTeamSchedule(dateStr);
+          <div className="week-schedule flex flex-col lg:flex-row justify-center lg:space-x-4 space-y-3">
+            {weekDates.map(({ date: dateMoment, isWithinRange }) => {
+              const dateStr = dateMoment.format("YYYY-MM-DD");
+              const displayDate = dateMoment.format("DD/MM/YY");
 
+              if (isWithinRange) {
+                const scheduleData = getTeamSchedule(dateStr);
                 return (
                   <div
                     key={dateStr}
@@ -435,9 +444,19 @@ export const TeamCalendar: React.FC<TeamCalendarProps> = ({
                     </Body>
                   </div>
                 );
-              })}
-            </div>
-          }
+              } else {
+                // Render an empty placeholder to maintain alignment
+                return (
+                  <div
+                    key={dateStr}
+                    className="flex flex-col justify-between items-center p-4 min-h-[100px] lg:min-h-[400px] w-full md:w-1/2 lg:w-1/7 xl:w-1/7 2xl:w-1/7"
+                  >
+                    {/* Empty placeholder */}
+                  </div>
+                );
+              }
+            })}
+          </div>
         </div>
       )}
     </div>
