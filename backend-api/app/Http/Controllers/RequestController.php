@@ -191,11 +191,10 @@ class RequestController extends Controller
             // Check for reporting manager and return failure if not found
             if (!$reportingManager) {
                 return response()->json(['message' => 'Reporting manager not found', 'success' => false], 404);
-            }
-            else{
+            } else {
                 $reportingManagerRow = Employee::where("Staff_ID", $reportingManager)->firstOrFail();
-                $reportingManagerFName = $reportingManagerRow-> Staff_FName;
-                $reportingManagerLName = $reportingManagerRow-> Staff_LName;
+                $reportingManagerFName = $reportingManagerRow->Staff_FName;
+                $reportingManagerLName = $reportingManagerRow->Staff_LName;
                 $reportingManagerName = $reportingManagerFName . " " . $reportingManagerLName;
             }
 
@@ -451,7 +450,7 @@ class RequestController extends Controller
 
         if (!$booking) {
             return response()->json(
-                ['message' => "Request ID: {$request->Request_ID} was not originally made by this Employee ID: {$request->Employee_ID}"], 
+                ['message' => "Request ID: {$request->Request_ID} was not originally made by this Employee ID: {$request->Employee_ID}"],
                 404
             );
         }
@@ -526,21 +525,25 @@ class RequestController extends Controller
         $requestDB = Requests::where("Request_ID", $request_id)->first();
 
         // can check if the request is currently at a state from which it can be approved
-        
+
+        // check for batch = null
+        if ($request_batch !== null) {
+            return response()->json(['message' => 'Request is batch request, unable to approve this request by itself'], 400);
+        }
+
         // check for correct status
         if ($status == 'Approved' || $status == 'Withdrawn') {
-            
         } else {
             return response()->json(['message' => 'You are not trying to approve request, this endpoint was to approve requests'], 400);
         }
-        
+
         // check if the requst is already approved
-        if ($requestDB->Status== "Approved") {
+        if ($requestDB->Status == "Approved") {
             return response()->json(['message' => "Request was already Approved"], 400);
         }
 
         // check if the requst is already approved
-        if ($requestDB->Status== "Withdrawn") {
+        if ($requestDB->Status == "Withdrawn") {
             return response()->json(['message' => "Request was already Withdrawn"], 400);
         }
 
@@ -572,19 +575,19 @@ class RequestController extends Controller
             return response()->json(['message' => 'The format of date is not correct, sample format 2024-10-03'], 400);
         }
         $formattedDate = (new DateTime($date))->format('Y-m-d');
-        
+
         // query database for the people with that approver
         $requests = Requests::where('Approver_ID', $approver_id)
-                    ->get();
-                    
+            ->get();
+
         $team_size = Employee::where('Reporting_Manager', $approver_id)->count();
-        
+
         if ($team_size != 0) {
             $proportion = 1 / $team_size;
         } else {
             return response()->json(['message' => 'This person manages 0 people.'], 404);
         }
-        
+
         if ($requests) {
             // create a dictionary of different dates and check how many people are working from home for that date
             $date_dictionary = [];
@@ -596,7 +599,7 @@ class RequestController extends Controller
                 $isRequestValid = in_array($req->Status, ['Approved', 'Withdraw Pending', 'Withdraw Rejected']);
                 if ($formattedDate == $formattedDateOfReq && $isRequestValid) {
                     $counter++;
-                    
+
                     // how to print the values of $dateOfReq and $date
                     $arrangement = $req->Duration;
 
@@ -621,9 +624,8 @@ class RequestController extends Controller
                     return response()->json(['message' => 'Unable to accept request as this would lead to less than 50% of the team being in office'], 400);
                 }
             }
-            
         } else {
-            return response()->json(["message"=> "Unable to query from Requests Table"], 400);
+            return response()->json(["message" => "Unable to query from Requests Table"], 400);
         }
 
         // Approve request
@@ -639,7 +641,7 @@ class RequestController extends Controller
             $requestDB->Status = 'Approved';
             $requestDB->save();
         } else {
-            return response()->json(["message"=> "Unable to convert status: $requestDB->Status to $status"], 400);
+            return response()->json(["message" => "Unable to convert status: $requestDB->Status to $status"], 400);
         }
 
         // Save the Request Log
@@ -668,7 +670,6 @@ class RequestController extends Controller
 
         // Checking for correct status
         if ($status == 'Rejected' || $status == "Withdraw Rejected") {
-            
         } else {
             return response()->json(['message' => 'You are not trying to reject request, this endpoint was to reject requests'], 400);
         }
@@ -706,12 +707,12 @@ class RequestController extends Controller
         // Change state of the ticket to rejected
         if ($requestDB->Status == 'Pending' && $status == 'Rejected') {
             $requestDB->Status = 'Rejected';
-        } else if ($requestDB->Status=='Withdraw Pending' && $status == 'Withdraw Rejected'){
+        } else if ($requestDB->Status == 'Withdraw Pending' && $status == 'Withdraw Rejected') {
             $requestDB->Status = 'Withdraw Rejected';
         } else {
             return response()->json(['message' => "A state change from $requestDB->Status to $status is not allowed"], 400);
         }
-        
+
         $requestDB->save();
         // Add to request log table
         $newRequestLog = new RequestLog();
@@ -802,5 +803,68 @@ class RequestController extends Controller
         }
 
         return response()->json(['message' => 'All requests in the batch have been rejected successfully'], 200);
+    }
+
+    // Manager Withdraw Approved Request
+    public function managerWithdrawBooking(Request $request, Carbon $referenceDate = null)
+    {
+        // Validate the incoming JSON payload
+        $validated = $request->validate([
+            'Manager_ID' => 'required|integer',
+            'Request_ID' => 'required|integer',
+        ]);
+
+        // Retrieve the request by ID
+        $booking = Requests::findOrFail($validated['Request_ID']);
+
+        // Ensure the status is 'Approved'
+        if ($booking->Status !== 'Approved') {
+            return response()->json([
+                'message' => "Only approved requests can be withdrawn.",
+            ], 400); // Bad Request
+        }
+
+        // Validate that the manager has permission to withdraw this request
+        $employee = Employee::findOrFail($booking->Requestor_ID);
+        if ($employee->Reporting_Manager != $validated['Manager_ID']) {
+            return response()->json([
+                'message' => 'Manager does not have permission to withdraw this booking.',
+            ], 403); // Forbidden
+        }
+
+        // Use the provided reference date or fall back to Carbon::now()
+        $now = $referenceDate ?? Carbon::now();
+
+        // Calculate 1 month back and 3 months forward boundaries
+        $oneMonthBack = $now->copy()->subMonthNoOverflow();
+        $threeMonthsForward = $now->copy()->addMonthsNoOverflow(3)->subDay();
+
+        // Check if the booking date is within the valid withdrawal range
+        $bookingDate = Carbon::parse($booking->Date_Requested);
+        if ($bookingDate->lt($oneMonthBack) || $bookingDate->gt($threeMonthsForward)) {
+            return response()->json([
+                'message' => 'Withdrawals must be within 1 month back and 3 months forward.',
+            ], 400); // Bad Request
+        }
+
+        // Update the status to 'Withdrawn by Manager'
+        $booking->update(['Status' => 'Withdrawn By Manager']);
+
+        // Log the status change with Manager_ID
+        RequestLog::create([
+            'Request_ID' => $booking->Request_ID,
+            'Previous_State' => 'Approved',
+            'New_State' => 'Withdrawn By Manager',
+            'Employee_ID' => $validated['Manager_ID'],
+            'Date' => now(),
+            'Remarks' => 'Booking withdrawn by manager',
+        ]);
+
+        // Return a success response
+        return response()->json([
+            'message' => 'Booking successfully withdrawn by manager',
+            'Request_ID' => $booking->Request_ID,
+            'Manager_ID' => $validated['Manager_ID'],
+        ], 200);
     }
 }

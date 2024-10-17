@@ -30,6 +30,7 @@ Route::post(uri: '/request', action: [RequestController::class, 'createRequest']
 Route::get(uri: '/request/proportionOfTeam/{approver_id}', action: [RequestController::class, 'getProportionOfTeam']);
 Route::get(uri: '/request/proportionOfTeam/date/{approver_id}/{date}', action: [RequestController::class, 'getProportionOfTeamOnDate']);
 Route::post('/request/withdraw', [RequestController::class, 'withdrawRequest']);
+Route::post('/request/managerWithdraw', [RequestController::class, 'managerWithdrawBooking']);
 
 // Recurring Requests
 Route::post(uri: '/recurringRequest', action: [RequestController::class, 'createRecurringRequest']);
