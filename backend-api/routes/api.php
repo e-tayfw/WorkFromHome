@@ -30,6 +30,7 @@ Route::post(uri: '/request', action: [RequestController::class, 'createRequest']
 Route::get(uri: '/request/proportionOfTeam/{approver_id}', action: [RequestController::class, 'getProportionOfTeam']);
 Route::get(uri: '/request/proportionOfTeam/date/{approver_id}/{date}', action: [RequestController::class, 'getProportionOfTeamOnDate']);
 Route::post('/request/withdraw', [RequestController::class, 'withdrawRequest']);
+Route::post('/request/managerWithdraw', [RequestController::class, 'managerWithdrawBooking']);
 
 // Schedule
 Route::get(uri: '/generateOwnSchedule/{staff_id}', action: [ScheduleController::class, 'generateOwnSchedule']);

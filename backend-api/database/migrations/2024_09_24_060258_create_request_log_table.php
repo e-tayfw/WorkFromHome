@@ -18,8 +18,8 @@ class CreateRequestLogTable extends Migration
             $table->bigIncrements('Log_ID'); // Auto-incrementing ID
             $table->bigInteger('Request_ID')->unsigned(); // Foreign key to Request
             $table->bigInteger('Employee_ID')->unsigned(); // Foreign key to Employee
-            $table->enum('Previous_State', ['Pending', 'Approved', 'Rejected', 'Withdrawn', 'Withdraw Pending', 'Withdraw Rejected']); // Enum for previous state
-            $table->enum('New_State', ['Pending', 'Approved', 'Rejected', 'Withdrawn', 'Withdraw Pending', 'Withdraw Rejected']); // Enum for new state
+            $table->enum('Previous_State', ['Pending', 'Approved', 'Rejected', 'Withdrawn', 'Withdraw Pending', 'Withdraw Rejected', 'Withdrawn By Manager']); // Enum for previous state
+            $table->enum('New_State', ['Pending', 'Approved', 'Rejected', 'Withdrawn', 'Withdraw Pending', 'Withdraw Rejected', 'Withdrawn By Manager']); // Enum for new state
             $table->date('Date'); // Date field
             $table->string('Remarks')->nullable(); // Optional remarks
 
