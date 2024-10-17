@@ -248,9 +248,19 @@ class RequestTest extends TestCase
      */
     public function test_create_request_multiple_reqeusts_same_date(): void
     {
+        $request = Requests::factory()->create([
+            'Status' => 'Pending',
+            'Requestor_ID'=>140879,
+            'Approver_ID' => 151408,
+            'Request_ID' => 15,
+            'Date_Requested' => '2024-11-10',
+            'Request_Batch' => null,
+            'Duration'=>'FD'
+        ]);
+
         // Prepare data with a non-existent staff ID
         $staffId = '140879'; // Assuming this staff ID exist
-        $date = '2024-10-6'; // Valid date butt repeated request
+        $date = '2024-11-10'; // Valid date butt repeated request
         $arrangement = 'FD'; // Valid arrangement
         $reason = 'Personal'; // Valid reason
 
@@ -270,16 +280,26 @@ class RequestTest extends TestCase
     }
 
     /**
-     * Test creating a request with inalid date format
+     * Test creating a multiple requests on the same day
      * 
      * #[Depends('test_database_is_test_db')]
      */
-    public function test_create_request_with_invalid_date_format(): void
+    public function test_create_request_multiple_reqeusts_same_date_different_arrangement(): void
     {
+        $request = Requests::factory()->create([
+            'Status' => 'Pending',
+            'Requestor_ID'=>140879,
+            'Approver_ID' => 151408,
+            'Request_ID' => 15,
+            'Date_Requested' => '2024-11-10',
+            'Request_Batch' => null,
+            'Duration'=>'AM'
+        ]);
+
         // Prepare data with a non-existent staff ID
-        $staffId = '140001'; // Assuming this staff ID exist
-        $date = '2024-10-60'; // Invalid date
-        $arrangement = 'FD'; // Valid arrangement
+        $staffId = '140879'; // Assuming this staff ID exist
+        $date = '2024-11-10'; // Valid date butt repeated request
+        $arrangement = 'PM'; // Valid arrangement
         $reason = 'Personal'; // Valid reason
 
         // Prepare the payload
@@ -294,7 +314,7 @@ class RequestTest extends TestCase
         $response = $this->postJson('/api/request', $payload);
 
         // Assert that the response status is 400 (Bad Request)
-        $response->assertStatus(400);
+        $response->assertStatus(200);
     }
 
      /**
