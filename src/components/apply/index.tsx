@@ -3,10 +3,11 @@ import { Datecomponent } from "@/components/apply/datepicker";
 import { Selection } from "@/components/apply/selection";
 import { Reason } from "@/components/apply/reason";
 import { Submit } from "@/components/apply/submit";
-import { Body, Display } from "@/components/TextStyles";
+import { H1, BodyLarge, Body, Display } from "@/components/TextStyles";
 import Swal from 'sweetalert2';
 import { useSelector } from "react-redux";
 import axios from 'axios';
+import { toast } from "react-toastify";
 
 type ArrangementType = 'AM' | 'PM' | 'FD' | '';
 
@@ -43,7 +44,7 @@ const Apply: React.FC = () => {
     setReason(text);
   }, []);
 
-  const handleSubmit = useCallback(async () => {
+  const handleSubmit = useCallback(async (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     setIsLoading(true);
 
     const submitData: SubmitData = {
@@ -91,7 +92,7 @@ const Apply: React.FC = () => {
             <div style="display: flex; justify-content: center;">
               <div style="text-align: left; display: inline-block;">
                 <p>Date: ${response.data.date}</p>
-                <p>Arrangement: ${formatArrangement(response.data.requested)}</p>                                       
+                <p>Arrangement: ${formatArrangement(response.data.arrangement)}</p>                                       
                 <p>Reason: ${response.data.reason}</p>
                 <p>Reporting Manager: ${response.data.reportingManager}</p>
               </div>
