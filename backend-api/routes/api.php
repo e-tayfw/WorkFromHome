@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\TestScheduleController;
 use App\Http\Controllers\RequestController;
+use App\Http\Controllers\RequestLogController;
 use App\Http\Controllers\ScheduleController;
 
 Route::middleware(['auth:sanctum'])->get('/user', function (Request $request) {
@@ -52,3 +53,11 @@ Route::get('/generateTeamScheduleByDirector/{director}', [ScheduleController::cl
 
 // Recurring Requests
 Route::post(uri: '/rejectRecurringRequest', action: [RequestController::class, 'rejectRecurringRequest']);
+
+// Request Logs
+Route::get('/requestLog', [RequestLogController::class, 'getAllRequestLog']);
+Route::get('/requestLog/logId/{id}', [RequestLogController::class, 'getRequestLogById']);
+Route::get('/requestLog/employeeId/{employee_id}', [RequestLogController::class, 'getRequestLogByEmployeeID']);
+Route::get('/requestLog/autoRejected', [RequestLogController::class, 'getAutoRejectedLogs']);
+Route::get('/requestLog/requestId/{requestId}', [RequestLogController::class, 'getRequestLogsByRequestId']);
+Route::post('/requestLog/filter', [RequestLogController::class, 'filterRequestLogs']);
