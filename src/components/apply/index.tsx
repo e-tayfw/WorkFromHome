@@ -110,9 +110,10 @@ const Apply: React.FC = () => {
       }
       else if(response.data.success == false){
         
-        let title = 'Request Rejected';
+        const title = 'Request Rejected';
         let message = '';
-        let resetDate = false;
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const resetDate = false;
 
         if ((response.data.existing === "AM" || response.data.existing === "PM") && response.data.requested === "FD") {
           message = `You can't apply for a full day request when a same-day request already exists`;

@@ -5,7 +5,7 @@ import { logout } from '@/redux/slices/authSlice'; // Import the logout action f
 import { ReactNode, useCallback, useEffect, useState } from "react";
 import Image from "next/image";
 import { useCheckMobileScreen } from "@/hooks/useIsMobile";
-import {MobileMenu} from "@/components/Nav/MobileNav";
+import { MobileMenu } from "@/components/nav/MobileNav";
 import { Body, BodyLarge } from "@/components/TextStyles";
 import { motion } from "framer-motion";
 export type NavLink = {
@@ -55,7 +55,7 @@ export const navLinks: NavLink[] = [
       },
       {
         title: "Approve Requests",
-        path: "/request",
+        path: "/approve",
         imgUrl:
           "https://workfromhomebucket.s3.ap-southeast-2.amazonaws.com/Nav/approve-request-simu.png",
       },

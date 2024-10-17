@@ -4,9 +4,8 @@ import RequestEntry from '@/components/history/entry';
 import '@testing-library/jest-dom';
 
 // Mock the current date for testing boundary conditions
-
-const mockCurrentDate = (mockDate: string): void => {
-  jest.useFakeTimers();
+const mockCurrentDate = (mockDate: string) => {
+  jest.useFakeTimers({ now: new Date() });
   jest.setSystemTime(new Date(mockDate));
 };
 

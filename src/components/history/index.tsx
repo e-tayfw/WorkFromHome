@@ -8,7 +8,7 @@ const History = () => {
         <div className="px-[16px] lg:px-[128px]">
           <div className="py-[10px] lg:py-[60px] text-[50px] lg:text-[80px] leading-[60px] lg:leading-[95px] font-bold ">
             <span className="block animate-slide-up1 mt-[60px] md:mt-[100px]">
-              <Display>Manage Requests</Display>
+              <Display>Manage Your Requests</Display>
             </span>
           </div>
         </div>
