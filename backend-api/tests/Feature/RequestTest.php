@@ -686,7 +686,7 @@ class RequestTest extends TestCase
     public function test_withdraw_request_approve_success(): void
     {
         $request = Requests::factory()->create([
-            'Status' => 'Withdraw Pending',
+        'Status' => 'Withdraw Pending',
             'Approver_ID' => 151408,
             'Request_ID' => 15,
             'Date_Requested' => '2024-09-27',
