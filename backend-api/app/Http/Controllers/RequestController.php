@@ -144,7 +144,7 @@ class RequestController extends Controller
 
             $existingRequests = Requests::where([
                 ['Requestor_ID', '=', $staffId],
-                ['Date_Requested', '=', $selectedDate]
+                ['Date_Requested', '=', $selectedDate],
                 ['Status', 'in', ['Pending', 'Approved', 'Withdraw Rejected', 'Withdraw Pending']]
             ])->get();
             
