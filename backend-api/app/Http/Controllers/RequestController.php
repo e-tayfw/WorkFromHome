@@ -332,11 +332,6 @@ class RequestController extends Controller
         $requestDB = Requests::where("Request_ID", $request_id)->first();
 
         // can check if the request is currently at a state from which it can be approved
-
-        // check for batch = null
-        if ($request_batch !== null) {
-            return response()->json(['message' => 'Request is batch request, unable to approve this request by itself'], 400);
-        }
         
         // check for correct status
         if ($status == 'Approved' || $status == 'Withdrawn') {
@@ -485,14 +480,13 @@ class RequestController extends Controller
             return response()->json(['message' => 'You are not trying to reject request, this endpoint was to reject requests'], 400);
         }
 
-        // check for batch = null
-        if ($request_batch !== null) {
-            return response()->json(['message' => 'Request is batch request, unable to approve this request by itself'], 400);
+        if ($status == "Rejected" && $request_batch !== null) {
+            return response()->json(['message' => 'You are not trying to reject a recurring request, this endpoint was to reject individual requests'], 400);
         }
 
         // check for reason provided
         if ($reason == "") {
-            return response()->json(['message' => "Reason was not provided"], 401);
+            return response()->json(['message' => "Reason was not provided"], 400);
         }
 
         if (strlen($reason) > 255) {
@@ -542,5 +536,78 @@ class RequestController extends Controller
             // Handle error saving RequestLog
             return response()->json(['message' => 'Failed to create Request Logs'], 400);
         }
+    }
+
+    // reject recurring
+    public function rejectRecurringRequest(Request $request) {
+        // parse the inputs
+        $request_batch = $request->input('Request_Batch');
+        $approver_id = $request->input('Approver_ID');
+        $status = $request->input('Status');
+        $reason = $request->input('Reason');
+
+        // check if reason provided
+        if (strlen($reason) > 255) {
+            $reason = substr($reason, 0, 255);
+        }
+
+        // check for reason provided
+        if ($reason == "") {
+            return response()->json(['message' => "Reason was not provided"], 400);
+        }
+
+        if ($status == 'Rejected') {
+            
+        } else {
+            return response()->json(['message' => 'You are not trying to reject request, this endpoint was to reject requests', 'status'=> $status], 400);
+        }
+
+        // check for batch = null
+        if ($request_batch == null) {
+            return response()->json(['message' => 'Request is not a batch request'], 400);
+        }
+
+        // Fetch employee rows using the request batch
+        $requests = Requests::where("Request_Batch", $request_batch)->get();
+        
+        if ($requests->isEmpty()) {
+            return response()->json(['message' => 'No requests found for the given batch'], 404);
+        }
+
+        foreach ($requests as $requestDB) {
+            // check if the person rejecting the request is the approver
+            if ($requestDB->Approver_ID !== $approver_id) {
+                return response()->json(['message' => "You are not allowed to reject this request"], 400);
+            }
+
+            // Change state of the ticket to rejected
+            if ($requestDB->Status == 'Pending') {
+                $requestDB->Status = 'Rejected';
+            } else if ($requestDB->Status == 'Rejected') {
+                return response()->json(['message' => "Status is already rejected for Request number: {$requestDB->Request_ID} (Request date: {$requestDB->Date_Requested})"], 400);
+            }
+            else {
+                return response()->json(['message' => "A state change from {$requestDB->Status} to {$status} is not allowed for Request number: {$requestDB->Request_ID} (Request date: {$requestDB->Date_Requested})"], 400);
+            }
+
+            $requestDB->save();
+
+            // Add to request log table
+            $newRequestLog = new RequestLog();
+            $newRequestLog->Request_ID = $requestDB->Request_ID;
+            $newRequestLog->Previous_State = $requestDB->Status;
+            $newRequestLog->New_State = $status;
+            $newRequestLog->Employee_ID = $approver_id;
+            $newRequestLog->Date = date("Y-m-d");
+            $newRequestLog->Remarks = $reason;
+
+            // Save the Request Log
+            if (!$newRequestLog->save()) {
+                // Handle error saving RequestLog
+                return response()->json(['message' => "Failed to create Request Logs for Request number: {$requestDB->Request_ID} (Request date: {$requestDB->Date_Requested})"], 400);
+            }
+        }
+
+        return response()->json(['message' => 'All requests in the batch have been rejected successfully'], 200);
     }
 }
