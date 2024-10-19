@@ -1,14 +1,12 @@
 import { useState, useEffect } from "react";
 import { Display, BodyLarge, H1 } from "@/components/TextStyles";
 import ApproveTable from "@/components/approve/table";
-import CalendarView from "@/components/approve/calendar";
 import axios from "axios";
 import { useSelector } from "react-redux";
 import { ToastContainer, toast } from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
 
 const Approve = () => {
-  const [viewMode, setViewMode] = useState<"table" | "calendar">("table");
   const [noReportsMessage, setNoReportsMessage] = useState<string | null>(null);
   const [employees, setEmployees] = useState([]); // State to hold employee data
   const staffId = useSelector((state: any) => state.auth.staffId);
@@ -83,32 +81,7 @@ const Approve = () => {
       </div>
 
       <div className="max-w-8xl w-full px-[16px] md:px-[128px] pt-[60px] pb-[30px] md:pt-[50px]">
-        {/* Toggle Button */}
-        <div className="mb-4 flex space-x-4">
-          <button
-            className={`px-4 py-2 rounded-md focus:outline-none transition-all duration-200 ${
-              viewMode === "table" ? "bg-primary text-white shadow-lg" : "bg-gray-200 text-primary"
-            }`}
-            onClick={() => setViewMode("table")}
-          >
-            <BodyLarge className="font-semibold">Table View</BodyLarge>
-          </button>
-          <button
-            className={`px-4 py-2 rounded-md focus:outline-none transition-all duration-200 ${
-              viewMode === "calendar" ? "bg-primary text-white shadow-lg" : "bg-gray-200 text-primary"
-            }`}
-            onClick={() => setViewMode("calendar")}
-          >
-            <BodyLarge className="font-semibold">Calendar View</BodyLarge>
-          </button>
-        </div>
-
-        {/* Conditionally render either the table or calendar view */}
-        {viewMode === "table" ? (
-          <ApproveTable employees={employees} />
-        ) : (
-          <CalendarView />
-        )}
+        <ApproveTable employees={employees} />
       </div>
     </div>
   );
