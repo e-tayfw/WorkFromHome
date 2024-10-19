@@ -612,6 +612,8 @@ class RequestController extends Controller
         }
 
         return response()->json(['message' => 'All requests in the batch have been rejected successfully'], 200);
+    }
+    
     // Manager Withdraw Approved Request
     public function managerWithdrawBooking(Request $request, Carbon $referenceDate = null)
     {
