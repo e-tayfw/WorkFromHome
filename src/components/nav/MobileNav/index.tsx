@@ -5,13 +5,15 @@ import { FiMenu, FiX } from "react-icons/fi";
 import { logout } from "@/redux/slices/authSlice"; // Import the logout action from the authSlice
 import { useDispatch } from "react-redux";
 import NextLink from "next/link";
-import { NavLink } from "@/components/nav";
+import { NavLink } from "@/components/Nav";
+import { BodyLarge } from "@/components/TextStyles";
 // import { Body } from "@/components/TextStyles";
 // import Link from "next/link";
 
 export interface MobileMenuProps {
   scrollPos: number;
   isHomePage: boolean;
+  staffName: string;
 }
 
 export const mobileMenuLinks: NavLink[] = [
@@ -60,7 +62,11 @@ export const mobileMenuLinks: NavLink[] = [
   },
 ];
 
-export const MobileMenu: FC<MobileMenuProps> = ({ scrollPos, isHomePage }) => {
+export const MobileMenu: FC<MobileMenuProps> = ({
+  scrollPos,
+  isHomePage,
+  staffName,
+}) => {
   const [isOpen, setIsOpen] = useState(false);
   const router = useRouter();
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -92,12 +98,18 @@ export const MobileMenu: FC<MobileMenuProps> = ({ scrollPos, isHomePage }) => {
   return (
     <>
       <div
-        className={`w-[40px] z-100 transition-colors relative ${
+        className={`w-[40px] flex flex-row z-100 transition-colors relative ${
           scrollPos > 0.01 || !isHomePage ? "text-black" : "text-white"
         }`}
         onClick={() => router.push("/")}
         role="button"
-      ></div>
+      >
+      </div>
+      {staffName && (
+          <div className={`flex flex-col w-full font-bold ${scrollPos > 0.01 || !isHomePage ? "text-black" : "text-white"}`}>
+            <BodyLarge>Hi, {staffName}!</BodyLarge>
+          </div>
+        )}
       <div
         className={`w-6 h-6 cursor-pointer ${
           scrollPos > 0.01 || !isHomePage ? "text-black" : "text-white"
