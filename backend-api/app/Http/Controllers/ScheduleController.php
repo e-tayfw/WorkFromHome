@@ -20,17 +20,12 @@ class ScheduleController extends Controller
             return response()->json(['message' => 'Invalid Requestor ID provided'], 400);
         }
 
+        $desiredStatuses = ['Approved', 'Withdraw Pending', 'Withdraw Rejected'];
+
         $requests = Requests::where('Requestor_ID', $staff_id)
-            ->where('Status', 'Approved')
+            ->whereIn('Status', $desiredStatuses)
             ->get();
         
-        $requests = Requests::where(column: 'Requestor_ID', operator: $staff_id)
-            ->where('Status', 'Approved')
-            ->get();;
-        // Handle empty results
-        // if ($requests->isEmpty()) {
-        //     continue;
-        // }
 
         // Current date
         $currentDate = Carbon::now();
@@ -108,9 +103,11 @@ class ScheduleController extends Controller
             });
         }
 
-        // Step 3: Fetch all approved requests for the team members
-        $approvedRequests = Requests::whereIn('Requestor_ID', $teamMembers)
-            ->where('Status', 'Approved')
+        // Step 3: Fetch all approved, withdraw pending, withdraw rejected requests for the team members
+        $desiredStatuses = ['Approved', 'Withdraw Pending', 'Withdraw Rejected'];
+
+        $approvedRequests = Requests::where('Requestor_ID', $staff_id)
+            ->whereIn('Status', $desiredStatuses)
             ->get();
 
         // Current Date
@@ -193,9 +190,11 @@ class ScheduleController extends Controller
         $teamMembers = Employee::where('Dept', $dept)
             ->pluck('Staff_ID');    // Retrieve only team member IDs
 
-        // Step 3: Fetch all approved requests for the team members
+         // Step 3: Fetch all approved, withdraw pending, withdraw rejected requests for the team members
+        $desiredStatuses = ['Approved', 'Withdraw Pending', 'Withdraw Rejected'];
+
         $approvedRequests = Requests::whereIn('Requestor_ID', $teamMembers)
-            ->where('Status', 'Approved')
+            ->whereIn('Status', $desiredStatuses)
             ->get();
 
         // Current Date
@@ -283,9 +282,13 @@ class ScheduleController extends Controller
         }
 
         // Step 3: Fetch all approved requests for the team members
+        $desiredStatuses = ['Approved', 'Withdraw Pending', 'Withdraw Rejected'];
+
         $approvedRequests = Requests::whereIn('Requestor_ID', $teamMembers)
-            ->where('Status', 'Approved')
+            ->whereIn('Status', $desiredStatuses)
             ->get();
+
+        
 
         // Current Date
         $currentDate = Carbon::now();
