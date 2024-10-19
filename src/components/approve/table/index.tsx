@@ -16,12 +16,12 @@ interface Request {
   approverId: number;
   status: string;
   dateRequested: string;
-  requestBatch: string;
+  requestBatch: string | null;
   dateOfRequest: string;
   duration: string;
 }
 
-interface Employee {
+export interface Employee {
   Staff_ID: number;
   Staff_FName: string;
   Staff_LName: string;
@@ -39,7 +39,7 @@ const ApproveTable: React.FC<ApproveTableProps> = ({ employees }) => {
   const [error, setError] = useState<string | null>(null);
   const [allDataLoaded, setAllDataLoaded] = useState<boolean>(false);
   const [filterStatus, setFilterStatus] = useState<string>('all'); // Status filter state
-  const [pagination, setPagination] = useState<{ [staffId: number]: number }>({});
+  const [pagination, setPagination] = useState<{ [staffId: number]: { recurring: number; adhoc: number } }>({});
   const [searchTerm, setSearchTerm] = useState<string>(''); // Search term for staff name
   const [isClient, setIsClient] = useState(false); 
 
@@ -148,20 +148,51 @@ const ApproveTable: React.FC<ApproveTableProps> = ({ employees }) => {
     return filteredRequests.filter((request) => request.requestorId === employeeId);
   };
 
-  const paginate = (requests: Request[], staffId: number) => {
-    const currentPage = pagination[staffId] || 1;
+  const paginate = (requests: Request[] | undefined, staffId: number, type: 'recurring' | 'adhoc') => {
+    const currentPage = pagination[staffId]?.[type] || 1;
     const startIndex = (currentPage - 1) * requestsPerPage;
     const endIndex = startIndex + requestsPerPage;
+    
+    // Ensure that `requests` is an array before slicing
+    if (!Array.isArray(requests)) {
+        return [];
+    }
+
     return requests.slice(startIndex, endIndex);
   };
 
-  const handlePageChange = (staffId: number, newPage: number) => {
-    setPagination((prev) => ({ ...prev, [staffId]: newPage }));
+  const getTotalPages = (requests: Request[] | undefined) => {
+    return requests && requests.length > 0 ? Math.ceil(requests.length / requestsPerPage) : 1;
+  };
+
+  const handlePageChange = (staffId: number, newPage: number, type: 'recurring' | 'adhoc') => {
+    setPagination((prev) => ({
+      ...prev,
+      [staffId]: { ...prev[staffId], [type]: newPage },
+    }));
   };
 
   useEffect(() => {
     setPagination({});
   }, [filterStatus]);
+
+  // Grouping requests by batch (recurring) and separating adhoc requests
+  const groupRequestsByBatch = (requests: Request[]) => {
+    return requests.reduce((acc: any, request: Request) => {
+      const batch = request.requestBatch;
+      if (batch) {
+        // Recurring request
+        if (!acc.recurring[batch]) {
+          acc.recurring[batch] = [];
+        }
+        acc.recurring[batch].push(request);
+      } else {
+        // Adhoc request
+        acc.adhoc.push(request);
+      }
+      return acc;
+    }, { recurring: {}, adhoc: [] });
+  };
 
   return (
     <div className="container mx-auto p-4">
@@ -180,10 +211,11 @@ const ApproveTable: React.FC<ApproveTableProps> = ({ employees }) => {
         )
         .map((employee) => {
           const employeeRequests = getEmployeeRequests(employee.Staff_ID);
-          const paginatedRequests = paginate(employeeRequests, employee.Staff_ID);
-          const currentPage = pagination[employee.Staff_ID] || 1;
-          const totalPages = Math.ceil(employeeRequests.length / requestsPerPage);
+          const groupedRequests = groupRequestsByBatch(employeeRequests);
           const isExpanded = expandedStaff.includes(employee.Staff_ID);
+
+          const recurringRequests = groupedRequests.recurring;
+          const adhocRequests = groupedRequests.adhoc;
 
           return (
             <div key={employee.Staff_ID} className="mb-8">
@@ -200,59 +232,115 @@ const ApproveTable: React.FC<ApproveTableProps> = ({ employees }) => {
                 />
               </div>
 
-              {/* Staff Request Table - Only display if expanded */}
+              {/* Staff Request Tables - Only display if expanded */}
               {isExpanded && (
                 <>
-                  {employeeRequests.length === 0 ? (
-                    <div className="text-center text-primary mt-4">
-                      Staff has no requests of &apos;{filterStatus}&apos; status
-                    </div>
-                  ) : (
-                    <>
-                      <table className="table-auto w-full border-collapse mt-4">
+                  {/* Recurring Requests */}
+                  {Object.keys(recurringRequests).length > 0 ? (
+                    <div className="mt-4">
+                      <h3 className="text-lg font-semibold text-primary">
+                        Recurring Requests
+                      </h3>
+                      <table className="table-auto w-full border-collapse mt-2">
                         <thead>
                           <tr className="bg-secondary text-text">
-                            <th
-                              className="px-4 py-2 text-left cursor-pointer"
-                              onClick={() => requestSort("dateRequested")}
-                            >
-                              <BodyLarge className="text-primary">
-                                Date Requested {getSortIcon("dateRequested")}
-                              </BodyLarge>
+                            <th className="px-4 py-2 text-left cursor-pointer" onClick={() => requestSort("dateRequested")}>
+                              <BodyLarge className="text-primary">Date Requested {getSortIcon("dateRequested")}</BodyLarge>
                             </th>
-                            <th
-                              className="px-4 py-2 text-left cursor-pointer"
-                              onClick={() => requestSort("duration")}
-                            >
-                              <BodyLarge className="text-primary">
-                                Duration {getSortIcon("duration")}
-                              </BodyLarge>
+                            <th className="px-4 py-2 text-left cursor-pointer" onClick={() => requestSort("duration")}>
+                              <BodyLarge className="text-primary">Duration {getSortIcon("duration")}</BodyLarge>
                             </th>
-                            <th
-                              className="px-4 py-2 text-left cursor-pointer"
-                              onClick={() => requestSort("dateOfRequest")}
-                            >
-                              <BodyLarge className="text-primary">
-                                Date Of Request {getSortIcon("dateOfRequest")}
-                              </BodyLarge>
+                            <th className="px-4 py-2 text-left cursor-pointer" onClick={() => requestSort("dateOfRequest")}>
+                              <BodyLarge className="text-primary">Date Of Request {getSortIcon("dateOfRequest")}</BodyLarge>
                             </th>
-                            <th
-                              className="px-4 py-2 text-left cursor-pointer"
-                              onClick={() => requestSort("status")}
-                            >
-                              <BodyLarge className="text-primary">
-                                Status {getSortIcon("status")}
-                              </BodyLarge>
+                            <th className="px-4 py-2 text-left cursor-pointer" onClick={() => requestSort("status")}>
+                              <BodyLarge className="text-primary">Status {getSortIcon("status")}</BodyLarge>
                             </th>
                             <th className="px-4 py-2 text-left">
-                              <BodyLarge className="text-primary">
-                                Action
-                              </BodyLarge>
+                              <BodyLarge className="text-primary">Action</BodyLarge>
                             </th>
                           </tr>
                         </thead>
                         <tbody>
-                          {paginatedRequests.map((request) => (
+                          {Object.keys(recurringRequests).map((batchNumber) => (
+                            <React.Fragment key={`batch-${batchNumber}`}>
+                              {/* Batch Row */}
+                              <tr>
+                                <td colSpan={5} className="bg-gray-200 text-center font-semibold py-2">
+                                  Batch: {batchNumber}
+                                </td>
+                              </tr>
+                              {paginate(recurringRequests[batchNumber], employee.Staff_ID, 'recurring').map((request) => (
+                                <ApproveEntry
+                                  key={request.requestId}
+                                  requestId={request.requestId}
+                                  requestorName={`${employee.Staff_FName} ${employee.Staff_LName}`}
+                                  requestorId={request.requestorId}
+                                  approverId={request.approverId}
+                                  status={request.status}
+                                  dateRequested={request.dateRequested}
+                                  requestBatch={request.requestBatch}
+                                  dateOfRequest={request.dateOfRequest}
+                                  duration={request.duration}
+                                  teamSize={employees.length}
+                                  onRefreshRequests={fetchRequests}
+                                />
+                              ))}
+                            </React.Fragment>
+                          ))}
+                        </tbody>
+                      </table>
+
+                      {/* Pagination for Recurring Requests */}
+                      <div className="flex justify-center items-center mt-4 space-x-4">
+                        <button
+                          className="bg-primary text-white py-2 px-4 rounded-md disabled:bg-gray-400 disabled:cursor-not-allowed"
+                          disabled={(pagination[employee.Staff_ID]?.recurring || 1) === 1}
+                          onClick={() => handlePageChange(employee.Staff_ID, (pagination[employee.Staff_ID]?.recurring || 1) - 1, 'recurring')}
+                        >
+                          Previous
+                        </button>
+                        <span className="text-primary font-semibold">
+                          Page {(pagination[employee.Staff_ID]?.recurring || 1)} of {getTotalPages(recurringRequests[Object.keys(recurringRequests)[0]])}
+                        </span>
+                        <button
+                          className="bg-primary text-white py-2 px-4 rounded-md disabled:bg-gray-400 disabled:cursor-not-allowed"
+                          disabled={paginate(recurringRequests[Object.keys(recurringRequests)[0]], employee.Staff_ID, 'recurring').length < requestsPerPage}
+                          onClick={() => handlePageChange(employee.Staff_ID, (pagination[employee.Staff_ID]?.recurring || 1) + 1, 'recurring')}
+                        >
+                          Next
+                        </button>
+                      </div>
+                    </div>
+                  ) : null}
+
+                  {/* Adhoc Requests */}
+                  {adhocRequests.length > 0 ? (
+                    <div className="mt-4">
+                      <hr className="my-4 border-t border-gray-300" />
+                      <h3 className="text-lg font-semibold text-primary">Adhoc Requests</h3>
+                      <table className="table-auto w-full border-collapse mt-2">
+                        <thead>
+                          <tr className="bg-secondary text-text">
+                            <th className="px-4 py-2 text-left cursor-pointer" onClick={() => requestSort("dateRequested")}>
+                              <BodyLarge className="text-primary">Date Requested {getSortIcon("dateRequested")}</BodyLarge>
+                            </th>
+                            <th className="px-4 py-2 text-left cursor-pointer" onClick={() => requestSort("duration")}>
+                              <BodyLarge className="text-primary">Duration {getSortIcon("duration")}</BodyLarge>
+                            </th>
+                            <th className="px-4 py-2 text-left cursor-pointer" onClick={() => requestSort("dateOfRequest")}>
+                              <BodyLarge className="text-primary">Date Of Request {getSortIcon("dateOfRequest")}</BodyLarge>
+                            </th>
+                            <th className="px-4 py-2 text-left cursor-pointer" onClick={() => requestSort("status")}>
+                              <BodyLarge className="text-primary">Status {getSortIcon("status")}</BodyLarge>
+                            </th>
+                            <th className="px-4 py-2 text-left">
+                              <BodyLarge className="text-primary">Action</BodyLarge>
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {paginate(adhocRequests, employee.Staff_ID, 'adhoc').map((request) => (
                             <ApproveEntry
                               key={request.requestId}
                               requestId={request.requestId}
@@ -265,43 +353,41 @@ const ApproveTable: React.FC<ApproveTableProps> = ({ employees }) => {
                               dateOfRequest={request.dateOfRequest}
                               duration={request.duration}
                               teamSize={employees.length}
-                              onRefreshRequests={fetchRequests} // Pass fetchRequests to ApproveEntry
+                              onRefreshRequests={fetchRequests}
                             />
                           ))}
                         </tbody>
                       </table>
 
-                      {/* Pagination Controls */}
+                      {/* Pagination for Adhoc Requests */}
                       <div className="flex justify-center items-center mt-4 space-x-4">
                         <button
                           className="bg-primary text-white py-2 px-4 rounded-md disabled:bg-gray-400 disabled:cursor-not-allowed"
-                          disabled={currentPage === 1}
-                          onClick={() =>
-                            handlePageChange(employee.Staff_ID, currentPage - 1)
-                          }
+                          disabled={(pagination[employee.Staff_ID]?.adhoc || 1) === 1}
+                          onClick={() => handlePageChange(employee.Staff_ID, (pagination[employee.Staff_ID]?.adhoc || 1) - 1, 'adhoc')}
                         >
                           Previous
                         </button>
                         <span className="text-primary font-semibold">
-                          Page {currentPage} of {totalPages}
+                          Page {(pagination[employee.Staff_ID]?.adhoc || 1)} of {getTotalPages(adhocRequests)}
                         </span>
                         <button
                           className="bg-primary text-white py-2 px-4 rounded-md disabled:bg-gray-400 disabled:cursor-not-allowed"
-                          disabled={
-                            currentPage === totalPages || totalPages === 0
-                          }
-                          onClick={() =>
-                            handlePageChange(employee.Staff_ID, currentPage + 1)
-                          }
+                          disabled={paginate(adhocRequests, employee.Staff_ID, 'adhoc').length < requestsPerPage}
+                          onClick={() => handlePageChange(employee.Staff_ID, (pagination[employee.Staff_ID]?.adhoc || 1) + 1, 'adhoc')}
                         >
                           Next
                         </button>
                       </div>
-                    </>
-                  )}
+                    </div>
+                  ) : null}
 
-                  {/* Grey Divider between Staff Sections */}
-                  <hr className="my-8 border-t-2 border-gray-300" />
+                  {/* No Requests Message */}
+                  {Object.keys(recurringRequests).length === 0 && adhocRequests.length === 0 && (
+                    <div className="text-center text-primary mt-4">
+                      Staff has no requests of '{filterStatus}' status
+                    </div>
+                  )}
                 </>
               )}
             </div>
