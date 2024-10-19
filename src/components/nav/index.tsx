@@ -3,11 +3,11 @@ import { useRouter as usePagesRouter } from "next/router";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
 import { logout } from "@/redux/slices/authSlice"; // Import the logout action from the authSlice
-import { ReactNode, use, useCallback, useEffect, useState } from "react";
+import { ReactNode, useCallback, useEffect, useState } from "react";
 import Image from "next/image";
 import { useCheckMobileScreen } from "@/hooks/useIsMobile";
 import { getEmployeeFullNameByStaffID } from "@/pages/api/employeeApi";
-import { MobileMenu } from "@/components/Nav/MobileNav";
+import { MobileMenu } from "@/components/nav/MobileNav";
 import { Body, BodyLarge } from "@/components/TextStyles";
 import { motion } from "framer-motion";
 export type NavLink = {
@@ -85,22 +85,22 @@ const Nav = () => {
     dispatch(logout());
     router.push("/");
   }
-  const getFullName = async () => {
-    if (staffId) {
-      try {
-        const fetchedName = await getEmployeeFullNameByStaffID(
-          staffId.toString()
-        );
-        console.log(fetchedName);
-        setFullName(fetchedName);
-      } catch (error) {
-        console.error("Error fetching Name:", error);
-      }
-    } else {
-      console.error("No staffId found in Redux store");
-    }
-  };
   useEffect(() => {
+    const getFullName = async () => {
+      if (staffId) {
+        try {
+          const fetchedName = await getEmployeeFullNameByStaffID(
+            staffId.toString()
+          );
+          console.log(fetchedName);
+          setFullName(fetchedName);
+        } catch (error) {
+          console.error("Error fetching Name:", error);
+        }
+      } else {
+        console.error("No staffId found in Redux store");
+      }
+    };
     getFullName();
   }, [staffId]);
 
@@ -260,7 +260,11 @@ const Nav = () => {
             : "border-none"
         }`}
       >
-        <MobileMenu scrollPos={scrollPos} isHomePage={isHomePage} staffName= {fullName} />
+        <MobileMenu
+          scrollPos={scrollPos}
+          isHomePage={isHomePage}
+          staffName={fullName}
+        />
       </div>
 
       {/* Desktop Nav */}
@@ -321,6 +325,7 @@ const Nav = () => {
           </div>
 
           <div
+            data-testid="dropdown-container"
             className={`absolute z-20 flex w-full bg-white top-0 left-0 origin-top transition-all duration-1000 ${
               hoveredNavItem ? "scale-y-100" : "scale-y-0"
             } hover:scale-y-100`}

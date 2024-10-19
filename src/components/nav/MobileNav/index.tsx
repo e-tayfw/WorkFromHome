@@ -5,10 +5,9 @@ import { FiMenu, FiX } from "react-icons/fi";
 import { logout } from "@/redux/slices/authSlice"; // Import the logout action from the authSlice
 import { useDispatch } from "react-redux";
 import NextLink from "next/link";
-import { NavLink } from "@/components/Nav";
+import { NavLink } from "@/components/nav";
 import { BodyLarge } from "@/components/TextStyles";
-// import { Body } from "@/components/TextStyles";
-// import Link from "next/link";
+
 
 export interface MobileMenuProps {
   scrollPos: number;
@@ -103,24 +102,31 @@ export const MobileMenu: FC<MobileMenuProps> = ({
         }`}
         onClick={() => router.push("/")}
         role="button"
-      >
-      </div>
+      ></div>
       {staffName && (
-          <div className={`flex flex-col w-full font-bold ${scrollPos > 0.01 || !isHomePage ? "text-black" : "text-white"}`}>
-            <BodyLarge>Hi, {staffName}!</BodyLarge>
-          </div>
-        )}
+        <div
+          className={`flex flex-col w-full font-bold ${
+            scrollPos > 0.01 || !isHomePage ? "text-black" : "text-white"
+          }`}
+        >
+          <BodyLarge>Hi, {staffName}!</BodyLarge>
+        </div>
+      )}
       <div
         className={`w-6 h-6 cursor-pointer ${
           scrollPos > 0.01 || !isHomePage ? "text-black" : "text-white"
         }`}
         onClick={() => setIsOpen(true)}
+        role="button"
       >
         <FiMenu size="100%" />
       </div>
 
       {isOpen && (
-        <div className="fixed inset-0 z-100 flex flex-col items-center bg-white">
+        <div
+          className="fixed inset-0 z-100 flex flex-col items-center bg-white"
+          role="navigation"
+        >
           <div className="absolute top-0 right-0 m-4">
             <button className="text-black" onClick={() => setIsOpen(false)}>
               <FiX size="24" />
