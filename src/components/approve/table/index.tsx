@@ -7,6 +7,8 @@ import { faSort, faSortUp, faSortDown, faChevronDown, faChevronRight } from '@fo
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useSelector } from "react-redux";
+import StatusFilter from '@/components/approve/filter'; // Import StatusFilter component
+import StaffSearch from '@/components/approve/search';   // Import StaffSearch component
 
 interface Request {
   requestId: number;
@@ -33,20 +35,17 @@ const ApproveTable: React.FC<ApproveTableProps> = ({ employees }) => {
   const [requests, setRequests] = useState<Request[]>([]);
   const [expandedStaff, setExpandedStaff] = useState<number[]>([]); // Track expanded staff tables
   const [sortConfig, setSortConfig] = useState<{ key: keyof Request; direction: string } | null>(null);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [allDataLoaded, setAllDataLoaded] = useState<boolean>(false);
   const [filterStatus, setFilterStatus] = useState<string>('all'); // Status filter state
   const [pagination, setPagination] = useState<{ [staffId: number]: number }>({});
   const [searchTerm, setSearchTerm] = useState<string>(''); // Search term for staff name
-  const [searchSuggestions, setSearchSuggestions] = useState<Employee[]>([]); // For dynamic suggestions
   const [isClient, setIsClient] = useState(false); 
 
   const staffId = useSelector((state: any) => state.auth.staffId);
   const requestsPerPage = 5;
 
-  // Define fetchRequests to refresh data and collapse expanded tables
   const fetchRequests = useCallback(async () => {
     try {
       const requestRes = await axios.get(`http://127.0.0.1:8085/api/request/approverID/${staffId}`);
@@ -65,12 +64,10 @@ const ApproveTable: React.FC<ApproveTableProps> = ({ employees }) => {
       setRequests(mappedRequests);
       setLoading(false);
 
-      // If employees are also loaded, show the success toast
       if (employees.length > 0) {
         setAllDataLoaded(true);
       }
 
-      // Collapse all expanded sections after refresh
       setExpandedStaff([]);
       
     } catch (err) {
@@ -92,16 +89,13 @@ const ApproveTable: React.FC<ApproveTableProps> = ({ employees }) => {
     }
   }, [allDataLoaded]);
 
-  // Apply sorting and filtering
   const filteredRequests = useMemo(() => {
     let sortableRequests = [...requests];
 
-    // Apply status filter
     if (filterStatus !== 'all') {
       sortableRequests = sortableRequests.filter((request) => request.status.toLowerCase() === filterStatus.toLowerCase());
     }
 
-    // Apply sorting
     if (sortConfig !== null) {
       sortableRequests.sort((a, b) => {
         let aValue: any = a[sortConfig.key];
@@ -123,18 +117,6 @@ const ApproveTable: React.FC<ApproveTableProps> = ({ employees }) => {
     }
     return sortableRequests;
   }, [requests, sortConfig, filterStatus]);
-
-  // Filter employees based on search term and handle suggestions
-  useEffect(() => {
-    if (searchTerm) {
-      const matchingSuggestions = employees.filter(employee =>
-        `${employee.Staff_FName} ${employee.Staff_LName}`.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-      setSearchSuggestions(matchingSuggestions);
-    } else {
-      setSearchSuggestions([]);
-    }
-  }, [searchTerm, employees]);
 
   const requestSort = (key: keyof Request) => {
     let direction = 'ascending';
@@ -166,7 +148,6 @@ const ApproveTable: React.FC<ApproveTableProps> = ({ employees }) => {
     return filteredRequests.filter((request) => request.requestorId === employeeId);
   };
 
-  // Handle pagination
   const paginate = (requests: Request[], staffId: number) => {
     const currentPage = pagination[staffId] || 1;
     const startIndex = (currentPage - 1) * requestsPerPage;
@@ -178,89 +159,19 @@ const ApproveTable: React.FC<ApproveTableProps> = ({ employees }) => {
     setPagination((prev) => ({ ...prev, [staffId]: newPage }));
   };
 
-  // Reset pagination when filter is applied
   useEffect(() => {
     setPagination({});
   }, [filterStatus]);
 
-  // Function to handle highlighting of search matches
-  const highlightMatch = (text: string, searchTerm: string) => {
-    const parts = text.split(new RegExp(`(${searchTerm})`, 'gi'));
-    return parts.map((part, index) => 
-      part.toLowerCase() === searchTerm.toLowerCase() ? 
-      <span key={index} className="font-bold text-primary">{part}</span> : 
-      part
-    );
-  };
-
   return (
     <div className="container mx-auto p-4">
-      {/* Conditionally render ToastContainer only if it's client-side */}
       {isClient && <ToastContainer position="top-right" autoClose={5000} hideProgressBar={false} newestOnTop closeOnClick />}
 
       {/* Filter and Search Row */}
       <div className="mb-6 flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-4 w-full">
-        {/* Filter Dropdown */}
-        <div className="flex-1 w-full">
-          <label htmlFor="statusFilter" className="text-lg font-semibold text-primary">Filter by Status:</label>
-          <div className="relative w-full">
-            <select
-              id="statusFilter"
-              value={filterStatus}
-              onChange={(e) => setFilterStatus(e.target.value)}
-              className="block appearance-none w-full bg-white border border-gray-300 text-gray-700 py-2 px-4 pr-8 rounded-md shadow-sm leading-tight focus:outline-none focus:ring-primary focus:border-primary"
-            >
-              <option value="all">All</option>
-              <option value="approved">Approved</option>
-              <option value="pending">Pending</option>
-              <option value="withdrawn">Withdrawn</option>
-              <option value="withdraw pending">Withdraw Pending</option>
-              <option value="withdraw rejected">Withdraw Rejected</option>
-              <option value="rejected">Rejected</option>
-            </select>
-            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700" />
-          </div>
-        </div>
-
-        {/* Grey Vertical Divider */}
+        <StatusFilter filterStatus={filterStatus} setFilterStatus={setFilterStatus} />
         <div className="h-16 w-px bg-gray-300 hidden md:block" />
-
-        {/* Search Input for Staff Member */}
-        <div className="flex-1 w-full relative">
-          <label htmlFor="staffSearch" className="text-lg font-semibold text-primary">Search by Name:</label>
-          <input
-            type="text"
-            id="staffSearch"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') {
-                setSearchSuggestions([]);
-              }
-            }}
-            onBlur={() => setSearchSuggestions([])}
-            placeholder="Enter staff name"
-            className="block w-full bg-white border border-gray-300 text-gray-700 py-2 px-4 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary"
-          />
-
-          {/* Suggestions Dropdown */}
-          {searchSuggestions.length > 0 && (
-            <ul className="absolute left-0 right-0 mt-2 bg-white border border-gray-300 rounded-md shadow-lg z-10 max-h-60 overflow-y-auto">
-              {searchSuggestions.map((suggestion) => (
-                <li
-                  key={suggestion.Staff_ID}
-                  onMouseDown={() => {
-                    setSearchTerm(`${suggestion.Staff_FName} ${suggestion.Staff_LName}`);
-                    setSearchSuggestions([]);
-                  }}
-                  className="px-4 py-2 cursor-pointer hover:bg-gray-100"
-                >
-                  {highlightMatch(`${suggestion.Staff_FName} ${suggestion.Staff_LName}`, searchTerm)}
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
+        <StaffSearch searchTerm={searchTerm} setSearchTerm={setSearchTerm} employees={employees} />
       </div>
 
       {employees
@@ -397,7 +308,6 @@ const ApproveTable: React.FC<ApproveTableProps> = ({ employees }) => {
           );
         })}
 
-      {/* Error message display */}
       {error && (
         <div className="flex items-center justify-center mt-6">
           <BodyLarge className="text-red-500">{error}</BodyLarge>

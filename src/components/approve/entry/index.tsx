@@ -15,12 +15,11 @@ interface ApproveEntryProps {
   dateOfRequest: string;
   duration: string;
   teamSize: number;
-  onRefreshRequests: () => void; // Add the refresh prop
+  onRefreshRequests: () => void;
 }
 
 const ApproveEntry: React.FC<ApproveEntryProps> = ({
   requestId,
-  requestorId,
   approverId,
   status,
   dateRequested,
@@ -28,7 +27,7 @@ const ApproveEntry: React.FC<ApproveEntryProps> = ({
   dateOfRequest,
   duration,
   teamSize,
-  onRefreshRequests, // Pass this prop
+  onRefreshRequests,
 }) => {
   const [proportion, setProportion] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -58,7 +57,7 @@ const ApproveEntry: React.FC<ApproveEntryProps> = ({
   };
 
   const proportionAfterApproval = () => {
-    if (proportion === null || teamSize === 0) return null;
+    if (proportion === null || teamSize === 0) return 0;
     const proportionPerEmployee = 1 / teamSize;
     return proportion + proportionPerEmployee;
   };
@@ -66,19 +65,101 @@ const ApproveEntry: React.FC<ApproveEntryProps> = ({
   const getStatusClass = () => {
     switch (requestStatus?.toLowerCase()) {
       case 'approved':
-        return 'bg-teal-100 text-teal-700'; // Custom color for approved
+        return 'bg-teal-100 text-teal-700';
       case 'pending':
-        return 'bg-yellow-100 text-yellow-700'; // Custom color for pending
+        return 'bg-yellow-100 text-yellow-700';
       case 'withdrawn':
-        return 'bg-gray-200 text-gray-700'; // Custom color for withdrawn
+        return 'bg-gray-200 text-gray-700';
       case 'rejected':
-        return 'bg-red-100 text-red-700'; // Custom color for rejected
+        return 'bg-red-100 text-red-700';
       case 'withdraw pending':
       case 'withdraw rejected':
-        return 'bg-orange-100 text-orange-700'; // Custom color for withdraw pending or rejected
+        return 'bg-orange-100 text-orange-700';
       default:
-        return 'bg-gray-100 text-gray-600'; // Default color
+        return 'bg-gray-100 text-gray-600';
     }
+  };
+
+  const renderActionButtons = () => {
+    if (status.toLowerCase() === 'approved') {
+      return (
+        <button
+          className="bg-red-100 hover:bg-red-200 text-red-700 font-semibold py-1 px-4 rounded-md transition duration-200 ease-in-out"
+          onClick={() => handleWithdraw(requestId)}
+        >
+          Withdraw
+        </button>
+      );
+    } else if (status.toLowerCase() === 'withdraw pending') {
+      return (
+        <>
+          <button
+            className="bg-green-100 text-green-700 font-semibold py-1 px-4 rounded-md transition duration-200 ease-in-out mr-2 hover:bg-green-200"
+            onClick={handleApprove}
+          >
+            Approve
+          </button>
+          <button
+            className="bg-red-100 hover:bg-red-200 text-red-700 font-semibold py-1 px-4 rounded-md transition duration-200 ease-in-out"
+            onClick={handleReject}
+          >
+            Reject
+          </button>
+        </>
+      );
+    } else if (status.toLowerCase() === 'pending') {
+      return (
+        <>
+          <button
+            className={`bg-green-100 text-green-700 font-semibold py-1 px-4 rounded-md transition duration-200 ease-in-out mr-2 ${
+              willExceedProportion() ? 'opacity-50 cursor-not-allowed' : 'hover:bg-green-200'
+            }`}
+            onClick={handleApprove}
+            disabled={willExceedProportion()}
+          >
+            Approve
+          </button>
+          <button
+            className="bg-red-100 hover:bg-red-200 text-red-700 font-semibold py-1 px-4 rounded-md transition duration-200 ease-in-out"
+            onClick={handleReject}
+          >
+            Reject
+          </button>
+        </>
+      );
+    }
+
+    return null;
+  };
+
+  const handleApprove = () => {
+    ActionHandler.handleApprove({
+      requestId,
+      approverId,
+      dateRequested,
+      requestBatch,
+      duration,
+      proportionAfterApproval: proportionAfterApproval(), // Pass the result of proportionAfterApproval()
+      onRefreshRequests,
+    });
+  };
+
+  const handleReject = () => {
+    ActionHandler.handleReject({
+      requestId,
+      approverId,
+      dateRequested,
+      requestBatch,
+      duration,
+      onRefreshRequests,
+    });
+  };
+
+  const handleWithdraw = (requestId: number) => {
+    ActionHandler.handleWithdraw({
+      requestId,
+      onWithdraw: onRefreshRequests, // Pass the refresh function
+    });
   };
 
   return (
@@ -110,20 +191,7 @@ const ApproveEntry: React.FC<ApproveEntryProps> = ({
             />
           </div>
         ) : (
-          <ActionHandler
-            requestId={requestId}
-            requestorId={requestorId}
-            dateRequested={dateRequested}
-            requestBatch={requestBatch}
-            duration={duration}
-            status={requestStatus}
-            onWithdraw={() => {
-              onRefreshRequests(); // Refresh all data after withdrawal
-            }}
-            isDisabled={willExceedProportion()}
-            proportionAfterApproval={proportionAfterApproval()}
-            onRefreshRequests={onRefreshRequests} // Pass the refresh function to ActionHandler
-          />
+          renderActionButtons()
         )}
       </td>
     </tr>
