@@ -1,23 +1,25 @@
 import { useState, useEffect } from "react";
-import { Navigate, useLocation } from "react-router-dom";
+import { useRouter } from "next/router";
 
 const Home = () => {
   const [userType, setUserType] = useState<string | null>(null);
-  const location = useLocation();
+  const router = useRouter();
 
   useEffect(() => {
     setUserType(localStorage.getItem("userType"));
   }, []);
 
-  // Check if the current path is "/" and userType is available
-  if (location.pathname === "/" && userType) {
-    return <Navigate to="/schedule" />;
-  }
+  useEffect(() => {
+    // Check if the current path is "/" and userType is available
+    if (router.pathname === "/" && userType) {
+      router.push("/schedule");
+    }
 
-  // If userType is null, route them to "/auth"
-  if (!userType) {
-    return <Navigate to="/auth" />;
-  }
+    // If userType is null, route them to "/auth"
+    if (!userType) {
+      router.push("/auth");
+    }
+  }, [router, userType]);
 
   // If already on a valid route or if no redirection is needed, return null
   return null;

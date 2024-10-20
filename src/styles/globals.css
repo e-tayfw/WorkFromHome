@@ -20,28 +20,47 @@ body {
     text-wrap: balance;
   }
 }
-/* Custom styles for DataTable */
-/* Custom styles for DataTable */
-.dataTables_wrapper .dataTables_filter input {
-  border-radius: 0.375rem; /* Rounded corners */
-  padding: 0.5rem;
-  border: 1px solid #ffffff;
+
+.dt-layout-start {
+  margin-bottom: 20px; /* adjust the value as needed */
+  margin-right: 20px; /* adjust the value as needed */
+
 }
 
-.dataTables_wrapper .dataTables_paginate .paginate_button {
-  border-radius: 0.375rem; /* Rounded corners */
-  padding: 0.5rem;
-  margin: 0 0.25rem;
-  border: 1px solid #ffffff;
+#dt-length-3 {
+  margin-top: 20px; /* adjust the value as needed */
 }
 
-.dataTables_wrapper .dataTables_paginate .paginate_button.current {
-  background-color: #171717;
-  color: white;
+/* Alternatively, target the search and length elements directly */
+.dt-search {
+  margin-bottom: 20px; /* adjust the value as needed */
+  gap: 10px; /* adjust the value as needed */
+}
+#dt-search-3 {
+  margin-left: 20px; /* adjust the value as needed */
+  border-radius: 5%;
 }
 
-.dataTables_wrapper .dataTables_paginate {
+.dt-paging {
   display: flex;
   justify-content: center;
-  flex-wrap: wrap;
+  align-items: center;
+}
+
+.dt-paging .pagination {
+  display: flex;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.dt-paging .page-item {
+  margin: 0 5px; /* Adjust the spacing between buttons as needed */
+}
+
+.dt-paging .page-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 5px 10px; /* Adjust the padding as needed */
 }
