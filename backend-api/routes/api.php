@@ -54,6 +54,7 @@ Route::get('/generateTeamScheduleByDirector/{director}', [ScheduleController::cl
 
 // Recurring Requests
 Route::post(uri: '/rejectRecurringRequest', action: [RequestController::class, 'rejectRecurringRequest']);
+Route::post(uri: '/approveRecurringRequest', action: [RequestController::class, 'approveRecurringRequest']);
 
 // Request Logs
 Route::get('/requestLog', [RequestLogController::class, 'getAllRequestLog']);
