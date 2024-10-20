@@ -15,6 +15,8 @@ use DB;
 use Log;
 use Mockery\Generator\StringManipulation\Pass\Pass;
 
+use function Laravel\Prompts\error;
+
 class RequestController extends Controller
 {
     // Fetch All Requests
@@ -578,6 +580,15 @@ class RequestController extends Controller
         }
 
         foreach ($requests as $requestDB) {
+            if ($requestDB->Status == 'Rejected') {
+                return response()->json(['message' => "Status is already rejected for Request number: {$requestDB->Request_ID} (Request date: {$requestDB->Date_Requested})"], 400);
+            }
+            if ($requestDB->Approver_ID !== $approver_id) {
+                return response()->json(['message' => "You are not allowed to reject this request"], 400);
+            }
+        }
+
+        foreach ($requests as $requestDB) {
             // check if the person rejecting the request is the approver
             if ($requestDB->Approver_ID !== $approver_id) {
                 return response()->json(['message' => "You are not allowed to reject this request"], 400);
@@ -682,5 +693,108 @@ class RequestController extends Controller
             'Request_ID' => $booking->Request_ID,
             'Manager_ID' => $validated['Manager_ID'],
         ], 200);
+    }
+
+    // approve recurring
+    public function approveRecurringRequest(Request $request)
+    {
+        // Decode json input and give assign to variables based on key
+        $approver_id = $request->input('Approver_ID');
+        $status = $request->input('Status');
+        $request_batch = $request->input('Request_Batch');
+        $wfh_type = $request->input('Duration');
+        $reason = $request->input('Reason');
+
+        // Fetch employee row using staff_id
+        $requests = Requests::where("Request_Batch", $request_batch)->get();
+
+        $listOfDates = [];
+
+        // check for correct status
+        if ($status == 'Approved') {
+            
+        } else {
+            return response()->json(['message' => 'You are not trying to approve request, this endpoint was to approve requests'], 400);
+        }
+
+        foreach ($requests as $requestDB) {
+            // Check current status
+            if ($requestDB->Status == 'Approved') {
+                return response()->json(['message' => "Status is already approved for Request number: {$requestDB->Request_ID} (Request date: {$requestDB->Date_Requested})"], 400);
+            }
+            // Check if the person rejecting the request is the approver
+            if ($requestDB->Approver_ID !== $approver_id) {
+                return response()->json(['message' => "You are not allowed to approve this request"], 400);
+            }
+            $listOfDates[$requestDB->Date_Requested] = ['AM' => 0, 'PM' => 0, 'FD' => 0];
+        }
+
+        // Handle too many charcters in reason
+        if (strlen($reason) > 255) {
+            $reason = substr($reason, 0, 255);
+        }
+
+        // query database for the people with that approver
+        $otherTeamRequests = Requests::where('Approver_ID', $approver_id)
+                    ->get();
+                    
+        $team_size = Employee::where('Reporting_Manager', $approver_id)->count();
+        
+        if ($team_size != 0) {
+            $proportion = 1 / $team_size;
+        } else {
+            return response()->json(['message' => 'This person manages 0 people.'], 404);
+        }
+
+        if ($otherTeamRequests) {
+            // for loop to iterate through date_dictionary to find different dates and see how many people are working from home for that date
+            foreach ($otherTeamRequests as $otherTeamRequest) {
+                $dateOfReq = $otherTeamRequest->Date_Requested;
+                $isRequestValid = in_array($otherTeamRequest->Status, ['Approved', 'Withdraw Pending', 'Withdraw Rejected']);
+                if (array_key_exists($dateOfReq, $listOfDates) && $isRequestValid) {
+                    $flag = true;
+                    $arrangement = $otherTeamRequest->Duration;
+
+                    if ($arrangement === 'AM') {
+                        $listOfDates[$dateOfReq]['AM'] += $proportion;
+                    } else if ($arrangement === "PM") {
+                        $listOfDates[$dateOfReq]['PM'] += $proportion;
+                    } else if ($arrangement === "FD") {
+                        $listOfDates[$dateOfReq]["FD"] += $proportion;
+                    }
+                }
+            }
+
+            
+        } else {
+            return response()->json(["message"=> "Unable to query from Requests Table"], 400);
+        }
+
+        $flag = true;
+
+        foreach ($listOfDates as $dates) {
+            if ($dates[$wfh_type] + $proportion > 0.5) {
+                $flag = false;
+            }
+        }
+
+        if ($flag) {
+            foreach ($requests as $requestDB) {
+                $newRequestLog = new RequestLog();
+                $newRequestLog->Request_ID = $requestDB->Request_ID;
+                $newRequestLog->Previous_State = $requestDB->Status;
+                $newRequestLog->New_State = $status;
+                $newRequestLog->Employee_ID = $approver_id;
+                $newRequestLog->Date = $requestDB->Date_Requested;
+                $newRequestLog->Remarks = $reason;
+                $requestDB->Status = "Approved";
+                $requestDB->save();
+                $newRequestLog->save();
+            }
+        } else {
+            return response()->json(['message' => 'Unable to accept request as this would lead to less than 50% of the team being in office'], 400);
+        }
+
+        return response()->json($requests);
     }
 }
