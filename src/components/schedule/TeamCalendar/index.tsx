@@ -6,6 +6,7 @@ import { RootState } from "@/redux/store";
 import { EyeIcon } from "@/components/Svgs/eye";
 import { CloseIcon } from "@/components/Svgs/close";
 import { getEmployeeFullNameByStaffID } from "@/pages/api/employeeApi";
+import { ScheduleTable } from "@/components/Schedule/Table";
 
 interface TeamMember {
   [date: string]: number | undefined;
@@ -15,10 +16,23 @@ interface ScheduleData {
   [userId: string]: TeamMember;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-interface Schedule {
-  [date: string]: number;
+interface ScheduleProps {
+  [userid: string]: {
+    [date: string]: number | undefined;
+  };
 }
+
+
+type ScheduleByDateData = {
+  amwfhUsers: string[];
+  pmwfhUsers: string[];
+  fulldaywfhUsers: string[];
+  amCount: number;
+  pmCount: number;
+  fullDayCount: number;
+  totalStrength: number;
+  scheduleByDate: ScheduleData;
+};
 
 interface TeamCalendarProps {
   selectedSchedule: ScheduleData; // Accepting schedule from the parent
@@ -35,7 +49,6 @@ export const TeamCalendar: React.FC<TeamCalendarProps> = ({
   const [schedule, setSchedule] = useState<ScheduleData | null>(
     selectedSchedule
   );
-
   const [searchQuery, setSearchQuery] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
   const [modalDate, setModalDate] = useState<string>("");
@@ -201,6 +214,7 @@ export const TeamCalendar: React.FC<TeamCalendarProps> = ({
     const amwfhUsers: string[] = [];
     const pmwfhUsers: string[] = [];
     const fulldaywfhUsers: string[] = [];
+    const scheduleByDate = schedule || {};
     let amCount = 0;
     let pmCount = 0;
     let fullDayCount = 0;
@@ -210,6 +224,7 @@ export const TeamCalendar: React.FC<TeamCalendarProps> = ({
       Object.entries(schedule).forEach(([userId, userSchedule]) => {
         const wfhStatus = userSchedule[formattedDate];
         if (wfhStatus !== undefined) {
+          scheduleByDate[userId] = { [formattedDate]: wfhStatus };
           if (wfhStatus === 1) {
             amCount++;
             amwfhUsers.push(userId);
@@ -234,6 +249,7 @@ export const TeamCalendar: React.FC<TeamCalendarProps> = ({
       pmCount,
       fullDayCount,
       totalStrength,
+      scheduleByDate,
     };
   };
 
@@ -266,9 +282,9 @@ export const TeamCalendar: React.FC<TeamCalendarProps> = ({
       {/* Modal Rendering */}
       {modalOpen &&
         (() => {
-          const { amwfhUsers, pmwfhUsers, fulldaywfhUsers } =
+          const { amwfhUsers, pmwfhUsers, fulldaywfhUsers, scheduleByDate } =
             getTeamSchedule(modalDate);
-
+          console.log("scheduleByDate", scheduleByDate);
           const amwfhUserNames = amwfhUsers.map(
             (userId) => employeeNames[userId] || "Loading..."
           );
@@ -290,7 +306,7 @@ export const TeamCalendar: React.FC<TeamCalendarProps> = ({
           );
 
           return (
-            <div className="fixed inset-0 bg-gray-900 bg-opacity-50 flex justify-center items-center">
+            <div className="fixed inset-0 bg-gray-900 bg-opacity-50 flex justify-center items-center z-30">
               <div className="bg-white p-4 rounded-xl max-w-lg w-full">
                 <div className="flex justify-between items-center mb-4">
                   <H2 className="text-lg font-bold">
@@ -303,13 +319,13 @@ export const TeamCalendar: React.FC<TeamCalendarProps> = ({
                     <CloseIcon />
                   </button>
                 </div>
-                <input
+                {/* <input
                   type="text"
                   placeholder="Search by name"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="mb-4 p-2 border border-gray-300 rounded w-full"
-                />
+                /> */}
                 <div className="flex flex-col space-y-2">
                   <Body className="text-lg font-bold">
                     Staff on AM WFH:
@@ -330,6 +346,9 @@ export const TeamCalendar: React.FC<TeamCalendarProps> = ({
                       : " No Users on Full Day WFH"}
                   </Body>
                 </div>
+                <ScheduleTable
+                  scheduleByDate={scheduleByDate}
+                />
               </div>
             </div>
           );

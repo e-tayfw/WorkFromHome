@@ -53,6 +53,7 @@ export function Auth() {
         // Step 4: Store role and Dept
         const role = employeeData.Role;;
         const dept = employeeData.Dept;
+        toast.success("Login successful");
 
         // Step 4: Dispatch the employee data to Redux store
         dispatch(
@@ -64,6 +65,7 @@ export function Auth() {
             dept: dept,
           })
         );
+
 
         // Step 5: Optionally store userType if needed for other parts of the app
         localStorage.setItem("userType", userType);
@@ -126,7 +128,7 @@ export function Auth() {
             <div>
               <button
                 type="submit"
-                className="flex w-full bg-background text-text dark:bg-dark-background dark:text-dark-text justify-center rounded-md bg-black px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-secondary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                className="flex w-full bg-primary justify-center rounded-md px-3 py-1.5 text-sm font-semibold leading-6 shadow-sm hover:bg-secondary outline ocus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
               >
                 Sign in
               </button>
