@@ -60,12 +60,12 @@ const Apply: React.FC = () => {
                              dateRange.end !== '' && 
                              new Date(dateRange.start) <= new Date(dateRange.end);
     
-    setIsRecurringFormValid(
-      isDateRangeValid &&
+    const isFormValid = isDateRangeValid &&
       day !== 0 && 
       selectedArrangement !== "" && 
-      reason.trim() !== ""
-    );
+      reason.trim() !== "";
+
+    setIsRecurringFormValid(isFormValid);
   }, [dateRange, day, selectedArrangement, reason]);
 
   const handleDateChange = useCallback((date: string) => {
@@ -402,7 +402,7 @@ const Apply: React.FC = () => {
                 <Selection
                   onSelectionChange={handleArrangementChange}
                   selectedValue={selectedArrangement}
-                />
+                  />
               </div>
 
               <Body className="text-sm font-light text-primary mt-8">Reason</Body>

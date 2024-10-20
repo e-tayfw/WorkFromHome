@@ -101,7 +101,7 @@ const DateRangePickerComponent: React.FC<DateRangePickerProps> = ({
         <input
           ref={startDateRef}
           type="text"
-          className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 p-2.5"
+          className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:!ring-primary focus:!border-primary block w-full sm:w-auto ps-10 p-2.5"
           placeholder="Start date"
           value={selectedDateRange.start}
           readOnly
@@ -119,7 +119,7 @@ const DateRangePickerComponent: React.FC<DateRangePickerProps> = ({
         <input
           ref={endDateRef}
           type="text"
-          className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 p-2.5"
+          className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:!ring-primary focus:!border-primary block w-full sm:w-auto ps-10 p-2.5"
           placeholder="End date"
           value={selectedDateRange.end}
           readOnly
