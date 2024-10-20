@@ -812,11 +812,18 @@ class RequestController extends Controller
         $validated = $request->validate([
             'Manager_ID' => 'required|integer',
             'Request_ID' => 'required|integer',
+            'Reason' => 'required|string|max:255'
         ]);
 
-        // Retrieve the request by ID
-        $booking = Requests::findOrFail($validated['Request_ID']);
-
+        try {
+            // Retrieve the request by ID
+            $booking = Requests::findOrFail($validated['Request_ID']);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json([
+                'message' => 'Request not found.',
+            ], 404); // Not Found
+        }
+        
         // Ensure the status is 'Approved'
         if ($booking->Status !== 'Approved') {
             return response()->json([
@@ -857,7 +864,7 @@ class RequestController extends Controller
             'New_State' => 'Withdrawn By Manager',
             'Employee_ID' => $validated['Manager_ID'],
             'Date' => now(),
-            'Remarks' => 'Booking withdrawn by manager',
+            'Remarks' => $validated['Reason'],  // Store the reason as remarks
         ]);
 
         // Return a success response

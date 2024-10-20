@@ -131,7 +131,8 @@ class ManagerWithdrawApprovedRequestTest extends TestCase
 
         $httpRequest = new HttpRequest([
             'Manager_ID' => $unauthorizedManager->Staff_ID,
-            'Request_ID' => $request->Request_ID
+            'Request_ID' => $request->Request_ID,
+            'Reason' => 'Testing Reason'
         ]);
 
         echo "\n--------------------------------------------------\n";
@@ -176,7 +177,8 @@ class ManagerWithdrawApprovedRequestTest extends TestCase
 
         $httpRequest = new HttpRequest([
             'Manager_ID' => $manager->Staff_ID,
-            'Request_ID' => $request->Request_ID
+            'Request_ID' => $request->Request_ID,
+            'Reason' => 'Testing Reason'
         ]);
 
         $controller = new RequestController();
