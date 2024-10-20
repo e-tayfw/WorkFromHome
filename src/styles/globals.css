@@ -24,10 +24,9 @@ body {
 .dt-layout-start {
   margin-bottom: 20px; /* adjust the value as needed */
   margin-right: 20px; /* adjust the value as needed */
-
 }
 
-#dt-length-3 {
+[id^="dt-length-"] {
   margin-top: 20px; /* adjust the value as needed */
 }
 
@@ -36,7 +35,8 @@ body {
   margin-bottom: 20px; /* adjust the value as needed */
   gap: 10px; /* adjust the value as needed */
 }
-#dt-search-3 {
+
+[id^="dt-search-"] {
   margin-left: 20px; /* adjust the value as needed */
   border-radius: 5%;
 }
