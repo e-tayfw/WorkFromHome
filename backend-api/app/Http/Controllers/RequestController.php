@@ -585,7 +585,8 @@ class RequestController extends Controller
             foreach ($requests as $req) {
                 $dateOfReq = $req->Date_Requested;
                 $formattedDateOfReq = (new DateTime($dateOfReq))->format('Y-m-d');
-                if ($formattedDate == $formattedDateOfReq && $req->Status == $status) {
+                $isRequestValid = in_array($req->Status, ['Approved', 'Withdraw Pending', 'Withdraw Rejected']);
+                if ($formattedDate == $formattedDateOfReq && $isRequestValid) {
                     $counter++;
                     
                     // how to print the values of $dateOfReq and $date
