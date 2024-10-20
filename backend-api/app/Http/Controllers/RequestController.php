@@ -143,6 +143,7 @@ class RequestController extends Controller
         try {
             $employee = Employee::where("Staff_ID", $staffId)->firstOrFail();
 
+            // Check if there are existing requests
             $existingRequests = Requests::where('Requestor_ID', $staffId)
             ->where('Date_Requested', $selectedDate)
             ->whereIn('Status', ['Pending', 'Approved', 'Withdraw Rejected', 'Withdraw Pending'])
@@ -163,7 +164,8 @@ class RequestController extends Controller
                 } elseif ($arrangement === 'FD' && (in_array('AM', $existingArrangements) || in_array('PM', $existingArrangements))) {
                     $message = 'Full day being requested when a half day arrangement already exists';
                 }
-            
+                
+                // Return failure if existing request condition is met
                 if ($message) {
                     return response()->json([
                         'message' => $message,
@@ -176,12 +178,13 @@ class RequestController extends Controller
                 }
             } 
             
-
+            
             $reportingManager = $employee->Reporting_Manager;
             $reportingManagerFName = "";
             $reportingManagerLName = "";
             $reportingManagerName = "";
 
+            // Check for reporting manager and return failure if not found
             if (!$reportingManager) {
                 return response()->json(['message' => 'Reporting manager not found', 'success' => false], 404);
             }
@@ -194,6 +197,7 @@ class RequestController extends Controller
 
             DB::beginTransaction();
 
+            // Create new row in Request if all conditions are met
             $newRequest = Requests::create([
                 'Requestor_ID' => $staffId,
                 'Approver_ID' => $reportingManager,
@@ -206,6 +210,7 @@ class RequestController extends Controller
             // Dispatch the job to check status after 2 months
             RejectPendingRequestsOlderThanTwoMonthsJob::dispatch($newRequest)->delay(now()->addMonths(2));
 
+            // Create new row in Request Log
             RequestLog::create([
                 'Request_ID' => $newRequest->Request_ID,
                 'Previous_State' => 'Pending',
@@ -238,12 +243,12 @@ class RequestController extends Controller
     public function createRecurringRequest(Request $request)
     {
         // Step 1: Retrieve Start Date (YYYY-MM-DD), End Date (YYYY-MM-DD), Staff ID, Arrangement (AM, PM, FD), Reason, Day chosen for Recurring (Integer format)
-        $staffId = $request->staffId;
-        $startDate = $request->startDate;
-        $endDate = $request->endDate;
+        $staffId = $request->staffid;
+        $startDate = $request->startdate;
+        $endDate = $request->enddate;
         $arrangement = $request->arrangement;
         $reason = $request->reason;
-        $dayChosen = $request->dayChosen;
+        $dayChosen = $request->day;
 
         // Step 1b: take the current date in (YYYY-MM-DD) format as well
         $currentDate = date("Y-m-d");
@@ -299,7 +304,11 @@ class RequestController extends Controller
                 if ($duplicate) {
                     return response()->json([
                         'message' => "Duplicate request found on {$date}. Cannot create recurring requests with overlapping dates.",
-                        'success' => false
+                        'success' => false,
+                        'startDate' => $startDate,
+                        'endDate' => $endDate,
+                        'arrangement' => $arrangement,
+                        'reason' => $reason,
                     ], 409); // 409 Conflict
                 }
             }
@@ -308,7 +317,13 @@ class RequestController extends Controller
             $reportingManager = $employee->Reporting_Manager;
             $reportingManagerName = "";
             if (!$reportingManager) {
-                return response()->json(['message' => 'Reporting manager not found', 'success' => false], 404);
+                return response()->json(['message' => 'Reporting manager not found', 
+                                               'success' => false,
+                                               'startDate' => $startDate,
+                                               'endDate' => $endDate,
+                                               'arrangement' => $arrangement,
+                                               'reason' => $reason,
+                                            ], 404);
             } else {
                 $reportingManagerRow = Employee::where("Staff_ID", $reportingManager)->firstOrFail();
                 $reportingManagerName = $reportingManagerRow->Staff_FName . " " . $reportingManagerRow->Staff_LName;
@@ -349,6 +364,7 @@ class RequestController extends Controller
                 'message' => 'Rows for Request and RequestLog have been successfully created',
                 'success' => true,
                 'Request_Batch' => $requestBatch,
+                'day' => $dayChosen,
                 'startDate' => $startDate,
                 'endDate' => $endDate,
                 'arrangement' => $arrangement,
