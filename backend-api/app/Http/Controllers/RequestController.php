@@ -243,9 +243,9 @@ class RequestController extends Controller
     public function createRecurringRequest(Request $request)
     {
         // Step 1: Retrieve Start Date (YYYY-MM-DD), End Date (YYYY-MM-DD), Staff ID, Arrangement (AM, PM, FD), Reason, Day chosen for Recurring (Integer format)
-        $staffId = $request->staffid;
-        $startDate = $request->startdate;
-        $endDate = $request->enddate;
+        $staffId = $request->staffId;
+        $startDate = $request->startDate;
+        $endDate = $request->endDate;
         $arrangement = $request->arrangement;
         $reason = $request->reason;
         $dayChosen = $request->day;

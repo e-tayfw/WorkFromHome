@@ -31,9 +31,9 @@ interface SubmitData {
 }
 
 interface SubmitRecurringData {
-  staffid: number;
-  startdate: string;
-  enddate: string;
+  staffId: number;
+  startDate: string;
+  endDate: string;
   arrangement: ArrangementType;
   day: number;
   reason: string;
@@ -130,9 +130,9 @@ const Apply: React.FC = () => {
 
   const handleRecurringSubmit = useCallback(async (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     const submitData: SubmitRecurringData = {
-      staffid: staffid,
-      startdate: dateRange.start,
-      enddate: dateRange.end,
+      staffId: staffid,
+      startDate: dateRange.start,
+      endDate: dateRange.end,
       arrangement: selectedArrangement,
       day: day,
       reason: reason,
