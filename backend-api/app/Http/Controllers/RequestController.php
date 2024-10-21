@@ -248,7 +248,7 @@ class RequestController extends Controller
         $endDate = $request->endDate;
         $arrangement = $request->arrangement;
         $reason = $request->reason;
-        $dayChosen = $request->day;
+        $dayChosen = $request->dayChosen;
 
         // Step 1b: take the current date in (YYYY-MM-DD) format as well
         $currentDate = date("Y-m-d");
