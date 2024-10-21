@@ -11,7 +11,7 @@ import { Body, Display } from "@/components/TextStyles";
 import Swal from 'sweetalert2';
 import { useSelector } from "react-redux";
 import axios, { AxiosError } from 'axios';
-import { toast } from "react-toastify";
+// import { toast } from "react-toastify";
 
 type ArrangementType = 'AM' | 'PM' | 'FD' | '';
 
@@ -89,10 +89,10 @@ const Apply: React.FC = () => {
   },[]);
 
       // Helper function to format existing arrangements
-  const formatExistingArrangements = (existing: string) => {
+  const formatExistingArrangements = useCallback((existing: string) => {
     const arrangements = existing.split(', ');
     return arrangements.map(formatArrangement).join(', ');
-  };
+  }, []);
 
   // Helper function to format a single arrangement
   const formatArrangement = (arrangement: string) => {
@@ -128,7 +128,7 @@ const Apply: React.FC = () => {
     }
   };  
 
-  const handleRecurringSubmit = useCallback(async (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+  const handleRecurringSubmit = useCallback(async () => {
     const submitData: SubmitRecurringData = {
       staffId: staffid,
       startDate: dateRange.start,
@@ -178,10 +178,10 @@ const Apply: React.FC = () => {
       if (axios.isAxiosError(error)) {
         const axiosError = error as AxiosError<any>;
         const responseData = axiosError.response?.data;
-        const status = axiosError.response?.status;
+        // const status = axiosError.response?.status;
         
-        let title = 'Request Rejected';
-        let message = responseData.message || 'An error occurred while processing your request';
+        const title = 'Request Rejected';
+        const message = responseData.message || 'An error occurred while processing your request';
 
 
         await Swal.fire({
@@ -222,7 +222,7 @@ const Apply: React.FC = () => {
     }
   }, [staffid, dateRange, selectedArrangement, day, reason]);
 
-  const handleSubmit = useCallback(async (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+  const handleSubmit = useCallback(async () => {
     const submitData: SubmitData = {
       staffid: staffid,
       date: selectedDate,
@@ -269,7 +269,7 @@ const Apply: React.FC = () => {
         const responseData = axiosError.response?.data;
         const status = axiosError.response?.status;
 
-        let title = 'Request Rejected';
+        const title = 'Request Rejected';
         let message = '';
 
         if (status === 400) {
@@ -318,7 +318,7 @@ const Apply: React.FC = () => {
         });
       }
     }
-  }, [staffid, selectedDate, selectedArrangement, reason]);
+  }, [staffid, selectedDate, selectedArrangement, reason, formatExistingArrangements]);
 
   
 
