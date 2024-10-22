@@ -4,14 +4,14 @@ on:
   push:
     branches:
       - dev_wfh
-      - main  # Also trigger on pushes to main
+      - main
     paths:
       - 'backend-api/**'
 
   pull_request:
     branches:
       - dev_wfh
-      - main  # Also trigger on pull requests to main
+      - main
     paths:
       - 'backend-api/**'
 
@@ -28,19 +28,33 @@ jobs:
       with:
         php-version: '8.2'
 
-    - name: Copy .env and .env.testing
+    - name: Generate .env and .env.testing Files
       working-directory: backend-api
       run: |
-        php -r "file_exists('.env') || copy('.env.example', '.env');"
-        php -r "file_exists('.env.testing') || copy('.env.example', '.env.testing');"
+        # Generate .env file
+        echo 'APP_NAME=Laravel' > .env
+        echo 'APP_ENV=local' >> .env
+        echo 'APP_KEY=$(php artisan key:generate --show)' >> .env
+        echo 'APP_DEBUG=true' >> .env
+        echo 'DB_CONNECTION=pgsql' >> .env
+        echo 'DB_HOST=${{ secrets.DB_HOST }}' >> .env
+        echo 'DB_PORT=5432' >> .env
+        echo 'DB_DATABASE=dev_db' >> .env
+        echo 'DB_USERNAME=postgres' >> .env
+        echo 'DB_PASSWORD=${{ secrets.DB_PASSWORD }}' >> .env
+
+        # Generate .env.testing file
+        echo 'APP_ENV=testing' > .env.testing
+        echo 'DB_CONNECTION=pgsql' >> .env.testing
+        echo 'DB_HOST=${{ secrets.DB_HOST }}' >> .env.testing
+        echo 'DB_PORT=5432' >> .env.testing
+        echo 'DB_DATABASE=test_db' >> .env.testing
+        echo 'DB_USERNAME=postgres' >> .env.testing
+        echo 'DB_PASSWORD=${{ secrets.DB_PASSWORD }}' >> .env.testing
 
     - name: Run Composer Install
       working-directory: backend-api
       run: composer install --no-ansi --no-interaction --no-progress --prefer-dist
-
-    - name: Generate Application Key
-      working-directory: backend-api
-      run: php artisan key:generate
 
     - name: Run Laravel Tests
       working-directory: backend-api
