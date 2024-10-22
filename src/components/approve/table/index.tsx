@@ -4,6 +4,7 @@ import ApproveEntry from '@/components/approve/entry';
 import { BodyLarge } from '@/components/TextStyles';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSort, faSortUp, faSortDown, faChevronDown, faChevronRight } from '@fortawesome/free-solid-svg-icons';
+import Swal from 'sweetalert2'; // Import SweetAlert for modal
 import { useSelector } from "react-redux";
 import StatusFilter from '@/components/approve/filter';
 import StaffSearch from '@/components/approve/search';
@@ -74,6 +75,41 @@ const ApproveTable: React.FC<ApproveTableProps> = ({ employees }) => {
     setIsClient(true);
     fetchRequests();
   }, [staffId, employees, fetchRequests]);
+
+  // Fetch and display logs in a modal using SweetAlert
+  const handleRequestClick = async (requestId: number) => {
+    try {
+      const response = await axios.get(`http://127.0.0.1:8085/api/requestLog/requestId/${requestId}`);
+      const logs = response.data;
+
+      // Prepare the log content
+      const logContent = logs.map((log: any) => `
+        <div>
+          <strong>Date:</strong> ${log.Date}<br />
+          <strong>Status:</strong> ${log.New_State}<br />
+          <strong>Remarks:</strong> ${log.Remarks || 'No remarks'}<br /><br />
+        </div>
+      `).join('');
+
+      // Show the logs using SweetAlert
+      Swal.fire({
+        title: `Request #${requestId} Logs`,
+        html: `<div style="text-align: left;">${logContent}</div>`,
+        icon: 'info',
+        showCloseButton: true,
+        confirmButtonText: 'Close',
+        confirmButtonColor: '#072040'
+      });
+    } catch (error) {
+      Swal.fire({
+        title: 'Error',
+        text: 'Failed to load request logs. Please try again later.',
+        icon: 'error',
+        confirmButtonText: 'Close',
+        confirmButtonColor: '#072040'
+      });
+    }
+  };
 
   const sortedAdhocRequests = useMemo(() => {
     let adhocRequests = [...requests].filter((request) => request.requestBatch === null);
@@ -189,7 +225,6 @@ const ApproveTable: React.FC<ApproveTableProps> = ({ employees }) => {
   };
 
   const useShortHeaders = () => {
-    // Set breakpoint to use short headers
     const [isMobile, setIsMobile] = useState(false);
     useEffect(() => {
       const handleResize = () => {
@@ -206,7 +241,6 @@ const ApproveTable: React.FC<ApproveTableProps> = ({ employees }) => {
 
   return (
     <div className="container mx-auto p-4">
-      {/* Filter and Search Row */}
       <div className="mb-6 flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-4 w-full">
         <StatusFilter filterStatus={filterStatus} setFilterStatus={setFilterStatus} />
         <div className="h-16 w-px bg-gray-300 hidden md:block" />
@@ -227,7 +261,6 @@ const ApproveTable: React.FC<ApproveTableProps> = ({ employees }) => {
 
           return (
             <div key={employee.Staff_ID} className="mb-8">
-              {/* Clickable Dropdown Header */}
               <div
                 onClick={() => toggleExpand(employee.Staff_ID)}
                 className="flex items-center justify-between cursor-pointer bg-gray-100 px-4 py-2 rounded-md"
@@ -235,20 +268,14 @@ const ApproveTable: React.FC<ApproveTableProps> = ({ employees }) => {
                 <h2 className="text-xl font-semibold text-primary">
                   {employee.Staff_FName} {employee.Staff_LName}
                 </h2>
-                <FontAwesomeIcon
-                  icon={isExpanded ? faChevronDown : faChevronRight}
-                />
+                <FontAwesomeIcon icon={isExpanded ? faChevronDown : faChevronRight} />
               </div>
 
-              {/* Staff Request Tables - Only display if expanded */}
               {isExpanded && (
                 <>
-                  {/* Recurring Requests */}
                   {Object.keys(recurringRequests).length > 0 ? (
                     <div className="mt-4">
-                      <h3 className="text-lg font-semibold text-primary">
-                        Recurring Requests
-                      </h3>
+                      <h3 className="text-lg font-semibold text-primary">Recurring Requests</h3>
                       <table className="table-fixed w-full border-collapse mt-2">
                         <thead>
                           <tr className="bg-secondary text-text">
@@ -271,13 +298,14 @@ const ApproveTable: React.FC<ApproveTableProps> = ({ employees }) => {
                         </thead>
                         <tbody>
                           {Object.keys(recurringRequests)
-                            .sort((a, b) => Number(b) - Number(a)) // Sort batch numbers in descending order
+                            .sort((a, b) => Number(b) - Number(a))
                             .map((batchNumber) => {
-                              const pendingRequestsInBatch = recurringRequests[batchNumber].filter((request: { status: string; }) => request.status.toLowerCase() === 'pending');
+                              const pendingRequestsInBatch = recurringRequests[batchNumber].filter(
+                                (request: { status: string }) => request.status.toLowerCase() === 'pending'
+                              );
 
                               return (
                                 <React.Fragment key={`batch-${batchNumber}`}>
-                                  {/* Batch Row */}
                                   <tr>
                                     <td colSpan={5} className="bg-gray-200 text-center font-semibold py-2">
                                       Batch: {batchNumber}
@@ -298,6 +326,7 @@ const ApproveTable: React.FC<ApproveTableProps> = ({ employees }) => {
                                       duration={request.duration}
                                       teamSize={employees.length}
                                       onRefreshRequests={fetchRequests}
+                                      onRequestClick={handleRequestClick} // Pass click handler
                                       isFirstPendingInBatch={index === 0 && request.status.toLowerCase() === 'pending'}
                                       rowSpanCount={pendingRequestsInBatch.length}
                                       isMobile={isMobile}
@@ -309,7 +338,6 @@ const ApproveTable: React.FC<ApproveTableProps> = ({ employees }) => {
                         </tbody>
                       </table>
 
-                      {/* Pagination for Recurring Requests */}
                       <div className="flex justify-center items-center mt-4 space-x-4">
                         <button
                           className="bg-primary text-white py-2 px-4 rounded-md disabled:bg-gray-400 disabled:cursor-not-allowed"
@@ -332,8 +360,7 @@ const ApproveTable: React.FC<ApproveTableProps> = ({ employees }) => {
                     </div>
                   ) : null}
 
-                  {/* Adhoc Requests */}
-                  {sortedAdhocRequests.length > 0 ? (
+                  {adhocRequests.length > 0 ? (
                     <div className="mt-4">
                       <hr className="my-4 border-t border-gray-300" />
                       <h3 className="text-lg font-semibold text-primary">Adhoc Requests</h3>
@@ -358,7 +385,7 @@ const ApproveTable: React.FC<ApproveTableProps> = ({ employees }) => {
                           </tr>
                         </thead>
                         <tbody>
-                          {paginate(sortedAdhocRequests, employee.Staff_ID, 'adhoc').map((request) => (
+                          {paginate(adhocRequests, employee.Staff_ID, 'adhoc').map((request) => (
                             <ApproveEntry
                               key={request.requestId}
                               requestId={request.requestId}
@@ -372,13 +399,13 @@ const ApproveTable: React.FC<ApproveTableProps> = ({ employees }) => {
                               duration={request.duration}
                               teamSize={employees.length}
                               onRefreshRequests={fetchRequests}
+                              onRequestClick={handleRequestClick} // Pass click handler
                               isMobile={isMobile}
                             />
                           ))}
                         </tbody>
                       </table>
 
-                      {/* Pagination for Adhoc Requests */}
                       <div className="flex justify-center items-center mt-4 space-x-4">
                         <button
                           className="bg-primary text-white py-2 px-4 rounded-md disabled:bg-gray-400 disabled:cursor-not-allowed"
@@ -388,11 +415,11 @@ const ApproveTable: React.FC<ApproveTableProps> = ({ employees }) => {
                           Previous
                         </button>
                         <span className="text-primary font-semibold">
-                          Page {(pagination[employee.Staff_ID]?.adhoc || 1)} of {getTotalPages(sortedAdhocRequests)}
+                          Page {(pagination[employee.Staff_ID]?.adhoc || 1)} of {getTotalPages(adhocRequests)}
                         </span>
                         <button
                           className="bg-primary text-white py-2 px-4 rounded-md disabled:bg-gray-400 disabled:cursor-not-allowed"
-                          disabled={paginate(sortedAdhocRequests, employee.Staff_ID, 'adhoc').length < requestsPerPage}
+                          disabled={paginate(adhocRequests, employee.Staff_ID, 'adhoc').length < requestsPerPage}
                           onClick={() => handlePageChange(employee.Staff_ID, (pagination[employee.Staff_ID]?.adhoc || 1) + 1, 'adhoc')}
                         >
                           Next
@@ -401,7 +428,6 @@ const ApproveTable: React.FC<ApproveTableProps> = ({ employees }) => {
                     </div>
                   ) : null}
 
-                  {/* No Requests Message */}
                   {Object.keys(recurringRequests).length === 0 && adhocRequests.length === 0 && (
                     <div className="text-center text-primary mt-4">
                       Staff has no requests of '{filterStatus}' status

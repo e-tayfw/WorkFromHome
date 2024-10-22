@@ -3,6 +3,7 @@ import { Body } from '@/components/TextStyles';
 import axios from 'axios';
 import ActionHandler from '@/components/approve/actionHandler';
 import { Oval } from 'react-loader-spinner';
+import Swal from 'sweetalert2'; // Import SweetAlert for modal
 
 interface ApproveEntryProps {
   requestId: number;
@@ -16,6 +17,7 @@ interface ApproveEntryProps {
   duration: string;
   teamSize: number;
   onRefreshRequests: () => void;
+  onRequestClick: (requestId: number) => void; // New prop for click handler
   isFirstPendingInBatch?: boolean; // Prop to identify the first pending request in batch
   rowSpanCount?: number; // Number of rows to span for pending requests in the batch
   isMobile?: boolean; // Add this prop to handle mobile rendering
@@ -32,6 +34,7 @@ const ApproveEntry: React.FC<ApproveEntryProps> = ({
   duration,
   teamSize,
   onRefreshRequests,
+  onRequestClick, // Receive the click handler as a prop
   isFirstPendingInBatch = false, // Default to false
   rowSpanCount = 1, // Default row span count for adhoc requests
   isMobile = false, // Default to non-mobile view
@@ -121,6 +124,11 @@ const ApproveEntry: React.FC<ApproveEntryProps> = ({
       'Reject All': 'Rej all'
     };
     return isMobile ? actionMap[action] || action : action;
+  };
+
+  // Function to trigger when row is clicked
+  const handleRowClick = () => {
+    onRequestClick(requestId); // Call the parent component's function when clicked
   };
 
   const renderActionButtons = () => {
@@ -233,7 +241,7 @@ const ApproveEntry: React.FC<ApproveEntryProps> = ({
   };
 
   return (
-    <tr className="border-b">
+    <tr className="border-b cursor-pointer" onClick={handleRowClick}>
       <td className="px-4 py-2">
         <Body className="text-text">{dateRequested}</Body>
       </td>
