@@ -28,9 +28,11 @@ jobs:
       with:
         php-version: '8.2'
 
-    - name: Copy .env
+    - name: Copy .env and .env.testing
       working-directory: backend-api
-      run: php -r "file_exists('.env') || copy('.env.example', '.env');"
+      run: |
+        php -r "file_exists('.env') || copy('.env.example', '.env');"
+        php -r "file_exists('.env.testing') || copy('.env.example', '.env.testing');"
 
     - name: Run Composer Install
       working-directory: backend-api
