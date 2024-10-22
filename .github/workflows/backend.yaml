@@ -1,4 +1,4 @@
-name: Laravel Backend CI/CD
+name: Laravel Backend CI
 
 on:
   push:
@@ -28,44 +28,24 @@ jobs:
       with:
         php-version: '8.2'
 
-    - name: Generate .env and .env.testing Files
+    - name: Create .env and .env.testing Files from Secrets
       working-directory: backend-api
       run: |
-        # Generate .env file
-        echo 'APP_NAME=Laravel' > .env
-        echo 'APP_ENV=local' >> .env
-        echo 'APP_KEY=$(php artisan key:generate --show)' >> .env
-        echo 'APP_DEBUG=true' >> .env
-        echo 'DB_CONNECTION=pgsql' >> .env
-        echo 'DB_HOST=${{ secrets.DB_HOST }}' >> .env
-        echo 'DB_PORT=5432' >> .env
-        echo 'DB_DATABASE=dev_db' >> .env
-        echo 'DB_USERNAME=postgres' >> .env
-        echo 'DB_PASSWORD=${{ secrets.DB_PASSWORD }}' >> .env
-
-        # Generate .env.testing file
-        echo 'APP_ENV=testing' > .env.testing
-        echo 'DB_CONNECTION=pgsql' >> .env.testing
-        echo 'DB_HOST=${{ secrets.DB_HOST }}' >> .env.testing
-        echo 'DB_PORT=5432' >> .env.testing
-        echo 'DB_DATABASE=test_db' >> .env.testing
-        echo 'DB_USERNAME=postgres' >> .env.testing
-        echo 'DB_PASSWORD=${{ secrets.DB_PASSWORD }}' >> .env.testing
-
-    - name: Run Composer Install
+        echo "${{ secrets.ENV_CONTENT }}" > .env
+        echo "${{ secrets.ENV_TESTING_CONTENT }}" > .env.testing
+    - name: Test print content of env (REMOVE in PROD)
+      run: |
+        cat .env
+    - name: Install Dependencies
       working-directory: backend-api
       run: composer install --no-ansi --no-interaction --no-progress --prefer-dist
 
+    - name: Clear Config Cache
+      working-directory: backend-api
+      run: php artisan config:clear
+
     - name: Run Laravel Tests
       working-directory: backend-api
-      env:
-        APP_ENV: testing
-        DB_CONNECTION: pgsql
-        DB_HOST: ${{ secrets.DB_HOST }}
-        DB_PORT: 5432
-        DB_DATABASE: test_db
-        DB_USERNAME: postgres
-        DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
       run: php artisan test
 
   deploy:
