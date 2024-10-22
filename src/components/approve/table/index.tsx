@@ -4,11 +4,9 @@ import ApproveEntry from '@/components/approve/entry';
 import { BodyLarge } from '@/components/TextStyles';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSort, faSortUp, faSortDown, faChevronDown, faChevronRight } from '@fortawesome/free-solid-svg-icons';
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
 import { useSelector } from "react-redux";
-import StatusFilter from '@/components/approve/filter'; // Import StatusFilter component
-import StaffSearch from '@/components/approve/search';   // Import StaffSearch component
+import StatusFilter from '@/components/approve/filter';
+import StaffSearch from '@/components/approve/search';
 
 interface Request {
   requestId: number;
@@ -33,15 +31,14 @@ interface ApproveTableProps {
 
 const ApproveTable: React.FC<ApproveTableProps> = ({ employees }) => {
   const [requests, setRequests] = useState<Request[]>([]);
-  const [expandedStaff, setExpandedStaff] = useState<number[]>([]); // Track expanded staff tables
-  const [sortConfig, setSortConfig] = useState<{ key: keyof Request; direction: string } | null>(null);
+  const [expandedStaff, setExpandedStaff] = useState<number[]>([]);
+  const [adhocSortConfig, setAdhocSortConfig] = useState<{ key: keyof Request; direction: string } | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [allDataLoaded, setAllDataLoaded] = useState<boolean>(false);
-  const [filterStatus, setFilterStatus] = useState<string>('all'); // Status filter state
+  const [filterStatus, setFilterStatus] = useState<string>('all');
   const [pagination, setPagination] = useState<{ [staffId: number]: { recurring: number; adhoc: number } }>({});
-  const [searchTerm, setSearchTerm] = useState<string>(''); // Search term for staff name
-  const [isClient, setIsClient] = useState(false); 
+  const [searchTerm, setSearchTerm] = useState<string>('');
+  const [isClient, setIsClient] = useState(false);
 
   const staffId = useSelector((state: any) => state.auth.staffId);
   const requestsPerPage = 5;
@@ -58,23 +55,18 @@ const ApproveTable: React.FC<ApproveTableProps> = ({ employees }) => {
         dateRequested: item.Date_Requested,
         requestBatch: item.Request_Batch,
         dateOfRequest: new Date(item.created_at).toISOString().split('T')[0],
-        duration: item.Duration
+        duration: item.Duration,
       }));
 
       setRequests(mappedRequests);
       setLoading(false);
 
       if (employees.length > 0) {
-        setAllDataLoaded(true);
+        setExpandedStaff([]);
       }
-
-      setExpandedStaff([]);
-      
     } catch (err) {
-      console.error('Error fetching approval data:', err);
       setError('Failed to load approval data');
       setLoading(false);
-      toast.error('Failed to load approvals, please try again!');
     }
   }, [staffId, employees]);
 
@@ -83,54 +75,49 @@ const ApproveTable: React.FC<ApproveTableProps> = ({ employees }) => {
     fetchRequests();
   }, [staffId, employees, fetchRequests]);
 
-  useEffect(() => {
-    if (allDataLoaded) {
-      toast.success('All data loaded successfully');
-    }
-  }, [allDataLoaded]);
-
-  const filteredRequests = useMemo(() => {
-    let sortableRequests = [...requests];
+  const sortedAdhocRequests = useMemo(() => {
+    let adhocRequests = [...requests].filter((request) => request.requestBatch === null);
 
     if (filterStatus !== 'all') {
-      sortableRequests = sortableRequests.filter((request) => request.status.toLowerCase() === filterStatus.toLowerCase());
+      adhocRequests = adhocRequests.filter((request) => request.status.toLowerCase() === filterStatus.toLowerCase());
     }
 
-    if (sortConfig !== null) {
-      sortableRequests.sort((a, b) => {
-        let aValue: any = a[sortConfig.key];
-        let bValue: any = b[sortConfig.key];
+    if (adhocSortConfig !== null) {
+      adhocRequests.sort((a, b) => {
+        let aValue: any = a[adhocSortConfig.key];
+        let bValue: any = b[adhocSortConfig.key];
 
-        if (sortConfig.key === 'dateRequested' || sortConfig.key === 'dateOfRequest') {
+        if (adhocSortConfig.key === 'dateRequested' || adhocSortConfig.key === 'dateOfRequest') {
           aValue = new Date(aValue);
           bValue = new Date(bValue);
         }
 
         if (aValue < bValue) {
-          return sortConfig.direction === 'ascending' ? -1 : 1;
+          return adhocSortConfig.direction === 'ascending' ? -1 : 1;
         }
         if (aValue > bValue) {
-          return sortConfig.direction === 'ascending' ? 1 : -1;
+          return adhocSortConfig.direction === 'ascending' ? 1 : -1;
         }
         return 0;
       });
     }
-    return sortableRequests;
-  }, [requests, sortConfig, filterStatus]);
+
+    return adhocRequests;
+  }, [requests, adhocSortConfig, filterStatus]);
 
   const requestSort = (key: keyof Request) => {
     let direction = 'ascending';
-    if (sortConfig && sortConfig.key === key && sortConfig.direction === 'ascending') {
+    if (adhocSortConfig && adhocSortConfig.key === key && adhocSortConfig.direction === 'ascending') {
       direction = 'descending';
     }
-    setSortConfig({ key, direction });
+    setAdhocSortConfig({ key, direction });
   };
 
   const getSortIcon = (key: keyof Request) => {
-    if (!sortConfig || sortConfig.key !== key) {
+    if (!adhocSortConfig || adhocSortConfig.key !== key) {
       return <FontAwesomeIcon icon={faSort} />;
     }
-    if (sortConfig.direction === 'ascending') {
+    if (adhocSortConfig.direction === 'ascending') {
       return <FontAwesomeIcon icon={faSortUp} />;
     }
     return <FontAwesomeIcon icon={faSortDown} />;
@@ -145,17 +132,16 @@ const ApproveTable: React.FC<ApproveTableProps> = ({ employees }) => {
   };
 
   const getEmployeeRequests = (employeeId: number) => {
-    return filteredRequests.filter((request) => request.requestorId === employeeId);
+    return requests.filter((request) => request.requestorId === employeeId);
   };
 
   const paginate = (requests: Request[] | undefined, staffId: number, type: 'recurring' | 'adhoc') => {
     const currentPage = pagination[staffId]?.[type] || 1;
     const startIndex = (currentPage - 1) * requestsPerPage;
     const endIndex = startIndex + requestsPerPage;
-    
-    // Ensure that `requests` is an array before slicing
+
     if (!Array.isArray(requests)) {
-        return [];
+      return [];
     }
 
     return requests.slice(startIndex, endIndex);
@@ -176,28 +162,50 @@ const ApproveTable: React.FC<ApproveTableProps> = ({ employees }) => {
     setPagination({});
   }, [filterStatus]);
 
-  // Grouping requests by batch (recurring) and separating adhoc requests
   const groupRequestsByBatch = (requests: Request[]) => {
     return requests.reduce((acc: any, request: Request) => {
       const batch = request.requestBatch;
       if (batch) {
-        // Recurring request
         if (!acc.recurring[batch]) {
           acc.recurring[batch] = [];
         }
         acc.recurring[batch].push(request);
       } else {
-        // Adhoc request
         acc.adhoc.push(request);
       }
       return acc;
     }, { recurring: {}, adhoc: [] });
   };
 
+  const getShortHeader = (fullHeader: string) => {
+    const shortForms: { [key: string]: string } = {
+      "Date Requested": "Date Req.",
+      "Duration": "Dur.",
+      "Date Of Request": "DoR.",
+      "Status": "Stat.",
+      "Action": "Act.",
+    };
+    return shortForms[fullHeader] || fullHeader;
+  };
+
+  const useShortHeaders = () => {
+    // Set breakpoint to use short headers
+    const [isMobile, setIsMobile] = useState(false);
+    useEffect(() => {
+      const handleResize = () => {
+        setIsMobile(window.innerWidth < 960);
+      };
+      handleResize();
+      window.addEventListener("resize", handleResize);
+      return () => window.removeEventListener("resize", handleResize);
+    }, []);
+    return isMobile;
+  };
+
+  const isMobile = useShortHeaders();
+
   return (
     <div className="container mx-auto p-4">
-      {isClient && <ToastContainer position="top-right" autoClose={5000} hideProgressBar={false} newestOnTop closeOnClick />}
-
       {/* Filter and Search Row */}
       <div className="mb-6 flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-4 w-full">
         <StatusFilter filterStatus={filterStatus} setFilterStatus={setFilterStatus} />
@@ -241,53 +249,63 @@ const ApproveTable: React.FC<ApproveTableProps> = ({ employees }) => {
                       <h3 className="text-lg font-semibold text-primary">
                         Recurring Requests
                       </h3>
-                      <table className="table-auto w-full border-collapse mt-2">
+                      <table className="table-fixed w-full border-collapse mt-2">
                         <thead>
                           <tr className="bg-secondary text-text">
-                            <th className="px-4 py-2 text-left cursor-pointer" onClick={() => requestSort("dateRequested")}>
-                              <BodyLarge className="text-primary">Date Requested {getSortIcon("dateRequested")}</BodyLarge>
+                            <th className="w-1/5 px-4 py-2 text-left">
+                              <BodyLarge className="text-primary">{isMobile ? getShortHeader("Date Requested") : "Date Requested"}</BodyLarge>
                             </th>
-                            <th className="px-4 py-2 text-left cursor-pointer" onClick={() => requestSort("duration")}>
-                              <BodyLarge className="text-primary">Duration {getSortIcon("duration")}</BodyLarge>
+                            <th className="w-1/5 px-4 py-2 text-left">
+                              <BodyLarge className="text-primary">{isMobile ? getShortHeader("Duration") : "Duration"}</BodyLarge>
                             </th>
-                            <th className="px-4 py-2 text-left cursor-pointer" onClick={() => requestSort("dateOfRequest")}>
-                              <BodyLarge className="text-primary">Date Of Request {getSortIcon("dateOfRequest")}</BodyLarge>
+                            <th className="w-1/5 px-4 py-2 text-left">
+                              <BodyLarge className="text-primary">{isMobile ? getShortHeader("Date Of Request") : "Date Of Request"}</BodyLarge>
                             </th>
-                            <th className="px-4 py-2 text-left cursor-pointer" onClick={() => requestSort("status")}>
-                              <BodyLarge className="text-primary">Status {getSortIcon("status")}</BodyLarge>
+                            <th className="w-1/5 px-4 py-2 text-left">
+                              <BodyLarge className="text-primary">{isMobile ? getShortHeader("Status") : "Status"}</BodyLarge>
                             </th>
-                            <th className="px-4 py-2 text-left">
-                              <BodyLarge className="text-primary">Action</BodyLarge>
+                            <th className="w-1/5 px-4 py-2 text-left">
+                              <BodyLarge className="text-primary">{isMobile ? getShortHeader("Action") : "Action"}</BodyLarge>
                             </th>
                           </tr>
                         </thead>
                         <tbody>
-                          {Object.keys(recurringRequests).map((batchNumber) => (
-                            <React.Fragment key={`batch-${batchNumber}`}>
-                              {/* Batch Row */}
-                              <tr>
-                                <td colSpan={5} className="bg-gray-200 text-center font-semibold py-2">
-                                  Batch: {batchNumber}
-                                </td>
-                              </tr>
-                              {paginate(recurringRequests[batchNumber], employee.Staff_ID, 'recurring').map((request) => (
-                                <ApproveEntry
-                                  key={request.requestId}
-                                  requestId={request.requestId}
-                                  requestorName={`${employee.Staff_FName} ${employee.Staff_LName}`}
-                                  requestorId={request.requestorId}
-                                  approverId={request.approverId}
-                                  status={request.status}
-                                  dateRequested={request.dateRequested}
-                                  requestBatch={request.requestBatch}
-                                  dateOfRequest={request.dateOfRequest}
-                                  duration={request.duration}
-                                  teamSize={employees.length}
-                                  onRefreshRequests={fetchRequests}
-                                />
-                              ))}
-                            </React.Fragment>
-                          ))}
+                          {Object.keys(recurringRequests)
+                            .sort((a, b) => Number(b) - Number(a)) // Sort batch numbers in descending order
+                            .map((batchNumber) => {
+                              const pendingRequestsInBatch = recurringRequests[batchNumber].filter((request: { status: string; }) => request.status.toLowerCase() === 'pending');
+
+                              return (
+                                <React.Fragment key={`batch-${batchNumber}`}>
+                                  {/* Batch Row */}
+                                  <tr>
+                                    <td colSpan={5} className="bg-gray-200 text-center font-semibold py-2">
+                                      Batch: {batchNumber}
+                                    </td>
+                                  </tr>
+
+                                  {paginate(recurringRequests[batchNumber], employee.Staff_ID, 'recurring').map((request: Request, index: number) => (
+                                    <ApproveEntry
+                                      key={request.requestId}
+                                      requestId={request.requestId}
+                                      requestorName={`${employee.Staff_FName} ${employee.Staff_LName}`}
+                                      requestorId={request.requestorId}
+                                      approverId={request.approverId}
+                                      status={request.status}
+                                      dateRequested={request.dateRequested}
+                                      requestBatch={request.requestBatch}
+                                      dateOfRequest={request.dateOfRequest}
+                                      duration={request.duration}
+                                      teamSize={employees.length}
+                                      onRefreshRequests={fetchRequests}
+                                      isFirstPendingInBatch={index === 0 && request.status.toLowerCase() === 'pending'}
+                                      rowSpanCount={pendingRequestsInBatch.length}
+                                      isMobile={isMobile}
+                                    />
+                                  ))}
+                                </React.Fragment>
+                              );
+                            })}
                         </tbody>
                       </table>
 
@@ -315,32 +333,32 @@ const ApproveTable: React.FC<ApproveTableProps> = ({ employees }) => {
                   ) : null}
 
                   {/* Adhoc Requests */}
-                  {adhocRequests.length > 0 ? (
+                  {sortedAdhocRequests.length > 0 ? (
                     <div className="mt-4">
                       <hr className="my-4 border-t border-gray-300" />
                       <h3 className="text-lg font-semibold text-primary">Adhoc Requests</h3>
-                      <table className="table-auto w-full border-collapse mt-2">
+                      <table className="table-fixed w-full border-collapse mt-2">
                         <thead>
                           <tr className="bg-secondary text-text">
-                            <th className="px-4 py-2 text-left cursor-pointer" onClick={() => requestSort("dateRequested")}>
-                              <BodyLarge className="text-primary">Date Requested {getSortIcon("dateRequested")}</BodyLarge>
+                            <th className="w-1/5 px-4 py-2 text-left cursor-pointer" onClick={() => requestSort("dateRequested")}>
+                              <BodyLarge className="text-primary">{isMobile ? getShortHeader("Date Requested") : "Date Requested"} {getSortIcon("dateRequested")}</BodyLarge>
                             </th>
-                            <th className="px-4 py-2 text-left cursor-pointer" onClick={() => requestSort("duration")}>
-                              <BodyLarge className="text-primary">Duration {getSortIcon("duration")}</BodyLarge>
+                            <th className="w-1/5 px-4 py-2 text-left cursor-pointer" onClick={() => requestSort("duration")}>
+                              <BodyLarge className="text-primary">{isMobile ? getShortHeader("Duration") : "Duration"} {getSortIcon("duration")}</BodyLarge>
                             </th>
-                            <th className="px-4 py-2 text-left cursor-pointer" onClick={() => requestSort("dateOfRequest")}>
-                              <BodyLarge className="text-primary">Date Of Request {getSortIcon("dateOfRequest")}</BodyLarge>
+                            <th className="w-1/5 px-4 py-2 text-left cursor-pointer" onClick={() => requestSort("dateOfRequest")}>
+                              <BodyLarge className="text-primary">{isMobile ? getShortHeader("Date Of Request") : "Date Of Request"} {getSortIcon("dateOfRequest")}</BodyLarge>
                             </th>
-                            <th className="px-4 py-2 text-left cursor-pointer" onClick={() => requestSort("status")}>
-                              <BodyLarge className="text-primary">Status {getSortIcon("status")}</BodyLarge>
+                            <th className="w-1/5 px-4 py-2 text-left cursor-pointer" onClick={() => requestSort("status")}>
+                              <BodyLarge className="text-primary">{isMobile ? getShortHeader("Status") : "Status"} {getSortIcon("status")}</BodyLarge>
                             </th>
-                            <th className="px-4 py-2 text-left">
-                              <BodyLarge className="text-primary">Action</BodyLarge>
+                            <th className="w-1/5 px-4 py-2 text-left">
+                              <BodyLarge className="text-primary">{isMobile ? getShortHeader("Action") : "Action"}</BodyLarge>
                             </th>
                           </tr>
                         </thead>
                         <tbody>
-                          {paginate(adhocRequests, employee.Staff_ID, 'adhoc').map((request) => (
+                          {paginate(sortedAdhocRequests, employee.Staff_ID, 'adhoc').map((request) => (
                             <ApproveEntry
                               key={request.requestId}
                               requestId={request.requestId}
@@ -354,6 +372,7 @@ const ApproveTable: React.FC<ApproveTableProps> = ({ employees }) => {
                               duration={request.duration}
                               teamSize={employees.length}
                               onRefreshRequests={fetchRequests}
+                              isMobile={isMobile}
                             />
                           ))}
                         </tbody>
@@ -369,11 +388,11 @@ const ApproveTable: React.FC<ApproveTableProps> = ({ employees }) => {
                           Previous
                         </button>
                         <span className="text-primary font-semibold">
-                          Page {(pagination[employee.Staff_ID]?.adhoc || 1)} of {getTotalPages(adhocRequests)}
+                          Page {(pagination[employee.Staff_ID]?.adhoc || 1)} of {getTotalPages(sortedAdhocRequests)}
                         </span>
                         <button
                           className="bg-primary text-white py-2 px-4 rounded-md disabled:bg-gray-400 disabled:cursor-not-allowed"
-                          disabled={paginate(adhocRequests, employee.Staff_ID, 'adhoc').length < requestsPerPage}
+                          disabled={paginate(sortedAdhocRequests, employee.Staff_ID, 'adhoc').length < requestsPerPage}
                           onClick={() => handlePageChange(employee.Staff_ID, (pagination[employee.Staff_ID]?.adhoc || 1) + 1, 'adhoc')}
                         >
                           Next

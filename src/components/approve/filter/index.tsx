@@ -20,6 +20,7 @@ const StatusFilter: React.FC<StatusFilterProps> = ({ filterStatus, setFilterStat
           <option value="approved">Approved</option>
           <option value="pending">Pending</option>
           <option value="withdrawn">Withdrawn</option>
+          <option value="withdrawn by manager">Withdrawn By Manager</option>
           <option value="withdraw pending">Withdraw Pending</option>
           <option value="withdraw rejected">Withdraw Rejected</option>
           <option value="rejected">Rejected</option>
