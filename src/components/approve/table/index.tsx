@@ -1,13 +1,14 @@
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import axios from 'axios';
-import ApproveEntry from '@/components/approve/entry';
-import { BodyLarge } from '@/components/TextStyles';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSort, faSortUp, faSortDown, faChevronDown, faChevronRight } from '@fortawesome/free-solid-svg-icons';
-import Swal from 'sweetalert2'; // Import SweetAlert for modal
-import { useSelector } from "react-redux";
+import { useSelector } from 'react-redux';
+import Swal from 'sweetalert2';
 import StatusFilter from '@/components/approve/filter';
 import StaffSearch from '@/components/approve/search';
+import RecurringTable from '@/components/approve/recurring';
+import AdhocTable from '@/components/approve/adhoc';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faSort, faSortUp, faSortDown } from '@fortawesome/free-solid-svg-icons';
+import { faChevronDown, faChevronRight } from '@fortawesome/free-solid-svg-icons';
 
 interface Request {
   requestId: number;
@@ -82,7 +83,6 @@ const ApproveTable: React.FC<ApproveTableProps> = ({ employees }) => {
       const response = await axios.get(`http://127.0.0.1:8085/api/requestLog/requestId/${requestId}`);
       const logs = response.data;
 
-      // Prepare the log content
       const logContent = logs
         .map((log: any) => `
         <div>
@@ -93,7 +93,6 @@ const ApproveTable: React.FC<ApproveTableProps> = ({ employees }) => {
       `)
         .join('');
 
-      // Show the logs using SweetAlert
       Swal.fire({
         title: `Request #${requestId} Logs`,
         html: `<div style="text-align: left;">${logContent}</div>`,
@@ -113,6 +112,7 @@ const ApproveTable: React.FC<ApproveTableProps> = ({ employees }) => {
     }
   };
 
+  // Apply sorting and filter to adhoc requests
   const sortedAdhocRequests = useMemo(() => {
     let adhocRequests = [...requests].filter((request) => request.requestBatch === null);
 
@@ -177,20 +177,26 @@ const ApproveTable: React.FC<ApproveTableProps> = ({ employees }) => {
     return sortedAdhocRequests.filter((request) => request.requestorId === employeeId);
   };
 
-  const paginate = (requests: Request[] | undefined, staffId: number, type: 'recurring' | 'adhoc') => {
-    const currentPage = pagination[staffId]?.[type] || 1;
-    const startIndex = (currentPage - 1) * requestsPerPage;
-    const endIndex = startIndex + requestsPerPage;
+  // Group requests by batch, applying filterStatus
+  const groupRequestsByBatch = (requests: Request[]) => {
+    return requests.reduce(
+      (acc: any, request: Request) => {
+        const batch = request.requestBatch;
 
-    if (!Array.isArray(requests)) {
-      return [];
-    }
+        // Apply the filter status here for recurring requests
+        if (batch && (filterStatus === 'all' || request.status.toLowerCase() === filterStatus.toLowerCase())) {
+          if (!acc.recurring[batch]) {
+            acc.recurring[batch] = [];
+          }
+          acc.recurring[batch].push(request);
+        } else if (!batch) {
+          acc.adhoc.push(request);
+        }
 
-    return requests.slice(startIndex, endIndex);
-  };
-
-  const getTotalPages = (requests: Request[] | undefined) => {
-    return requests && requests.length > 0 ? Math.ceil(requests.length / requestsPerPage) : 1;
+        return acc;
+      },
+      { recurring: {}, adhoc: [] }
+    );
   };
 
   const handlePageChange = (staffId: number, newPage: number, type: 'recurring' | 'adhoc') => {
@@ -203,24 +209,6 @@ const ApproveTable: React.FC<ApproveTableProps> = ({ employees }) => {
   useEffect(() => {
     setPagination({});
   }, [filterStatus]);
-
-  const groupRequestsByBatch = (requests: Request[]) => {
-    return requests.reduce(
-      (acc: any, request: Request) => {
-        const batch = request.requestBatch;
-        if (batch) {
-          if (!acc.recurring[batch]) {
-            acc.recurring[batch] = [];
-          }
-          acc.recurring[batch].push(request);
-        } else {
-          acc.adhoc.push(request);
-        }
-        return acc;
-      },
-      { recurring: {}, adhoc: [] }
-    );
-  };
 
   const getShortHeader = (fullHeader: string) => {
     const shortForms: { [key: string]: string } = {
@@ -248,6 +236,15 @@ const ApproveTable: React.FC<ApproveTableProps> = ({ employees }) => {
 
   const isMobile = useShortHeaders();
 
+  // Sort employees alphabetically by name
+  const sortedEmployees = useMemo(() => {
+    return [...employees].sort((a, b) => {
+      const nameA = `${a.Staff_FName} ${a.Staff_LName}`.toLowerCase();
+      const nameB = `${b.Staff_FName} ${b.Staff_LName}`.toLowerCase();
+      return nameA.localeCompare(nameB);
+    });
+  }, [employees]);
+
   return (
     <div className="container mx-auto p-4">
       <div className="mb-6 flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-4 w-full">
@@ -256,7 +253,7 @@ const ApproveTable: React.FC<ApproveTableProps> = ({ employees }) => {
         <StaffSearch searchTerm={searchTerm} setSearchTerm={setSearchTerm} employees={employees} />
       </div>
 
-      {employees
+      {sortedEmployees
         .filter((employee) => `${employee.Staff_FName} ${employee.Staff_LName}`.toLowerCase().includes(searchTerm.toLowerCase()))
         .map((employee) => {
           const employeeRequests = getEmployeeRequests(employee.Staff_ID);
@@ -264,7 +261,8 @@ const ApproveTable: React.FC<ApproveTableProps> = ({ employees }) => {
           const groupedRequests = groupRequestsByBatch(employeeRequests);
           const isExpanded = expandedStaff.includes(employee.Staff_ID);
 
-          const recurringRequests = groupedRequests.recurring;
+          const hasNoRecurringRequests = Object.keys(groupedRequests.recurring).length === 0;
+          const hasNoAdhocRequests = employeeAdhocRequests.length === 0;
 
           return (
             <div key={employee.Staff_ID} className="mb-8">
@@ -277,163 +275,42 @@ const ApproveTable: React.FC<ApproveTableProps> = ({ employees }) => {
 
               {isExpanded && (
                 <>
-                  {Object.keys(recurringRequests).length > 0 && (
-                    <div className="mt-4">
-                      <h3 className="text-lg font-semibold text-primary">Recurring Requests</h3>
-                      <table className="table-fixed w-full border-collapse mt-2">
-                        <thead>
-                          <tr className="bg-secondary text-text">
-                            <th className="w-1/5 px-4 py-2 text-left">
-                              <BodyLarge className="text-primary">{isMobile ? getShortHeader('Date Requested') : 'Date Requested'}</BodyLarge>
-                            </th>
-                            <th className="w-1/5 px-4 py-2 text-left">
-                              <BodyLarge className="text-primary">{isMobile ? getShortHeader('Duration') : 'Duration'}</BodyLarge>
-                            </th>
-                            <th className="w-1/5 px-4 py-2 text-left">
-                              <BodyLarge className="text-primary">{isMobile ? getShortHeader('Date Of Request') : 'Date Of Request'}</BodyLarge>
-                            </th>
-                            <th className="w-1/5 px-4 py-2 text-left">
-                              <BodyLarge className="text-primary">{isMobile ? getShortHeader('Status') : 'Status'}</BodyLarge>
-                            </th>
-                            <th className="w-1/5 px-4 py-2 text-left">
-                              <BodyLarge className="text-primary">{isMobile ? getShortHeader('Action') : 'Action'}</BodyLarge>
-                            </th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {Object.keys(recurringRequests)
-                            .sort((a, b) => Number(b) - Number(a))
-                            .map((batchNumber) => {
-                              const pendingRequestsInBatch = recurringRequests[batchNumber].filter((request: { status: string }) => request.status.toLowerCase() === 'pending');
-
-                              return (
-                                <React.Fragment key={`batch-${batchNumber}`}>
-                                  <tr>
-                                    <td colSpan={5} className="bg-gray-200 text-center font-semibold py-2">
-                                      Batch: {batchNumber}
-                                    </td>
-                                  </tr>
-
-                                  {paginate(recurringRequests[batchNumber], employee.Staff_ID, 'recurring').map((request: Request, index: number) => (
-                                    <ApproveEntry
-                                      key={request.requestId}
-                                      requestId={request.requestId}
-                                      requestorName={`${employee.Staff_FName} ${employee.Staff_LName}`}
-                                      requestorId={request.requestorId}
-                                      approverId={request.approverId}
-                                      status={request.status}
-                                      dateRequested={request.dateRequested}
-                                      requestBatch={request.requestBatch}
-                                      dateOfRequest={request.dateOfRequest}
-                                      duration={request.duration}
-                                      teamSize={employees.length}
-                                      onRefreshRequests={fetchRequests}
-                                      onRequestClick={handleRequestClick} // Pass click handler
-                                      isFirstPendingInBatch={index === 0 && request.status.toLowerCase() === 'pending'}
-                                      rowSpanCount={pendingRequestsInBatch.length}
-                                      isMobile={isMobile}
-                                    />
-                                  ))}
-                                </React.Fragment>
-                              );
-                            })}
-                        </tbody>
-                      </table>
-
-                      <div className="flex justify-center items-center mt-4 space-x-4">
-                        <button
-                          className="bg-primary text-white py-2 px-4 rounded-md disabled:bg-gray-400 disabled:cursor-not-allowed"
-                          disabled={(pagination[employee.Staff_ID]?.recurring || 1) === 1}
-                          onClick={() => handlePageChange(employee.Staff_ID, (pagination[employee.Staff_ID]?.recurring || 1) - 1, 'recurring')}
-                        >
-                          Previous
-                        </button>
-                        <span className="text-primary font-semibold">
-                          Page {(pagination[employee.Staff_ID]?.recurring || 1)} of {getTotalPages(recurringRequests[Object.keys(recurringRequests)[0]])}
-                        </span>
-                        <button
-                          className="bg-primary text-white py-2 px-4 rounded-md disabled:bg-gray-400 disabled:cursor-not-allowed"
-                          disabled={paginate(recurringRequests[Object.keys(recurringRequests)[0]], employee.Staff_ID, 'recurring').length < requestsPerPage}
-                          onClick={() => handlePageChange(employee.Staff_ID, (pagination[employee.Staff_ID]?.recurring || 1) + 1, 'recurring')}
-                        >
-                          Next
-                        </button>
-                      </div>
+                  {hasNoRecurringRequests ? (
+                    <div className="mt-4 text-center">
+                      <span className="text-gray-500">Staff has no requests with '{filterStatus}' status</span>
                     </div>
+                  ) : (
+                    <RecurringTable
+                      employeeRequests={groupedRequests.recurring}
+                      employee={employee}
+                      pagination={pagination}
+                      requestsPerPage={requestsPerPage}
+                      handlePageChange={handlePageChange}
+                      fetchRequests={fetchRequests}
+                      handleRequestClick={handleRequestClick}
+                      isMobile={isMobile}
+                      getShortHeader={getShortHeader}
+                    />
                   )}
 
-                  {employeeAdhocRequests.length > 0 && (
-                    <div className="mt-4">
-                      <hr className="my-4 border-t border-gray-300" />
-                      <h3 className="text-lg font-semibold text-primary">Adhoc Requests</h3>
-                      <table className="table-fixed w-full border-collapse mt-2">
-                        <thead>
-                          <tr className="bg-secondary text-text">
-                            <th className="w-1/5 px-4 py-2 text-left cursor-pointer" onClick={() => requestSort('dateRequested')}>
-                              <BodyLarge className="text-primary">{isMobile ? getShortHeader('Date Requested') : 'Date Requested'} {getSortIcon('dateRequested')}</BodyLarge>
-                            </th>
-                            <th className="w-1/5 px-4 py-2 text-left cursor-pointer" onClick={() => requestSort('duration')}>
-                              <BodyLarge className="text-primary">{isMobile ? getShortHeader('Duration') : 'Duration'} {getSortIcon('duration')}</BodyLarge>
-                            </th>
-                            <th className="w-1/5 px-4 py-2 text-left cursor-pointer" onClick={() => requestSort('dateOfRequest')}>
-                              <BodyLarge className="text-primary">{isMobile ? getShortHeader('Date Of Request') : 'Date Of Request'} {getSortIcon('dateOfRequest')}</BodyLarge>
-                            </th>
-                            <th className="w-1/5 px-4 py-2 text-left cursor-pointer" onClick={() => requestSort('status')}>
-                              <BodyLarge className="text-primary">{isMobile ? getShortHeader('Status') : 'Status'} {getSortIcon('status')}</BodyLarge>
-                            </th>
-                            <th className="w-1/5 px-4 py-2 text-left">
-                              <BodyLarge className="text-primary">{isMobile ? getShortHeader('Action') : 'Action'}</BodyLarge>
-                            </th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {paginate(employeeAdhocRequests, employee.Staff_ID, 'adhoc').map((request) => (
-                            <ApproveEntry
-                              key={request.requestId}
-                              requestId={request.requestId}
-                              requestorName={`${employee.Staff_FName} ${employee.Staff_LName}`}
-                              requestorId={request.requestorId}
-                              approverId={request.approverId}
-                              status={request.status}
-                              dateRequested={request.dateRequested}
-                              requestBatch={request.requestBatch}
-                              dateOfRequest={request.dateOfRequest}
-                              duration={request.duration}
-                              teamSize={employees.length}
-                              onRefreshRequests={fetchRequests}
-                              onRequestClick={handleRequestClick} // Pass click handler
-                              isMobile={isMobile}
-                            />
-                          ))}
-                        </tbody>
-                      </table>
-
-                      <div className="flex justify-center items-center mt-4 space-x-4">
-                        <button
-                          className="bg-primary text-white py-2 px-4 rounded-md disabled:bg-gray-400 disabled:cursor-not-allowed"
-                          disabled={(pagination[employee.Staff_ID]?.adhoc || 1) === 1}
-                          onClick={() => handlePageChange(employee.Staff_ID, (pagination[employee.Staff_ID]?.adhoc || 1) - 1, 'adhoc')}
-                        >
-                          Previous
-                        </button>
-                        <span className="text-primary font-semibold">
-                          Page {(pagination[employee.Staff_ID]?.adhoc || 1)} of {getTotalPages(employeeAdhocRequests)}
-                        </span>
-                        <button
-                          className="bg-primary text-white py-2 px-4 rounded-md disabled:bg-gray-400 disabled:cursor-not-allowed"
-                          disabled={paginate(employeeAdhocRequests, employee.Staff_ID, 'adhoc').length < requestsPerPage}
-                          onClick={() => handlePageChange(employee.Staff_ID, (pagination[employee.Staff_ID]?.adhoc || 1) + 1, 'adhoc')}
-                        >
-                          Next
-                        </button>
-                      </div>
+                  {hasNoAdhocRequests ? (
+                    <div className="mt-4 text-center">
+                      <span className="text-gray-500">Staff has no requests with '{filterStatus}' status</span>
                     </div>
-                  )}
-
-                  {Object.keys(recurringRequests).length === 0 && employeeAdhocRequests.length === 0 && (
-                    <div className="text-center text-primary mt-4">
-                      Staff has no requests of '{filterStatus}' status
-                    </div>
+                  ) : (
+                    <AdhocTable
+                      employeeAdhocRequests={employeeAdhocRequests}
+                      employee={employee}
+                      pagination={pagination}
+                      requestsPerPage={requestsPerPage}
+                      handlePageChange={handlePageChange}
+                      requestSort={requestSort}
+                      getSortIcon={getSortIcon}
+                      fetchRequests={fetchRequests}
+                      handleRequestClick={handleRequestClick}
+                      isMobile={isMobile}
+                      getShortHeader={getShortHeader}
+                    />
                   )}
                 </>
               )}
@@ -443,7 +320,7 @@ const ApproveTable: React.FC<ApproveTableProps> = ({ employees }) => {
 
       {error && (
         <div className="flex items-center justify-center mt-6">
-          <BodyLarge className="text-red-500">{error}</BodyLarge>
+          <span className="text-red-500">{error}</span>
         </div>
       )}
     </div>

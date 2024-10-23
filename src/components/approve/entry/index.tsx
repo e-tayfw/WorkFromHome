@@ -3,7 +3,6 @@ import { Body } from '@/components/TextStyles';
 import axios from 'axios';
 import ActionHandler from '@/components/approve/actionHandler';
 import { Oval } from 'react-loader-spinner';
-import Swal from 'sweetalert2'; // Import SweetAlert for modal
 
 interface ApproveEntryProps {
   requestId: number;
@@ -17,15 +16,14 @@ interface ApproveEntryProps {
   duration: string;
   teamSize: number;
   onRefreshRequests: () => void;
-  onRequestClick: (requestId: number) => void; // New prop for click handler
-  isFirstPendingInBatch?: boolean; // Prop to identify the first pending request in batch
-  rowSpanCount?: number; // Number of rows to span for pending requests in the batch
-  isMobile?: boolean; // Add this prop to handle mobile rendering
+  onRequestClick: (requestId: number) => void;
+  isFirstPendingInBatch?: boolean;
+  rowSpanCount?: number;
+  isMobile?: boolean;
 }
 
 const ApproveEntry: React.FC<ApproveEntryProps> = ({
   requestId,
-  requestorName,
   approverId,
   status,
   dateRequested,
@@ -34,44 +32,40 @@ const ApproveEntry: React.FC<ApproveEntryProps> = ({
   duration,
   teamSize,
   onRefreshRequests,
-  onRequestClick, // Receive the click handler as a prop
-  isFirstPendingInBatch = false, // Default to false
-  rowSpanCount = 1, // Default row span count for adhoc requests
-  isMobile = false, // Default to non-mobile view
+  onRequestClick,
+  isFirstPendingInBatch = false,
+  rowSpanCount = 1,
+  isMobile = false,
 }) => {
   const [proportion, setProportion] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
-  // Function to check if today is within 1 month back and 3 months forward of dateRequested
-  const isWithinWithdrawWindow = () => {
-    const currentDate = new Date();
-    const requestDate = new Date(dateRequested);
-
-    const oneMonthBack = new Date(requestDate);
-    oneMonthBack.setMonth(requestDate.getMonth() - 1);
-
-    const threeMonthsForward = new Date(requestDate);
-    threeMonthsForward.setMonth(requestDate.getMonth() + 3);
-
-    return currentDate >= oneMonthBack && currentDate <= threeMonthsForward;
-  };
+  // List of statuses that don't require loading spinner or action buttons
+  const excludedStatuses = ['rejected', 'withdrawn', 'withdrawn by manager', 'withdraw rejected'];
 
   useEffect(() => {
-    const fetchProportion = async () => {
-      try {
-        const response = await axios.get(`http://127.0.0.1:8085/api/request/proportionOfTeam/${approverId}`);
-        const proportions = response.data;
-        const proportionForDateAndDuration = proportions[dateRequested]?.[duration] || 0;
-        setProportion(proportionForDateAndDuration);
-      } catch (err) {
-        console.error('Error fetching team proportion:', err);
-      } finally {
-        setIsLoading(false);
-      }
-    };
+    if (
+      !excludedStatuses.includes(status.toLowerCase()) &&
+      (isFirstPendingInBatch || (requestBatch === null) || (status !== 'pending' && requestBatch !== null))
+    ) {
+      const fetchProportion = async () => {
+        try {
+          const response = await axios.get(`http://127.0.0.1:8085/api/request/proportionOfTeam/${approverId}`);
+          const proportions = response.data;
+          const proportionForDateAndDuration = proportions[dateRequested]?.[duration] || 0;
+          setProportion(proportionForDateAndDuration);
+        } catch (err) {
+          console.error('Error fetching team proportion:', err);
+        } finally {
+          setIsLoading(false);
+        }
+      };
 
-    fetchProportion();
-  }, [dateRequested, duration, approverId]);
+      fetchProportion();
+    } else {
+      setIsLoading(false); // Skip loading if not required (e.g., excluded statuses)
+    }
+  }, [dateRequested, duration, approverId, isFirstPendingInBatch, requestBatch, status]);
 
   const willExceedProportion = () => {
     if (proportion === null || teamSize === 0) return false;
@@ -85,7 +79,6 @@ const ApproveEntry: React.FC<ApproveEntryProps> = ({
     return proportion + proportionPerEmployee;
   };
 
-  // Maintain colors based on the request status
   const getStatusClass = () => {
     switch (status?.toLowerCase()) {
       case 'approved':
@@ -99,6 +92,8 @@ const ApproveEntry: React.FC<ApproveEntryProps> = ({
       case 'withdraw pending':
       case 'withdraw rejected':
         return 'bg-orange-100 text-orange-700';
+      case 'withdrawn by manager': // Added Withdrawn by Manager case
+        return 'bg-purple-100 text-purple-700';
       default:
         return 'bg-gray-100 text-gray-600';
     }
@@ -110,7 +105,7 @@ const ApproveEntry: React.FC<ApproveEntryProps> = ({
       'pending': 'Pen.',
       'rejected': 'Rej.',
       'withdrawn': 'Wdn.',
-      'withdrawn by manager': 'WbM',
+      'withdrawn by manager': 'WbM', // Short form for Withdrawn by Manager
     };
     return isMobile ? statusMap[status.toLowerCase()] || status : status;
   };
@@ -126,17 +121,20 @@ const ApproveEntry: React.FC<ApproveEntryProps> = ({
     return isMobile ? actionMap[action] || action : action;
   };
 
-  // Function to trigger when row is clicked
   const handleRowClick = () => {
-    onRequestClick(requestId); // Call the parent component's function when clicked
+    onRequestClick(requestId);
   };
 
   const renderActionButtons = () => {
     const isApproved = status.toLowerCase() === 'approved';
     const isPending = status.toLowerCase() === 'pending';
 
-    // Withdraw button logic for 'approved' requests, only shown if within withdraw window
-    const withdrawButton = isApproved && isWithinWithdrawWindow() && (
+    // Do not render action buttons for non-first pending rows in a batch
+    if (!isFirstPendingInBatch && requestBatch && isPending) {
+      return null;
+    }
+
+    const withdrawButton = isApproved && (
       <button
         className="bg-red-100 hover:bg-red-200 text-red-700 font-semibold py-1 px-4 rounded-md transition duration-200 ease-in-out"
         onClick={() => handleWithdraw(requestId)}
@@ -145,7 +143,6 @@ const ApproveEntry: React.FC<ApproveEntryProps> = ({
       </button>
     );
 
-    // Approve and Reject buttons for individual pending requests
     if (isPending && !requestBatch) {
       return (
         <>
@@ -165,7 +162,6 @@ const ApproveEntry: React.FC<ApproveEntryProps> = ({
       );
     }
 
-    // Approve All and Reject All buttons for batch requests (if isFirstPendingInBatch is true)
     if (isFirstPendingInBatch) {
       return (
         <>
@@ -188,7 +184,7 @@ const ApproveEntry: React.FC<ApproveEntryProps> = ({
       );
     }
 
-    return withdrawButton || null; // Return the withdraw button if approved, else null
+    return withdrawButton || null;
   };
 
   const handleApprove = () => {
@@ -226,7 +222,7 @@ const ApproveEntry: React.FC<ApproveEntryProps> = ({
     ActionHandler.handleApproveBatch({
       requestBatch: requestBatch!,
       approverId,
-      duration, 
+      duration,
       proportionAfterApproval: proportionAfterApproval(),
       onRefreshRequests,
     });
@@ -241,23 +237,23 @@ const ApproveEntry: React.FC<ApproveEntryProps> = ({
   };
 
   return (
-    <tr className="border-b cursor-pointer" onClick={handleRowClick}>
-      <td className="px-4 py-2">
+    <tr className="border-b hover:bg-gray-100 cursor-pointer">
+      <td className="px-4 py-2" onClick={handleRowClick}>
         <Body className="text-text">{dateRequested}</Body>
       </td>
-      <td className="px-4 py-2">
+      <td className="px-4 py-2" onClick={handleRowClick}>
         <Body className="text-text">{duration}</Body>
       </td>
-      <td className="px-4 py-2">
+      <td className="px-4 py-2" onClick={handleRowClick}>
         <Body className="text-text">{dateOfRequest}</Body>
       </td>
-      <td className={`px-4 py-2 ${getStatusClass()} font-semibold rounded-md`}>
+      <td className={`px-4 py-2 ${getStatusClass()} font-semibold rounded-md`} onClick={handleRowClick}>
         <Body>{getStatusShortForm(status)}</Body>
       </td>
 
-      {/* Render Approve/Reject/Withdraw buttons in the same action column */}
-      {isFirstPendingInBatch ? (
-        <td className="px-4 py-2" rowSpan={rowSpanCount}>
+      {(isFirstPendingInBatch || (status !== 'Pending') || (requestBatch === null)) &&
+      !excludedStatuses.includes(status.toLowerCase()) ? (
+        <td className="px-4 py-2" rowSpan={isFirstPendingInBatch ? rowSpanCount : undefined}>
           {isLoading ? (
             <div className="flex justify-center items-center">
               <Oval
@@ -275,26 +271,7 @@ const ApproveEntry: React.FC<ApproveEntryProps> = ({
             renderActionButtons()
           )}
         </td>
-      ) : (
-        <td className="px-4 py-2">
-          {isLoading ? (
-            <div className="flex justify-center items-center">
-              <Oval
-                height={30}
-                width={30}
-                color="#072040"
-                visible={true}
-                ariaLabel="oval-loading"
-                secondaryColor="#a2b4cc"
-                strokeWidth={6}
-                strokeWidthSecondary={6}
-              />
-            </div>
-          ) : (
-            renderActionButtons()
-          )}
-        </td>
-      )}
+      ) : null}
     </tr>
   );
 };
