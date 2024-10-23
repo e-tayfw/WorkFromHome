@@ -3,17 +3,17 @@ name: Laravel Backend CI
 on:
   push:
     branches:
-      - ci-cd-backend
-      # - dev_wfh
-      # - main
+      # - ci-cd-backend
+      - dev_wfh
+      - main
     paths:
       - "backend-api/**"
 
   pull_request:
     branches:
-      - ci-cd-backend
-      # - dev_wfh
-      # - main
+      # - ci-cd-backend
+      - dev_wfh
+      - main
     paths:
       - "backend-api/**"
 
