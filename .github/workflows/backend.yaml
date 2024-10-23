@@ -43,7 +43,7 @@ jobs:
 
       - name: Run Laravel Tests
         working-directory: backend-api
-        run: php artisan test --parallel
+        run: php artisan test
 
   # copy files to EC2 instances after passing test cases
   deploy:
