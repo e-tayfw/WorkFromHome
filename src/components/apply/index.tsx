@@ -49,12 +49,15 @@ const Apply: React.FC = () => {
   const [dateRange, setDateRange] = useState<DateRange>({start: '', end: ''});
   const staffid = useSelector((state: any) => state.auth.staffId);
 
+
+  // Handle submit button for adhoc
   useEffect(() => {
     setIsFormValid(
       selectedDate !== "" && selectedArrangement !== "" && reason.trim() !== ""
     );
   }, [selectedDate, selectedArrangement, reason]);
 
+  // Handle submit button for recurring
   useEffect(() => {
     const isDateRangeValid = dateRange.start !== '' && 
                              dateRange.end !== '' && 
@@ -68,27 +71,32 @@ const Apply: React.FC = () => {
     setIsRecurringFormValid(isFormValid);
   }, [dateRange, day, selectedArrangement, reason]);
 
+  // Handle selected date change for adhoc
   const handleDateChange = useCallback((date: string) => {
     setSelectedDate(date);
   }, []);
 
+  // Handle arrangement selection change
   const handleArrangementChange = useCallback((value: ArrangementType) => {
     setArrangement(value);
   }, []);
 
+  // Handle reason change
   const handleReasonChange = useCallback((text: string) => {
     setReason(text);
   }, []);
 
+  // Handle selceted day change for recurring
   const handleDayChange = useCallback((value: DayValue) => {
     setDay(value);
   }, []);
 
+  // Handle date range change for recurring
   const handleDateRangeChange = useCallback((date: DateRange) => {
     setDateRange(date);
   },[]);
 
-      // Helper function to format existing arrangements
+  // Helper function to format existing arrangements
   const formatExistingArrangements = useCallback((existing: string) => {
     const arrangements = existing.split(', ');
     return arrangements.map(formatArrangement).join(', ');
@@ -128,6 +136,7 @@ const Apply: React.FC = () => {
     }
   };  
 
+  // Submit for recurring 
   const handleRecurringSubmit = useCallback(async () => {
     const submitData: SubmitRecurringData = {
       staffId: staffid,
@@ -202,7 +211,8 @@ const Apply: React.FC = () => {
             </div>
           `,
           icon: 'error',
-          confirmButtonText: 'OK'
+          confirmButtonText: 'OK',
+          confirmButtonColor: '#072040'
         });
         
         // Reset form fields
@@ -216,12 +226,15 @@ const Apply: React.FC = () => {
           title: 'Request Rejected',
           text: "An unexpected error occurred. Please try again.",
           icon: 'error',
-          confirmButtonText: 'OK'
+          confirmButtonText: 'OK',
+          confirmButtonColor: '#072040'
         });
       }
     }
   }, [staffid, dateRange, selectedArrangement, day, reason]);
 
+
+  // Submit for adhoc
   const handleSubmit = useCallback(async () => {
     const submitData: SubmitData = {
       staffid: staffid,
@@ -231,7 +244,7 @@ const Apply: React.FC = () => {
     };
 
     try {
-      const response = await axios.post("http://127.0.0.1:8085/api/request", submitData, {
+      const response = await axios.post("https://54.251.20.155.nip.io/api/request", submitData, {
         headers: {
           'Content-Type': 'application/json',
         },
@@ -255,7 +268,8 @@ const Apply: React.FC = () => {
           </div>
         `,
         icon: 'success',
-        confirmButtonText: 'OK'
+        confirmButtonText: 'OK',
+        confirmButtonColor: '#072040'
       });
       
       // Reset form fields
@@ -302,7 +316,8 @@ const Apply: React.FC = () => {
             </div>
           `,
           icon: 'error',
-          confirmButtonText: 'OK'
+          confirmButtonText: 'OK',
+          confirmButtonColor: '#072040'
         });
       
         setArrangement("");
@@ -314,7 +329,8 @@ const Apply: React.FC = () => {
           title: 'Request Rejected',
           text: "An unexpected error occurred. Please try again.",
           icon: 'error',
-          confirmButtonText: 'OK'
+          confirmButtonText: 'OK',
+          confirmButtonColor: '#072040'
         });
       }
     }
