@@ -270,7 +270,15 @@ class RequestController extends Controller
         $startDateCarbon = Carbon::createFromFormat('Y-m-d', $startDate);
         $endDateCarbon = Carbon::createFromFormat('Y-m-d', $endDate);
         if ($startDateCarbon->diffInMonths($endDateCarbon) > 3) {
-            return response()->json(['message' => 'The date range must be within 3 months apart'], 400);
+            return response()->json([
+                'message' => 'The date range must be within 3 months apart',
+                'success' => false,
+                'day' => $dayChosen,
+                'startDate' => $startDate,
+                'endDate' => $endDate,
+                'arrangement' => $arrangement,
+                'reason' => $reason,
+            ], 400);
         }
 
         // Step 2: Retrieve the Staff ID from the Employee Table 
@@ -293,7 +301,15 @@ class RequestController extends Controller
             $threeMonthForwardFromCurrent = $currentDateCarbon->copy()->addMonths(3);
 
             if ($startDateCarbon->lt($twoMonthAgoFromCurrent) || $endDateCarbon->gte($threeMonthForwardFromCurrent)) {
-                return response()->json(['message' => 'The date range must be within 2 months back and 3 months forward from the current date'], 400);
+                return response()->json([
+                    'message' => 'The date range must be within 2 months back and 3 months forward from the current date',
+                    'success' => false,
+                    'day' => $dayChosen,
+                    'startDate' => $startDate,
+                    'endDate' => $endDate,
+                    'arrangement' => $arrangement,
+                    'reason' => $reason,
+                    ], 400);
             }
 
             // **Condition 3**: Check for duplicate requests on the same day
