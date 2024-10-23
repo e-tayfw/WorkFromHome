@@ -140,6 +140,10 @@ class RequestController extends Controller
         $arrangement = $request->arrangement;
         $reason = $request->reason;
 
+        if (strlen($reason) > 255) {
+            $reason = substr($reason, 0, 255);
+        }
+
         try {
             $employee = Employee::where("Staff_ID", $staffId)->firstOrFail();
 
@@ -249,6 +253,11 @@ class RequestController extends Controller
         $arrangement = $request->arrangement;
         $reason = $request->reason;
         $dayChosen = $request->dayChosen;
+
+        // Step 1a: Check if the reason is more than 255 characters, if more than 255 characters, return the first 255
+        if (strlen($reason) > 255) {
+            $reason = substr($reason, 0, 255);
+        }
 
         // Step 1b: take the current date in (YYYY-MM-DD) format as well
         $currentDate = date("Y-m-d");
