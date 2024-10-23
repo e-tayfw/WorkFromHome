@@ -305,6 +305,7 @@ class RequestController extends Controller
                     return response()->json([
                         'message' => "Duplicate request found on {$date}. Cannot create recurring requests with overlapping dates.",
                         'success' => false,
+                        'day' => $dayChosen,
                         'startDate' => $startDate,
                         'endDate' => $endDate,
                         'arrangement' => $arrangement,
@@ -320,6 +321,7 @@ class RequestController extends Controller
                 return response()->json(['message' => 'Reporting manager not found', 
                                                'success' => false,
                                                'startDate' => $startDate,
+                                               'day' => $dayChosen,
                                                'endDate' => $endDate,
                                                'arrangement' => $arrangement,
                                                'reason' => $reason,
