@@ -3,84 +3,80 @@ name: Laravel Backend CI
 on:
   push:
     branches:
-      - dev_wfh
-      - main
+      - ci-cd-backend
+      # - dev_wfh
+      # - main
     paths:
-      - 'backend-api/**'
+      - "backend-api/**"
 
   pull_request:
     branches:
-      - dev_wfh
-      - main
+      - ci-cd-backend
+      # - dev_wfh
+      # - main
     paths:
-      - 'backend-api/**'
+      - "backend-api/**"
 
 jobs:
+  # run unit test cases
   laravel-tests:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout Code
-      uses: actions/checkout@v4
+      - name: Checkout Code
+        uses: actions/checkout@v4
 
-    - name: Setup PHP
-      uses: shivammathur/setup-php@v2
-      with:
-        php-version: '8.2'
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.2"
 
-    - name: Create .env and .env.testing Files from Secrets
-      working-directory: backend-api
-      run: |
-        echo "${{ secrets.ENV_CONTENT }}" > .env
-        echo "${{ secrets.ENV_TESTING_CONTENT }}" > .env.testing
-    - name: Test print content of env (REMOVE in PROD)
-      run: |
-        cat .env
-    - name: Install Dependencies
-      working-directory: backend-api
-      run: composer install --no-ansi --no-interaction --no-progress --prefer-dist
+      - name: Create .env and .env.testing Files from Secrets
+        working-directory: backend-api
+        run: |
+          echo "${{ secrets.ENV_CONTENT }}" > .env
+          echo "${{ secrets.ENV_TESTING_CONTENT }}" > .env.testing
 
-    - name: Clear Config Cache
-      working-directory: backend-api
-      run: php artisan config:clear
+      - name: Install Dependencies
+        working-directory: backend-api
+        run: composer install --no-ansi --no-interaction --no-progress --prefer-dist
 
-    - name: Run Laravel Tests
-      working-directory: backend-api
-      run: php artisan test
+      - name: Run Laravel Tests
+        working-directory: backend-api
+        run: php artisan test
 
+  # copy files to EC2 instances after passing test cases
   deploy:
-    needs: laravel-tests  # Deploy only if tests pass
+    needs: laravel-tests # Only run if tests pass
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout Code
-      uses: actions/checkout@v4
+      - name: Checkout Code
+        uses: actions/checkout@v4
 
-    - name: Set up SSH Access
-      env:
-        EC2_KEY: ${{ secrets.EC2_KEY }}
-      run: |
-        mkdir -p ~/.ssh
-        echo "$EC2_KEY" > ~/.ssh/id_rsa
-        chmod 600 ~/.ssh/id_rsa
+      - name: Set up SSH Access
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.EC2_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
 
-    - name: Copy Files to EC2
-      run: |
-        scp -r ./backend-api ec2-user@54.251.20.155:/var/www/html/spm-project/backend-api
+      - name: Copy Files to EC2
+        run: |
+          scp -o StrictHostKeyChecking=no -r ./backend-api ec2-user@54.251.20.155:/var/www/html/spm-project/backend-api
 
-    - name: Run Laravel Commands on EC2
-      run: |
-        ssh -o StrictHostKeyChecking=no ec2-user@54.251.20.155 << 'EOF'
-        cd /var/www/html/spm-project/backend-api
-        if [ -f composer.lock ]; then
-          composer install --no-dev --optimize-autoloader
-        fi
-        php artisan migrate --force
-        php artisan config:clear
-        php artisan cache:clear
-        php artisan route:clear
-        sudo chmod -R 775 storage bootstrap/cache
-        sudo chown -R apache:apache /var/www/html/spm-project/backend-api
-        export APP_ENV=production
-        sudo systemctl restart httpd
-        EOF
+      - name: Run Laravel Commands on EC2
+        run: |
+          ssh -o StrictHostKeyChecking=no ec2-user@54.251.20.155 << 'EOF'
+          cd /var/www/html/spm-project/backend-api
+          if [ -f composer.lock ]; then
+            composer install --no-dev --optimize-autoloader
+          fi
+          php artisan migrate --force
+          php artisan config:clear
+          php artisan cache:clear
+          php artisan route:clear
+          sudo chmod -R 775 storage bootstrap/cache
+          sudo chown -R apache:apache /var/www/html/spm-project/backend-api
+          export APP_ENV=production
+          sudo systemctl restart httpd
+          EOF
