@@ -35,7 +35,7 @@ interface SubmitRecurringData {
   startDate: string;
   endDate: string;
   arrangement: ArrangementType;
-  day: number;
+  dayChosen: number;
   reason: string;
 }
 
@@ -143,7 +143,7 @@ const Apply: React.FC = () => {
       startDate: dateRange.start,
       endDate: dateRange.end,
       arrangement: selectedArrangement,
-      day: day,
+      dayChosen: day,
       reason: reason,
     }
 
@@ -154,6 +154,8 @@ const Apply: React.FC = () => {
         },
       });
 
+
+      console.log("Return Data", response.data);
       // Successful submission
       await Swal.fire({
         title: 'Request Submitted',
@@ -174,7 +176,8 @@ const Apply: React.FC = () => {
           </div>
         `,
         icon: 'success',
-        confirmButtonText: 'OK'
+        confirmButtonText: 'OK',
+        confirmButtonColor: '#072040'
       });
       
       // Reset form fields
