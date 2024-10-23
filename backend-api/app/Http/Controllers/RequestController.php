@@ -908,15 +908,25 @@ class RequestController extends Controller
             return response()->json(['message' => 'You are not trying to approve request, this endpoint was to approve requests'], 400);
         }
 
-        foreach ($requests as $requestDB) {
+        foreach ($requests as $key => $requestDB) {
+            // Check if the status is 'Pending'
+            if ($requestDB->Status !== 'Pending') {
+                // If it's not pending, remove it from the list
+                unset($requests[$key]);
+                continue; // Skip the rest of the loop for this request
+            }
+        
             // Check current status
             if ($requestDB->Status == 'Approved') {
                 return response()->json(['message' => "Status is already approved for Request number: {$requestDB->Request_ID} (Request date: {$requestDB->Date_Requested})"], 400);
             }
-            // Check if the person rejecting the request is the approver
+        
+            // Check if the person approving the request is the approver
             if ($requestDB->Approver_ID !== $approver_id) {
                 return response()->json(['message' => "You are not allowed to approve this request"], 400);
             }
+        
+            // Initialize list of dates with default values
             $listOfDates[$requestDB->Date_Requested] = ['AM' => 0, 'PM' => 0, 'FD' => 0];
         }
 
@@ -976,7 +986,7 @@ class RequestController extends Controller
                 $newRequestLog->Previous_State = $requestDB->Status;
                 $newRequestLog->New_State = $status;
                 $newRequestLog->Employee_ID = $approver_id;
-                $newRequestLog->Date = $requestDB->Date_Requested;
+                $newRequestLog->Date = date("Y-m-d");
                 $newRequestLog->Remarks = $reason;
                 $requestDB->Status = "Approved";
                 $requestDB->save();
