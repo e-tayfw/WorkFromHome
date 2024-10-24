@@ -909,18 +909,18 @@ class RequestController extends Controller
         }
 
         foreach ($requests as $key => $requestDB) {
+            // Check current status
+            if ($requestDB->Status == 'Approved') {
+                return response()->json(['message' => "Status is already approved for Request number: {$requestDB->Request_ID} (Request date: {$requestDB->Date_Requested})"], 400);
+            }
+
             // Check if the status is 'Pending'
+            
             if ($requestDB->Status !== 'Pending') {
                 // If it's not pending, remove it from the list
                 unset($requests[$key]);
                 continue; // Skip the rest of the loop for this request
             }
-        
-            // Check current status
-            if ($requestDB->Status == 'Approved') {
-                return response()->json(['message' => "Status is already approved for Request number: {$requestDB->Request_ID} (Request date: {$requestDB->Date_Requested})"], 400);
-            }
-        
             // Check if the person approving the request is the approver
             if ($requestDB->Approver_ID !== $approver_id) {
                 return response()->json(['message' => "You are not allowed to approve this request"], 400);
