@@ -44,10 +44,7 @@ const ApproveEntry: React.FC<ApproveEntryProps> = ({
   const excludedStatuses = ['rejected', 'withdrawn', 'withdrawn by manager', 'withdraw rejected'];
 
   useEffect(() => {
-    if (
-      !excludedStatuses.includes(status.toLowerCase()) &&
-      (isFirstPendingInBatch || (requestBatch === null) || (status !== 'pending' && requestBatch !== null))
-    ) {
+    if (status.toLowerCase() === 'pending') { // Only fetch when status is 'pending'
       const fetchProportion = async () => {
         try {
           const response = await axios.get(`http://127.0.0.1:8085/api/request/proportionOfTeam/${approverId}`);
@@ -60,12 +57,12 @@ const ApproveEntry: React.FC<ApproveEntryProps> = ({
           setIsLoading(false);
         }
       };
-
+  
       fetchProportion();
     } else {
-      setIsLoading(false); // Skip loading if not required (e.g., excluded statuses)
+      setIsLoading(false);
     }
-  }, [dateRequested, duration, approverId, isFirstPendingInBatch, requestBatch, status]);
+  }, [dateRequested, duration, approverId, status]);
 
   const willExceedProportion = () => {
     if (proportion === null || teamSize === 0) return false;
