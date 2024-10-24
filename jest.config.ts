@@ -21,6 +21,8 @@ const config = {
       tsconfig: "tsconfig.jest.json",
     },
   },
+  coverageDirectory: "coverage", // Specify the output directory
+  coverageReporters: ["json", "lcov", "text", "clover"], // Define coverage report formats
 };
 // module.exports = {
 //   preset: "ts-jest", // Use ts-jest to work with TypeScript
