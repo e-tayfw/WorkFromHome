@@ -18,7 +18,6 @@ class ManagerWithdrawApprovedRequestTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->seed(); // Seed necessary data for the tests
     }
 
     /**
@@ -32,90 +31,117 @@ class ManagerWithdrawApprovedRequestTest extends TestCase
 
     /**
      * Test withdrawal on February 28 (non-leap year).
-     * 
-     * #[Depends('test_database_is_test_db')]
      */
     public function test_withdrawal_on_february_28_non_leap_year(): void
     {
-        $referenceDate = Carbon::create(2024, 3, 1);
+        $referenceDate = Carbon::create(2023, 3, 1);  // Non-leap year
+        $bookingDate = '2023-02-28';
+
         echo "\n--------------------------------------------------\n";
         echo "Test Case: Withdrawal on February 28, Non-Leap Year\n";
 
-        $this->performControllerTest('2024-02-28', $referenceDate, true);
+        $this->performControllerTest($bookingDate, $referenceDate, true);
+    }
+    /**
+     * Test withdrawal within the 1-month back boundary.
+     */
+    public function test_withdrawal_within_1_month_back_boundary(): void
+    {
+        $referenceDate = Carbon::create(2024, 10, 25);  // Simulated "today's" date
+        $bookingDate = $referenceDate->copy()->addMonth()->subDay(1)->toDateString();  // 2024-11-24
+
+        echo "\n--------------------------------------------------\n";
+        echo "Test Case: Within 1 Month Back Boundary\n";
+        echo "Reference Date: " . $referenceDate->toDateString() . "\n";
+        echo "Booking Date: " . $bookingDate . "\n";
+
+        // Expect withdrawal to succeed since it's on the boundary
+        $this->performControllerTest($bookingDate, $referenceDate, true);
     }
 
     /**
      * Test withdrawal on the 1-month back boundary.
-     * 
-     * #[Depends('test_database_is_test_db')]
      */
     public function test_withdrawal_on_1_month_back_boundary(): void
     {
-        $referenceDate = Carbon::create(2024, 3, 31);
-        $bookingDate = $referenceDate->copy()->subMonthNoOverflow();
+        $referenceDate = Carbon::create(2024, 10, 25);  // Simulated "today's" date
+        $bookingDate = $referenceDate->copy()->addMonth()->toDateString();  // 2024-11-25
 
         echo "\n--------------------------------------------------\n";
         echo "Test Case: 1 Month Back Boundary\n";
-        echo "Expected Booking Date: " . $bookingDate->toDateString() . "\n";
+        echo "Reference Date: " . $referenceDate->toDateString() . "\n";
+        echo "Booking Date: " . $bookingDate . "\n";
 
-        $this->performControllerTest($bookingDate->toDateString(), $referenceDate, true);
+        // Expect withdrawal to succeed since it's on the boundary
+        $this->performControllerTest($bookingDate, $referenceDate, true);
     }
 
     /**
      * Test withdrawal beyond the 1-month back boundary.
-     * 
-     * #[Depends('test_database_is_test_db')]
      */
     public function test_withdrawal_beyond_1_month_back(): void
     {
-        $referenceDate = Carbon::now();
-        $bookingDate = $referenceDate->copy()->subMonthNoOverflow()->subDay();
+        $referenceDate = Carbon::create(2024, 10, 25);  // Simulated "today's" date
+        $bookingDate = $referenceDate->copy()->addMonth()->addDay(1)->toDateString();  // 2024-11-26
 
         echo "\n--------------------------------------------------\n";
         echo "Test Case: Beyond 1 Month Back\n";
-        echo "Expected Booking Date: " . $bookingDate->toDateString() . "\n";
+        echo "Reference Date: " . $referenceDate->toDateString() . "\n";
+        echo "Booking Date: " . $bookingDate . "\n";
 
-        $this->performControllerTest($bookingDate->toDateString(), $referenceDate, false);
+        // Expect withdrawal to fail since it's beyond the 1-month back boundary
+        $this->performControllerTest($bookingDate, $referenceDate, false);
+    }
+
+    /**
+     * Test withdrawal within the 3-month forward boundary.
+     */
+    public function test_withdrawal_within_3_months_forward_boundary(): void
+    {
+        $referenceDate = Carbon::create(2024, 10, 25);
+        $bookingDate = $referenceDate->copy()->subMonthsNoOverflow(3)->addDay(2)->toDateString();  // 2024-07-27
+
+        echo "\n--------------------------------------------------\n";
+        echo "Test Case: Within 3 Months Forward Boundary\n";
+        echo "Reference Date (Today): " . $referenceDate->toDateString() . "\n";
+        echo "Booking Date: " . $bookingDate . "\n";
+
+        $this->performControllerTest($bookingDate, $referenceDate, true);
     }
 
     /**
      * Test withdrawal on the 3-month forward boundary.
-     * 
-     * #[Depends('test_database_is_test_db')]
      */
     public function test_withdrawal_on_3_months_forward_boundary(): void
     {
-        $referenceDate = Carbon::now();
-        $bookingDate = $referenceDate->copy()->addMonthsNoOverflow(3)->subDay();
+        $referenceDate = Carbon::create(2024, 10, 25);
+        $bookingDate = $referenceDate->copy()->subMonthsNoOverflow(3)->addDay()->toDateString();  // 2024-07-26
 
         echo "\n--------------------------------------------------\n";
         echo "Test Case: 3 Months Forward Boundary\n";
-        echo "Expected Booking Date: " . $bookingDate->toDateString() . "\n";
+        echo "Reference Date (Today): " . $referenceDate->toDateString() . "\n";
+        echo "Booking Date: " . $bookingDate . "\n";
 
-        $this->performControllerTest($bookingDate->toDateString(), $referenceDate, true);
+        $this->performControllerTest($bookingDate, $referenceDate, true);
     }
 
     /**
      * Test withdrawal beyond the 3-month forward boundary.
-     * 
-     * #[Depends('test_database_is_test_db')]
      */
     public function test_withdrawal_beyond_3_months_forward(): void
     {
-        $referenceDate = Carbon::now();
-        $bookingDate = $referenceDate->copy()->addMonthsNoOverflow(3);
+        $referenceDate = Carbon::create(2024, 10, 25);
+        $bookingDate = $referenceDate->copy()->subMonthsNoOverflow(3)->toDateString();  // 2024-07-25
 
         echo "\n--------------------------------------------------\n";
         echo "Test Case: Beyond 3 Months Forward\n";
-        echo "Expected Booking Date: " . $bookingDate->toDateString() . "\n";
+        echo "Expected Booking Date: " . $bookingDate . "\n";
 
-        $this->performControllerTest($bookingDate->toDateString(), $referenceDate, false);
+        $this->performControllerTest($bookingDate, $referenceDate, false);
     }
 
     /**
      * Test unauthorized manager withdrawal.
-     * 
-     * #[Depends('test_database_is_test_db')]
      */
     public function test_unauthorized_manager_withdrawal(): void
     {
@@ -126,7 +152,7 @@ class ManagerWithdrawApprovedRequestTest extends TestCase
         $request = Requests::factory()->create([
             'Requestor_ID' => $employee->Staff_ID,
             'Status' => 'Approved',
-            'Date_Requested' => Carbon::now()->format('Y-m-d')
+            'Date_Requested' => '2023-03-31'
         ]);
 
         $httpRequest = new HttpRequest([
@@ -145,13 +171,12 @@ class ManagerWithdrawApprovedRequestTest extends TestCase
     }
 
     /**
-     * Test withdrawal for same-day request.
-     * 
-     * #[Depends('test_database_is_test_db')]
+     * Test withdrawal for the same-day request.
      */
     public function test_withdrawal_on_same_day(): void
     {
-        $referenceDate = Carbon::now();
+        $referenceDate = Carbon::create(2023, 3, 31);
+
         echo "\n--------------------------------------------------\n";
         echo "Test Case: Withdrawal on Same Day\n";
 
@@ -186,8 +211,6 @@ class ManagerWithdrawApprovedRequestTest extends TestCase
 
         $expectedStatusCode = $expectedSuccess ? 200 : 400;
 
-        echo "Booking Date: " . $bookingDate . "\n";
-        echo "Reference Date: " . $referenceDate->toDateString() . "\n";
         echo "Expected Status Code: " . $expectedStatusCode . "\n";
         echo "Actual Status Code: " . $response->getStatusCode() . "\n";
 

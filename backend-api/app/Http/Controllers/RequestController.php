@@ -334,7 +334,7 @@ class RequestController extends Controller
         $requestDB = Requests::where("Request_ID", $request_id)->first();
 
         // can check if the request is currently at a state from which it can be approved
-        
+
 
         // check for batch = null
         if ($request_batch !== null) {
@@ -544,7 +544,8 @@ class RequestController extends Controller
     }
 
     // reject recurring
-    public function rejectRecurringRequest(Request $request) {
+    public function rejectRecurringRequest(Request $request)
+    {
         // parse the inputs
         $request_batch = $request->input('Request_Batch');
         $approver_id = $request->input('Approver_ID');
@@ -562,9 +563,8 @@ class RequestController extends Controller
         }
 
         if ($status == 'Rejected') {
-            
         } else {
-            return response()->json(['message' => 'You are not trying to reject request, this endpoint was to reject requests', 'status'=> $status], 400);
+            return response()->json(['message' => 'You are not trying to reject request, this endpoint was to reject requests', 'status' => $status], 400);
         }
 
         // check for batch = null
@@ -574,7 +574,7 @@ class RequestController extends Controller
 
         // Fetch employee rows using the request batch
         $requests = Requests::where("Request_Batch", $request_batch)->get();
-        
+
         if ($requests->isEmpty()) {
             return response()->json(['message' => 'No requests found for the given batch'], 404);
         }
@@ -599,8 +599,7 @@ class RequestController extends Controller
                 $requestDB->Status = 'Rejected';
             } else if ($requestDB->Status == 'Rejected') {
                 return response()->json(['message' => "Status is already rejected for Request number: {$requestDB->Request_ID} (Request date: {$requestDB->Date_Requested})"], 400);
-            }
-            else {
+            } else {
                 return response()->json(['message' => "A state change from {$requestDB->Status} to {$status} is not allowed for Request number: {$requestDB->Request_ID} (Request date: {$requestDB->Date_Requested})"], 400);
             }
 
@@ -624,7 +623,7 @@ class RequestController extends Controller
 
         return response()->json(['message' => 'All requests in the batch have been rejected successfully'], 200);
     }
-    
+
     // Manager Withdraw Approved Request
     public function managerWithdrawBooking(Request $request, Carbon $referenceDate = null)
     {
@@ -643,7 +642,7 @@ class RequestController extends Controller
                 'message' => 'Request not found.',
             ], 404); // Not Found
         }
-        
+
         // Ensure the status is 'Approved'
         if ($booking->Status !== 'Approved') {
             return response()->json([
@@ -660,15 +659,14 @@ class RequestController extends Controller
         }
 
         // Use the provided reference date or fall back to Carbon::now()
-        $date_requested = $referenceDate ?? Carbon::parse($booking->Date_Requested);
+        $referenceDate = ($referenceDate ?? Carbon::now())->toDateString();
 
-        // Calculate 1 month back and 3 months forward boundaries
-        $oneMonthBack = $date_requested->copy()->subMonthNoOverflow();
-        $threeMonthsForward = $date_requested->copy()->addMonthsNoOverflow(3)->subDay();
+        // Calculate 1 month back and 3 months forward boundaries from Date_Requested
+        $oneMonthBack = Carbon::parse($booking->Date_Requested)->subMonth()->toDateString();
+        $threeMonthsForward = Carbon::parse($booking->Date_Requested)->addMonthsNoOverflow(3)->subDay()->toDateString();
 
-        // Check if the booking date is within the valid withdrawal range
-        $bookingDate = Carbon::parse($booking->Date_Requested);
-        if ($bookingDate->lt($oneMonthBack) || $bookingDate->gt($threeMonthsForward)) {
+        // Check if today's date (reference date) is within the valid withdrawal range
+        if ($referenceDate < $oneMonthBack || $referenceDate > $threeMonthsForward) {
             return response()->json([
                 'message' => 'Withdrawals must be within 1 month back and 3 months forward.',
             ], 400); // Bad Request
@@ -712,7 +710,6 @@ class RequestController extends Controller
 
         // check for correct status
         if ($status == 'Approved') {
-            
         } else {
             return response()->json(['message' => 'You are not trying to approve request, this endpoint was to approve requests'], 400);
         }
@@ -724,7 +721,7 @@ class RequestController extends Controller
             }
 
             // Check if the status is 'Pending'
-            
+
             if ($requestDB->Status !== 'Pending') {
                 // If it's not pending, remove it from the list
                 unset($requests[$key]);
@@ -734,7 +731,7 @@ class RequestController extends Controller
             if ($requestDB->Approver_ID !== $approver_id) {
                 return response()->json(['message' => "You are not allowed to approve this request"], 400);
             }
-        
+
             // Initialize list of dates with default values
             $listOfDates[$requestDB->Date_Requested] = ['AM' => 0, 'PM' => 0, 'FD' => 0];
         }
@@ -746,10 +743,10 @@ class RequestController extends Controller
 
         // query database for the people with that approver
         $otherTeamRequests = Requests::where('Approver_ID', $approver_id)
-                    ->get();
-                    
+            ->get();
+
         $team_size = Employee::where('Reporting_Manager', $approver_id)->count();
-        
+
         if ($team_size != 0) {
             $proportion = 1 / $team_size;
         } else {
@@ -774,10 +771,8 @@ class RequestController extends Controller
                     }
                 }
             }
-
-            
         } else {
-            return response()->json(["message"=> "Unable to query from Requests Table"], 400);
+            return response()->json(["message" => "Unable to query from Requests Table"], 400);
         }
 
         $flag = true;
