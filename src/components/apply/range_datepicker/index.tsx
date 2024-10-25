@@ -62,8 +62,10 @@ const DateRangePickerComponent: React.FC<DateRangePickerProps> = ({
 
         if (endDateRef.current) {
           const initialMinDate = selectedDateRange.start ? new Date(selectedDateRange.start) : minDate;
-          initialMinDate.setDate(initialMinDate.getDate() + 1);
 
+          initialMinDate.setDate(initialMinDate.getDate() + 6);
+
+          
           const endMaxDate = new Date(selectedDateRange.start);
 
           endMaxDate.setMonth(endMaxDate.getMonth() + 3);
