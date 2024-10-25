@@ -325,17 +325,25 @@ class RequestController extends Controller
 
             // Condition 2b: Check if any of the recurringDates clash with existingRequests
             foreach ($recurringDates as $date) {
-                $duplicate = $existingRequests->where('Date_Requested', $date)->first();
-                if ($duplicate) {
-                    return response()->json([
-                        'message' => "Duplicate request found on {$date}. Cannot create recurring requests with overlapping dates.",
-                        'success' => false,
-                        'day' => $dayChosen,
-                        'startDate' => $startDate,
-                        'endDate' => $endDate,
-                        'arrangement' => $arrangement,
-                        'reason' => $reason,
-                    ], 409); // 409 Conflict
+            // Get all existing requests on that date
+                $duplicates = $existingRequests->where('Date_Requested', $date);
+                // Step 4a: If there is a duplicate for date_requested, check if the arrangement is the same
+                if ($duplicates->isNotEmpty()) {
+                    $recurringArrangement = $arrangement;
+                    foreach($duplicates as $duplicate) {
+                        $duplicateArrangement = $duplicate->Duration;
+                        // Condition 4a: If one of the arrangement is FD, duplicate is not allowed
+                        if ($recurringArrangement === 'FD' || $duplicateArrangement === 'FD') {
+                            return response()->json(['message' => 'Duplicate requests cannot be made'], 400);
+                        }
+                        // Condition 4b: If one of the arrangement is AM and the other is PM vice cersa, duplicate will be allowed
+                        elseif ($recurringArrangement === 'AM' && $duplicateArrangement === 'AM' || $recurringArrangement === 'PM' && $duplicateArrangement === 'PM') {
+                            return response()->json(['message' => 'Duplicate requests cannot be made'], 400);
+                        }
+                        else {
+                            continue;
+                        }
+                    }
                 }
             }
 
