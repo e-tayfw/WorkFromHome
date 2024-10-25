@@ -47,41 +47,56 @@ const AdhocTable: React.FC<AdhocTableProps> = ({
     const currentPage = pagination[staffId]?.adhoc || 1;
     const startIndex = (currentPage - 1) * requestsPerPage;
     const endIndex = startIndex + requestsPerPage;
-    return requests.slice(startIndex, endIndex);
+    return { paginated: requests.slice(startIndex, endIndex), endIndex, startIndex };
   };
 
   const getTotalPages = (requests: Request[]) => {
     return requests.length > 0 ? Math.ceil(requests.length / requestsPerPage) : 1;
   };
 
+  const totalRequests = employeeAdhocRequests.length; // Total number of requests
+
   return (
     <>
-      {employeeAdhocRequests.length > 0 && (
+      {totalRequests > 0 && (
         <div className="mt-4">
           <hr className="my-4 border-t border-gray-300" />
           <h3 className="text-lg font-semibold text-primary">Adhoc Requests</h3>
           <table className="table-fixed w-full border-collapse mt-2">
             <thead>
               <tr className="bg-secondary text-text">
-                <th className="w-1/5 px-4 py-2 text-left cursor-pointer" onClick={() => requestSort('dateRequested')}>
-                  <BodyLarge className="text-primary">{isMobile ? getShortHeader('Date Requested') : 'Date Requested'} {getSortIcon('dateRequested')}</BodyLarge>
+                <th
+                  className="w-1/5 px-4 py-2 text-left cursor-pointer"
+                  onClick={() => requestSort('dateRequested')}
+                >
+                  <BodyLarge className="text-primary">
+                    {isMobile ? getShortHeader('Date Requested') : 'Date Requested'} {getSortIcon('dateRequested')}
+                  </BodyLarge>
                 </th>
                 <th className="w-1/5 px-4 py-2 text-left cursor-pointer" onClick={() => requestSort('duration')}>
-                  <BodyLarge className="text-primary">{isMobile ? getShortHeader('Duration') : 'Duration'} {getSortIcon('duration')}</BodyLarge>
+                  <BodyLarge className="text-primary">
+                    {isMobile ? getShortHeader('Duration') : 'Duration'} {getSortIcon('duration')}
+                  </BodyLarge>
                 </th>
                 <th className="w-1/5 px-4 py-2 text-left cursor-pointer" onClick={() => requestSort('dateOfRequest')}>
-                  <BodyLarge className="text-primary">{isMobile ? getShortHeader('Date Of Request') : 'Date Of Request'} {getSortIcon('dateOfRequest')}</BodyLarge>
+                  <BodyLarge className="text-primary">
+                    {isMobile ? getShortHeader('Date Of Request') : 'Date Of Request'} {getSortIcon('dateOfRequest')}
+                  </BodyLarge>
                 </th>
                 <th className="w-1/5 px-4 py-2 text-left cursor-pointer" onClick={() => requestSort('status')}>
-                  <BodyLarge className="text-primary">{isMobile ? getShortHeader('Status') : 'Status'} {getSortIcon('status')}</BodyLarge>
+                  <BodyLarge className="text-primary">
+                    {isMobile ? getShortHeader('Status') : 'Status'} {getSortIcon('status')}
+                  </BodyLarge>
                 </th>
                 <th className="w-1/5 px-4 py-2 text-left">
-                  <BodyLarge className="text-primary">{isMobile ? getShortHeader('Action') : 'Action'}</BodyLarge>
+                  <BodyLarge className="text-primary">
+                    {isMobile ? getShortHeader('Action') : 'Action'}
+                  </BodyLarge>
                 </th>
               </tr>
             </thead>
             <tbody>
-              {paginate(employeeAdhocRequests, employee.Staff_ID).map((request) => (
+              {paginate(employeeAdhocRequests, employee.Staff_ID).paginated.map((request) => (
                 <ApproveEntry
                   key={request.requestId}
                   requestId={request.requestId}
@@ -115,7 +130,7 @@ const AdhocTable: React.FC<AdhocTableProps> = ({
             </span>
             <button
               className="bg-primary text-white py-2 px-4 rounded-md disabled:bg-gray-400 disabled:cursor-not-allowed"
-              disabled={paginate(employeeAdhocRequests, employee.Staff_ID).length < requestsPerPage}
+              disabled={paginate(employeeAdhocRequests, employee.Staff_ID).endIndex >= totalRequests}
               onClick={() => handlePageChange(employee.Staff_ID, (pagination[employee.Staff_ID]?.adhoc || 1) + 1, 'adhoc')}
             >
               Next

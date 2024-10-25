@@ -18,8 +18,10 @@ interface ApproveEntryProps {
   onRefreshRequests: () => void;
   onRequestClick: (requestId: number) => void;
   isFirstPendingInBatch?: boolean;
+  isLastPendingInBatch?: boolean;
   rowSpanCount?: number;
   isMobile?: boolean;
+
 }
 
 const ApproveEntry: React.FC<ApproveEntryProps> = ({
@@ -27,42 +29,92 @@ const ApproveEntry: React.FC<ApproveEntryProps> = ({
   approverId,
   status,
   dateRequested,
-  requestBatch,
   dateOfRequest,
+  requestBatch,
   duration,
   teamSize,
   onRefreshRequests,
   onRequestClick,
   isFirstPendingInBatch = false,
+  isLastPendingInBatch = false,
   rowSpanCount = 1,
   isMobile = false,
 }) => {
   const [proportion, setProportion] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [exceedProportionInBatch, setExceedProportionInBatch] = useState<boolean>(false);
 
   // List of statuses that don't require loading spinner or action buttons
   const excludedStatuses = ['rejected', 'withdrawn', 'withdrawn by manager', 'withdraw rejected'];
 
   useEffect(() => {
-    if (status.toLowerCase() === 'pending') { // Only fetch when status is 'pending'
+    // Reset the flag when the component loads, especially for new batches
+    console.log('Component loaded or batch started. Resetting exceedProportionInBatch to false.');
+    setExceedProportionInBatch(false);
+  
+    if (status.toLowerCase() === 'pending') {
       const fetchProportion = async () => {
         try {
+          console.log(`Fetching proportion for approverId: ${approverId}`);
           const response = await axios.get(`http://127.0.0.1:8085/api/request/proportionOfTeam/${approverId}`);
           const proportions = response.data;
+  
+          // Logging the response
+          console.log('Fetched proportions:', proportions);
+  
           const proportionForDateAndDuration = proportions[dateRequested]?.[duration] || 0;
+          console.log(`Proportion for date: ${dateRequested} and duration: ${duration} is:`, proportionForDateAndDuration);
           setProportion(proportionForDateAndDuration);
+  
+          // If this is the first pending request in the batch, start checking all pending requests in the batch
+          if (isFirstPendingInBatch) {
+            console.log('Checking if any request in the batch will exceed the allowed proportion.');
+            let exceedFlag = false;
+  
+            // Loop over all the requests between the first and last pending requests in the batch
+            for (let request of Object.keys(proportions)) {
+              const proportionForRequest = proportions[request]?.[duration] || 0;
+              setProportion(proportionForRequest); // Set the proportion for this request
+  
+              // Check if this request exceeds the proportion
+              if (willExceedProportion()) {
+                console.log(`Request ${request} exceeds the proportion limit.`);
+                exceedFlag = true;
+                break;
+              }
+  
+              // Stop checking if we reach the last pending request in the batch
+              if (isLastPendingInBatch) {
+                console.log('Reached the last pending request in the batch. Stopping the check.');
+                break;
+              }
+            }
+  
+            // Set the flag if any request in the batch exceeded the limit
+            setExceedProportionInBatch(exceedFlag);
+            console.log('ExceedProportionInBatch set to:', exceedFlag);
+          }
         } catch (err) {
           console.error('Error fetching team proportion:', err);
         } finally {
           setIsLoading(false);
+          console.log('Loading state set to false.');
         }
       };
   
       fetchProportion();
     } else {
+      console.log('Request status is not pending. Setting loading to false.');
       setIsLoading(false);
     }
-  }, [dateRequested, duration, approverId, status]);
+  
+    // Cleanup and reset flag when the component unmounts or after the batch is processed
+    return () => {
+      console.log('Component unmounted or batch processed. Resetting exceedProportionInBatch to false.');
+      setExceedProportionInBatch(false);
+    };
+  }, [dateRequested, duration, approverId, status, isFirstPendingInBatch, isLastPendingInBatch, teamSize]);
+    
 
   const willExceedProportion = () => {
     if (proportion === null || teamSize === 0) return false;
@@ -89,7 +141,7 @@ const ApproveEntry: React.FC<ApproveEntryProps> = ({
       case 'withdraw pending':
       case 'withdraw rejected':
         return 'bg-orange-100 text-orange-700';
-      case 'withdrawn by manager': // Added Withdrawn by Manager case
+      case 'withdrawn by manager':
         return 'bg-purple-100 text-purple-700';
       default:
         return 'bg-gray-100 text-gray-600';
