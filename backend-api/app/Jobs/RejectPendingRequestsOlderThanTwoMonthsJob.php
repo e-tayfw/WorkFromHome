@@ -4,8 +4,9 @@ namespace App\Jobs;
 
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
-use Carbon\Carbon;
 use App\Models\Requests;
+use App\Models\RequestLog;
+use Exception;
 use Log;
 
 class RejectPendingRequestsOlderThanTwoMonthsJob implements ShouldQueue
@@ -26,15 +27,25 @@ class RejectPendingRequestsOlderThanTwoMonthsJob implements ShouldQueue
      * Execute the job.
      */
     public function handle(): void
-    {
-        $twoMonthsAgo = Carbon::now()->subMonths(2)->startOfDay();
-        // Check if the request is still 'Pending' and older than or exactly 2 months
-        if ($this->requests->Status === 'Pending' && $this->requests->Date_Of_Request <= $twoMonthsAgo) {
-            $this->requests->update(['Status' => 'Rejected']);
-        } else {
-            // Remove the job from the queue if it's not 'Pending' status after 2 months
-            $this->delete();
+    {   
+        try {
+            // If the request is still 'Pending', reject it
+            if ($this->requests->Status === 'Pending') {
+                $this->requests->update(['Status' => 'Rejected']);
+
+                // Log the status change in RequestLog
+                RequestLog::create([
+                    'Request_ID' => $this->requests->Request_ID,
+                    'Previous_State' => 'Pending',
+                    'New_State' => 'Rejected',
+                    'Employee_ID' => '000000', 
+                    'Date' => now(),
+                    'Remarks' => 'Automatic Rejection',
+                ]);
+            }
+        } catch (Exception $e) {
+            // Log any exceptions for debugging purposes
+            Log::error('Failed to reject request: ' . $e->getMessage());
         }
     }
-    
 }

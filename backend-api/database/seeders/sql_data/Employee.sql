@@ -584,4 +584,5 @@ INSERT INTO "public"."Employee" ("Staff_ID", "Staff_FName", "Staff_LName", "Dept
 (210041, 'Seng', 'Saon', 'IT', 'IT Team', 'Singapore', 'Seng.Saon@allinone.com.sg', 210001, 2),
 (210042, 'Naron', 'Savoeun', 'IT', 'IT Team', 'Singapore', 'Naron.Savoeun@allinone.com.sg', 210001, 2),
 (210043, 'Phuc', 'Luon', 'IT', 'IT Team', 'Singapore', 'Phuc.Luon@allinone.com.sg', 210001, 2),
-(210044, 'Chandara', 'Tithe', 'IT', 'IT Team', 'Singapore', 'tithe.chandra@allinone.com.sg', 210001, 2);
+(210044, 'Chandara', 'Tithe', 'IT', 'IT Team', 'Singapore', 'tithe.chandra@allinone.com.sg', 210001, 2),
+(000000, 'System', 'User', 'IT', 'System Operations', 'Singapore', 'system.user@allinone.com.sg', 000000, 1);

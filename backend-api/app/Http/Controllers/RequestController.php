@@ -58,7 +58,7 @@ class RequestController extends Controller
                     $date_dictionary[$date]["FD"] += $proportion;
                 }
             }
-            
+
             $date_dictionary[$date]['AM'] += $date_dictionary[$date]["FD"];
             $date_dictionary[$date]['PM'] += $date_dictionary[$date]["FD"];
             $date_dictionary[$date]['FD'] += max($date_dictionary[$date]['AM'], $date_dictionary[$date]['PM']);
@@ -220,8 +220,8 @@ class RequestController extends Controller
                 'Duration' => $arrangement,
             ]);
 
-            // Dispatch the job to check status after 2 months
-            RejectPendingRequestsOlderThanTwoMonthsJob::dispatch($newRequest)->delay(now()->addMonths(2));
+            // Dispatch the job to check status after 2 months from the selected date (Date_Requested)
+            RejectPendingRequestsOlderThanTwoMonthsJob::dispatch($newRequest)->delay(Carbon::parse($selectedDate)->addMonths(2));
 
             // Create new row in Request Log
             RequestLog::create([
