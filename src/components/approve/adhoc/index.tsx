@@ -26,6 +26,7 @@ interface AdhocTableProps {
   handleRequestClick: (requestId: number) => void;
   isMobile: boolean;
   getShortHeader: (fullHeader: string) => string;
+  teamSize: number;
 }
 
 const AdhocTable: React.FC<AdhocTableProps> = ({
@@ -39,7 +40,8 @@ const AdhocTable: React.FC<AdhocTableProps> = ({
   fetchRequests,
   handleRequestClick,
   isMobile,
-  getShortHeader
+  getShortHeader,
+  teamSize
 }) => {
   const paginate = (requests: Request[], staffId: number) => {
     const currentPage = pagination[staffId]?.adhoc || 1;
@@ -91,7 +93,7 @@ const AdhocTable: React.FC<AdhocTableProps> = ({
                   requestBatch={request.requestBatch}
                   dateOfRequest={request.dateOfRequest}
                   duration={request.duration}
-                  teamSize={employeeAdhocRequests.length}
+                  teamSize={teamSize}
                   onRefreshRequests={fetchRequests}
                   onRequestClick={handleRequestClick}
                   isMobile={isMobile}
