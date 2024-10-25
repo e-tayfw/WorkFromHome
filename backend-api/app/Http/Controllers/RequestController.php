@@ -851,11 +851,11 @@ class RequestController extends Controller
         }
 
         // Use the provided reference date or fall back to Carbon::now()
-        $now = $referenceDate ?? Carbon::now();
+        $date_requested = $referenceDate ?? $booking->Date_Requested;
 
         // Calculate 1 month back and 3 months forward boundaries
-        $oneMonthBack = $now->copy()->subMonthNoOverflow();
-        $threeMonthsForward = $now->copy()->addMonthsNoOverflow(3)->subDay();
+        $oneMonthBack = $date_requested->copy()->subMonthNoOverflow();
+        $threeMonthsForward = $date_requested->copy()->addMonthsNoOverflow(3)->subDay();
 
         // Check if the booking date is within the valid withdrawal range
         $bookingDate = Carbon::parse($booking->Date_Requested);
