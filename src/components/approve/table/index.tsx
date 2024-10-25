@@ -112,6 +112,9 @@ const ApproveTable: React.FC<ApproveTableProps> = ({ employees }) => {
     }
   };
 
+  // Team Size
+  const teamSize = employees.length
+
   // Apply sorting and filter to adhoc requests
   const sortedAdhocRequests = useMemo(() => {
     let adhocRequests = [...requests].filter((request) => request.requestBatch === null);
@@ -284,12 +287,12 @@ const ApproveTable: React.FC<ApproveTableProps> = ({ employees }) => {
                       employeeRequests={groupedRequests.recurring}
                       employee={employee}
                       pagination={pagination}
-                      requestsPerPage={requestsPerPage}
                       handlePageChange={handlePageChange}
                       fetchRequests={fetchRequests}
                       handleRequestClick={handleRequestClick}
                       isMobile={isMobile}
                       getShortHeader={getShortHeader}
+                      teamSize = {teamSize}
                     />
                   )}
 
@@ -310,6 +313,7 @@ const ApproveTable: React.FC<ApproveTableProps> = ({ employees }) => {
                       handleRequestClick={handleRequestClick}
                       isMobile={isMobile}
                       getShortHeader={getShortHeader}
+                      teamSize = {teamSize}
                     />
                   )}
                 </>

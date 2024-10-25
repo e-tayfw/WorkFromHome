@@ -17,24 +17,24 @@ interface RecurringTableProps {
   employeeRequests: any;
   employee: any;
   pagination: any;
-  requestsPerPage: number;
   handlePageChange: (staffId: number, newPage: number, type: 'recurring' | 'adhoc') => void;
   fetchRequests: () => void;
   handleRequestClick: (requestId: number) => void;
   isMobile: boolean;
   getShortHeader: (fullHeader: string) => string;
+  teamSize: number;
 }
 
 const RecurringTable: React.FC<RecurringTableProps> = ({
   employeeRequests,
   employee,
   pagination,
-  requestsPerPage,
   handlePageChange,
   fetchRequests,
   handleRequestClick,
   isMobile,
-  getShortHeader
+  getShortHeader,
+  teamSize
 }) => {
   const batchesPerPage = 2; // Maximum number of batch requests per page
 
@@ -112,7 +112,7 @@ const RecurringTable: React.FC<RecurringTableProps> = ({
                           requestBatch={request.requestBatch}
                           dateOfRequest={request.dateOfRequest}
                           duration={request.duration}
-                          teamSize={requestsInBatch.length}
+                          teamSize={teamSize}
                           onRefreshRequests={fetchRequests}
                           onRequestClick={handleRequestClick}
                           isFirstPendingInBatch={isFirstPendingInBatch}
