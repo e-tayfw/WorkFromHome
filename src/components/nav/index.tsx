@@ -1,10 +1,12 @@
 import { useRouter } from "next/navigation";
 import { useRouter as usePagesRouter } from "next/router";
-import { useDispatch } from 'react-redux';
-import { logout } from '@/redux/slices/authSlice'; // Import the logout action from the authSlice
+import { useDispatch, useSelector } from "react-redux";
+import { RootState } from "@/redux/store";
+import { logout } from "@/redux/slices/authSlice"; // Import the logout action from the authSlice
 import { ReactNode, useCallback, useEffect, useState } from "react";
 import Image from "next/image";
 import { useCheckMobileScreen } from "@/hooks/useIsMobile";
+import { getEmployeeFullNameByStaffID } from "@/pages/api/employeeApi";
 import { MobileMenu } from "@/components/nav/MobileNav";
 import { Body, BodyLarge } from "@/components/TextStyles";
 import { motion } from "framer-motion";
@@ -68,20 +70,39 @@ const Nav = () => {
   const isMobile = useCheckMobileScreen();
   const router = useRouter();
   const pagesRouter = usePagesRouter();
-
+  const staffId = useSelector((state: RootState) => state.auth.staffId);
+  const [fullName, setFullName] = useState<string>("");
   const [scrollPos, setScrollPos] = useState(0);
   const [hoveredNavItem, setHoveredNavItem] = useState<string>("");
   const [isHomePage, setIsHomePage] = useState(true);
 
   const [showContent, setShowContent] = useState(false);
   const dispatch = useDispatch();
-  
+
   function handleSignOut(): void {
     localStorage.removeItem("userType");
 
-    dispatch(logout())
+    dispatch(logout());
     router.push("/");
   }
+  useEffect(() => {
+    const getFullName = async () => {
+      if (staffId) {
+        try {
+          const fetchedName = await getEmployeeFullNameByStaffID(
+            staffId.toString()
+          );
+          console.log(fetchedName);
+          setFullName(fetchedName);
+        } catch (error) {
+          console.error("Error fetching Name:", error);
+        }
+      } else {
+        console.error("No staffId found in Redux store");
+      }
+    };
+    getFullName();
+  }, [staffId]);
 
   useEffect(() => {
     let timeout: NodeJS.Timeout;
@@ -239,7 +260,11 @@ const Nav = () => {
             : "border-none"
         }`}
       >
-        <MobileMenu scrollPos={scrollPos} isHomePage={isHomePage} />
+        <MobileMenu
+          scrollPos={scrollPos}
+          isHomePage={isHomePage}
+          staffName={fullName}
+        />
       </div>
 
       {/* Desktop Nav */}
@@ -280,8 +305,13 @@ const Nav = () => {
               </div>
             ))}
           </div>
+          {fullName && (
+            <div className="flex items-center z-30">
+              <BodyLarge className="font-bold p-2.5">Hi, {fullName}!</BodyLarge>
+            </div>
+          )}
           <div className="flex items-center z-30">
-            <button className="sign-out-button" onClick={handleSignOut}>
+            <button className="sign-out-button bg" onClick={handleSignOut}>
               <BodyLarge
                 className={`font-bold cursor-pointer p-2.5  rounded-lg transition-colors ${
                   hoveredNavItem || scrollPos > 0.01 || !isHomePage
@@ -295,6 +325,7 @@ const Nav = () => {
           </div>
 
           <div
+            data-testid="dropdown-container"
             className={`absolute z-20 flex w-full bg-white top-0 left-0 origin-top transition-all duration-1000 ${
               hoveredNavItem ? "scale-y-100" : "scale-y-0"
             } hover:scale-y-100`}

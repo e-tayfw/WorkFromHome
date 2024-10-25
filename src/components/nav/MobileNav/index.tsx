@@ -6,12 +6,13 @@ import { logout } from "@/redux/slices/authSlice"; // Import the logout action f
 import { useDispatch } from "react-redux";
 import NextLink from "next/link";
 import { NavLink } from "@/components/nav";
-// import { Body } from "@/components/TextStyles";
-// import Link from "next/link";
+import { BodyLarge } from "@/components/TextStyles";
+
 
 export interface MobileMenuProps {
   scrollPos: number;
   isHomePage: boolean;
+  staffName: string;
 }
 
 export const mobileMenuLinks: NavLink[] = [
@@ -40,7 +41,7 @@ export const mobileMenuLinks: NavLink[] = [
     childPaths: [
       {
         title: "Make a Request",
-        path: "/request",
+        path: "/apply",
         imgUrl:
           "https://workfromhomebucket.s3.ap-southeast-2.amazonaws.com/Nav/new-request-simu.png",
       },
@@ -60,7 +61,11 @@ export const mobileMenuLinks: NavLink[] = [
   },
 ];
 
-export const MobileMenu: FC<MobileMenuProps> = ({ scrollPos, isHomePage }) => {
+export const MobileMenu: FC<MobileMenuProps> = ({
+  scrollPos,
+  isHomePage,
+  staffName,
+}) => {
   const [isOpen, setIsOpen] = useState(false);
   const router = useRouter();
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -92,23 +97,36 @@ export const MobileMenu: FC<MobileMenuProps> = ({ scrollPos, isHomePage }) => {
   return (
     <>
       <div
-        className={`w-[40px] z-100 transition-colors relative ${
+        className={`w-[40px] flex flex-row z-100 transition-colors relative ${
           scrollPos > 0.01 || !isHomePage ? "text-black" : "text-white"
         }`}
         onClick={() => router.push("/")}
         role="button"
       ></div>
+      {staffName && (
+        <div
+          className={`flex flex-col w-full font-bold ${
+            scrollPos > 0.01 || !isHomePage ? "text-black" : "text-white"
+          }`}
+        >
+          <BodyLarge>Hi, {staffName}!</BodyLarge>
+        </div>
+      )}
       <div
         className={`w-6 h-6 cursor-pointer ${
           scrollPos > 0.01 || !isHomePage ? "text-black" : "text-white"
         }`}
         onClick={() => setIsOpen(true)}
+        role="button"
       >
         <FiMenu size="100%" />
       </div>
 
       {isOpen && (
-        <div className="fixed inset-0 z-100 flex flex-col items-center bg-white">
+        <div
+          className="fixed inset-0 z-100 flex flex-col items-center bg-white"
+          role="navigation"
+        >
           <div className="absolute top-0 right-0 m-4">
             <button className="text-black" onClick={() => setIsOpen(false)}>
               <FiX size="24" />
