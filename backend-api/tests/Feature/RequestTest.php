@@ -6,9 +6,13 @@ use Database\Seeders\EmployeeSeeder;
 use Database\Seeders\RequestSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use App\Models\Requests;
+use App\Models\Employee;
 use Tests\TestCase;
-use DB;
 use Log;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Queue;
+use App\Jobs\RejectPendingRequestsOlderThanTwoMonthsJob;
+use Carbon\Carbon;
 
 class RequestTest extends TestCase
 {
@@ -316,6 +320,342 @@ class RequestTest extends TestCase
         // Assert that the response status is 400 (Bad Request)
         $response->assertStatus(200);
     }
+
+    /**
+     * Test creating a valid request for an employee with valid date.
+     * 
+     * #[Depends('test_database_is_test_db')]
+     */
+    public function test_create_recurring_request_successful()
+    {
+        // Prepare data with a non-existent staff ID
+        $staffId = '140879'; // Assuming this staff ID exist
+        $startDate = '2024-10-06'; // Valid date
+        $endDate = '2024-11-13'; // Valid date
+        $arrangement = 'FD'; // Valid arrangement
+        $reason = 'Personal'; // Valid reason
+        $dayReason = 3;
+
+        // Prepare the payload
+        $payload = [
+            'staffId' => $staffId,
+            'startDate' => $startDate,
+            'endDate' => $endDate,
+            'arrangement' => $arrangement,
+            'reason' => $reason,
+            'dayReason' => $dayReason
+        ];
+
+        // Send POST request to create request
+        $response = $this->postJson('/api/recurringRequest', $payload);
+
+        // Assert that the response status is 400 (Bad Request)
+        $response->assertStatus(200);
+    }
+
+    /**
+     * Test overlapping pending requests date.
+     * 
+     * #[Depends('test_database_is_test_db')]
+     */
+    public function test_duplicate_pending_request_detection()
+    {
+        // Assuming a request with the same dates already exists
+        $existingRequest = Requests::factory()->create([
+            'Requestor_ID'   => '140879',
+            'Approver_ID'    => '151408', // Example approver
+            'Status'         => 'Pending',
+            'Date_Requested' => '2024-10-09', // Date that will clash
+            'Request_Batch'  => 15,
+            'Duration'       => 'FD',
+        ]);
+
+        
+        // Prepare a payload with the same date as the existing request
+        $payload = [
+            'staffId'     => '140879',
+            'startDate'   => '2024-10-06',
+            'endDate'     => '2024-11-13',
+            'arrangement' => 'FD',
+            'reason'      => 'Personal',
+            'dayChosen'   => 3,
+        ];
+
+        // Send POST request
+        $response = $this->postJson('/api/recurringRequest', $payload);
+
+        // Assert that the response status is 409 (Conflict)
+        $response->assertStatus(409);
+
+        // Assert that the response contains the correct error message
+        $response->assertJson([
+            'message' => 'Duplicate request found on 2024-10-09. Cannot create recurring requests with overlapping dates.',
+        ]);
+    }
+
+    /**
+     * Test overlapping approved requests date.
+     * 
+     * #[Depends('test_database_is_test_db')]
+     */
+    public function test_duplicate_approved_request_detection()
+    {
+        // Assuming a request with the same dates already exists
+        $existingRequest = Requests::factory()->create([
+            'Requestor_ID'   => '140879',
+            'Approver_ID'    => '151408', // Example approver
+            'Status'         => 'Approved',
+            'Date_Requested' => '2024-10-09', // Date that will clash
+            'Request_Batch'  => 15,
+            'Duration'       => 'FD',
+        ]);
+
+        
+        // Prepare a payload with the same date as the existing request
+        $payload = [
+            'staffId'     => '140879',
+            'startDate'   => '2024-10-06',
+            'endDate'     => '2024-11-13',
+            'arrangement' => 'FD',
+            'reason'      => 'Personal',
+            'dayChosen'   => 3,
+        ];
+
+        // Send POST request
+        $response = $this->postJson('/api/recurringRequest', $payload);
+
+        // Assert that the response status is 409 (Conflict)
+        $response->assertStatus(409);
+
+        // Assert that the response contains the correct error message
+        $response->assertJson([
+            'message' => 'Duplicate request found on 2024-10-09. Cannot create recurring requests with overlapping dates.',
+        ]);
+    }
+
+    /**
+     * Test overlapping withdraw rejected request dates.
+     * 
+     * #[Depends('test_database_is_test_db')]
+     */
+    public function test_duplicate_withdraw_rejected_request_detection()
+    {
+        // Assuming a request with the same dates already exists
+        $existingRequest = Requests::factory()->create([
+            'Requestor_ID'   => '140879',
+            'Approver_ID'    => '151408', // Example approver
+            'Status'         => 'Withdraw Rejected',
+            'Date_Requested' => '2024-10-09', // Date that will clash
+            'Request_Batch'  => 15,
+            'Duration'       => 'FD',
+        ]);
+
+        
+        // Prepare a payload with the same date as the existing request
+        $payload = [
+            'staffId'     => '140879',
+            'startDate'   => '2024-10-06',
+            'endDate'     => '2024-11-13',
+            'arrangement' => 'FD',
+            'reason'      => 'Personal',
+            'dayChosen'   => 3,
+        ];
+
+        // Send POST request
+        $response = $this->postJson('/api/recurringRequest', $payload);
+
+        // Assert that the response status is 409 (Conflict)
+        $response->assertStatus(409);
+
+        // Assert that the response contains the correct error message
+        $response->assertJson([
+            'message' => 'Duplicate request found on 2024-10-09. Cannot create recurring requests with overlapping dates.',
+        ]);
+    }
+
+    /**
+     * Test overlapping withdraw pending request dates.
+     * 
+     * #[Depends('test_database_is_test_db')]
+     */
+    public function test_duplicate_withdraw_pending_request_detection()
+    {
+        // Assuming a request with the same dates already exists
+        $existingRequest = Requests::factory()->create([
+            'Requestor_ID'   => '140879',
+            'Approver_ID'    => '151408', // Example approver
+            'Status'         => 'Withdraw Pending',
+            'Date_Requested' => '2024-10-09', // Date that will clash
+            'Request_Batch'  => 15,
+            'Duration'       => 'FD',
+        ]);
+
+        
+        // Prepare a payload with the same date as the existing request
+        $payload = [
+            'staffId'     => '140879',
+            'startDate'   => '2024-10-06',
+            'endDate'     => '2024-11-13',
+            'arrangement' => 'FD',
+            'reason'      => 'Personal',
+            'dayChosen'   => 3,
+        ];
+
+        // Send POST request
+        $response = $this->postJson('/api/recurringRequest', $payload);
+
+        // Assert that the response status is 409 (Conflict)
+        $response->assertStatus(409);
+
+        // Assert that the response contains the correct error message
+        $response->assertJson([
+            'message' => 'Duplicate request found on 2024-10-09. Cannot create recurring requests with overlapping dates.',
+        ]);
+    }
+
+    /*
+    * Test if start date and end date gap is larger than 3 months.
+    * 
+    * #[Depends('test_database_is_test_db')]
+    */
+    public function test_date_range_more_than_three_months_apart()
+    {
+        // Prepare data with a start date and an end date more than 3 months apart
+        $staffId = '140879'; // Assuming this staff ID exists
+        $startDate = '2024-01-01'; // January 1st, 2024
+        $endDate = '2024-05-01'; // May 1st, 2024 (more than 3 months apart)
+        $arrangement = 'FD'; // Valid arrangement (Full Day)
+        $reason = 'Extended leave';
+        $dayChosen = 2; // Choosing a day (Tuesday, for example)
+
+        // Prepare the payload
+        $payload = [
+            'staffId'     => $staffId,
+            'startDate'   => $startDate,
+            'endDate'     => $endDate,
+            'arrangement' => $arrangement,
+            'reason'      => $reason,
+            'dayChosen'   => $dayChosen,
+        ];
+
+        // Send POST request to create request
+        $response = $this->postJson('/api/recurringRequest', $payload);
+
+        // Assert that the response status is 400 (Bad Request)
+        $response->assertStatus(400);
+
+        // Assert that the response contains the correct error message
+        $response->assertJson([
+            'message' => 'The date range must be within 3 months apart',
+        ]);
+    }
+
+    /**
+     * Test end date exceeds three months forward from the current date
+     * 
+     * #[Depends('test_database_is_test_db')]
+     */
+     public function end_date_exceeds_three_months_forward()
+    {
+        // Prepare data
+        $staffId = '140879'; // Assuming this staff ID exists
+        $startDate = Carbon::now()->addMonths(2)->format('Y-m-d');
+        $endDate = Carbon::now()->addMonths(4)->format('Y-m-d'); // More than 3 months forward
+        $arrangement = 'FD';
+        $reason = 'Holiday';
+        $dayChosen = 3;
+
+        // Prepare payload
+        $payload = [
+            'staffId'     => $staffId,
+            'startDate'   => $startDate,
+            'endDate'     => $endDate,
+            'arrangement' => $arrangement,
+            'reason'      => $reason,
+            'dayChosen'   => $dayChosen,
+        ];
+
+        // Send POST request
+        $response = $this->postJson('/api/recurringRequest', $payload);
+
+        // Assert response status is 400 (Bad Request)
+        $response->assertStatus(400);
+
+        // Assert the response contains the correct message
+        $response->assertJson([
+            'message' => 'The date range must be within 2 months back and 3 months forward from the current date',
+        ]);
+    }
+
+    /**
+     * Test start date exceeds two months back from the current date
+     * 
+     * #[Depends('test_database_is_test_db')]
+     */
+    public function start_date_exceeds_two_months_back()
+    {
+        // Prepare data
+        $staffId = '140879'; // Assuming this staff ID exists
+        $startDate = Carbon::now()->subMonths(3)->format('Y-m-d'); // More than 2 months back
+        $endDate = Carbon::now()->format('Y-m-d');
+        $arrangement = 'FD';
+        $reason = 'Late request';
+        $dayChosen = 3;
+
+        // Prepare payload
+        $payload = [
+            'staffId'     => $staffId,
+            'startDate'   => $startDate,
+            'endDate'     => $endDate,
+            'arrangement' => $arrangement,
+            'reason'      => $reason,
+            'dayChosen'   => $dayChosen,
+        ];
+
+        // Send POST request
+        $response = $this->postJson('/api/recurringRequest', $payload);
+
+        // Assert response status is 400 (Bad Request)
+        $response->assertStatus(400);
+
+        // Assert the response contains the correct message
+        $response->assertJson([
+            'message' => 'The date range must be within 2 months back and 3 months forward from the current date',
+        ]);
+    }
+
+    /**
+     * Test start date behind the current date
+     * 
+     * #[Depends('test_database_is_test_db')]
+     */
+    public function test_start_date_behind_current_date()
+    {
+        // Prepare data
+        $staffId = '140878'; // Assuming this staff ID exists
+        $startDate = Carbon::now()->subMonths(1)->format('Y-m-d'); // Behind current date
+        $endDate = Carbon::now()->addMonths(1)->format('Y-m-d');
+        $arrangement = 'AM';
+        $reason = 'Late request';
+        $dayChosen = 3;
+
+        // Prepare payload
+        $payload = [
+            'staffId'     => $staffId,
+            'startDate'   => $startDate,
+            'endDate'     => $endDate,
+            'arrangement' => $arrangement,
+            'reason'      => $reason,
+            'dayChosen'   => $dayChosen,
+        ];
+
+        // Send POST request
+        $response = $this->postJson('/api/recurringRequest', $payload);
+
+        // Assert response status is 200
+        $response->assertStatus(200);
+    }
+
 
      /**
      * Test if the API returns a 200 for approve request
