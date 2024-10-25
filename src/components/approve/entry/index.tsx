@@ -102,7 +102,7 @@ const ApproveEntry: React.FC<ApproveEntryProps> = ({
       'pending': 'Pen.',
       'rejected': 'Rej.',
       'withdrawn': 'Wdn.',
-      'withdrawn by manager': 'WbM', // Short form for Withdrawn by Manager
+      'withdrawn by manager': 'WbM',
     };
     return isMobile ? statusMap[status.toLowerCase()] || status : status;
   };
@@ -122,6 +122,22 @@ const ApproveEntry: React.FC<ApproveEntryProps> = ({
     onRequestClick(requestId);
   };
 
+  const isDateInRangeForWithdraw = () => {
+    const requestDate = new Date(dateRequested);
+    const currentDate = new Date();
+  
+    // Calculate the date one month back from requestDate
+    const oneMonthBack = new Date(requestDate);
+    oneMonthBack.setMonth(requestDate.getMonth() - 1);
+  
+    // Calculate the date three months forward from requestDate
+    const threeMonthsForward = new Date(requestDate);
+    threeMonthsForward.setMonth(requestDate.getMonth() + 3);
+  
+    // Check if the current date is within the range
+    return currentDate >= oneMonthBack && currentDate <= threeMonthsForward;
+  };
+
   const renderActionButtons = () => {
     const isApproved = status.toLowerCase() === 'approved';
     const isPending = status.toLowerCase() === 'pending';
@@ -131,7 +147,7 @@ const ApproveEntry: React.FC<ApproveEntryProps> = ({
       return null;
     }
 
-    const withdrawButton = isApproved && (
+    const withdrawButton = isApproved && isDateInRangeForWithdraw() && (
       <button
         className="bg-red-100 hover:bg-red-200 text-red-700 font-semibold py-1 px-4 rounded-md transition duration-200 ease-in-out"
         onClick={() => handleWithdraw(requestId)}
@@ -144,8 +160,11 @@ const ApproveEntry: React.FC<ApproveEntryProps> = ({
       return (
         <>
           <button
-            className="bg-green-100 hover:bg-green-200 text-green-700 font-semibold py-1 px-4 rounded-md transition duration-200 ease-in-out mr-2"
+            className={`bg-green-100 text-green-700 font-semibold py-1 px-4 rounded-md transition duration-200 ease-in-out mr-2 ${
+              willExceedProportion() ? 'opacity-50 cursor-not-allowed' : 'hover:bg-green-200'
+            }`}
             onClick={handleApprove}
+            disabled={willExceedProportion()}
           >
             {getActionShortForm("Approve")}
           </button>
