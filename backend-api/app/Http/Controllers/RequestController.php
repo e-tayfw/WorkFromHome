@@ -851,7 +851,7 @@ class RequestController extends Controller
         }
 
         // Use the provided reference date or fall back to Carbon::now()
-        $date_requested = $referenceDate ?? $booking->Date_Requested;
+        $date_requested = $referenceDate ?? Carbon::parse($booking->Date_Requested);
 
         // Calculate 1 month back and 3 months forward boundaries
         $oneMonthBack = $date_requested->copy()->subMonthNoOverflow();
