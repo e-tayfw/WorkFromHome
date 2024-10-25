@@ -57,6 +57,10 @@ class RequestController extends Controller
                     $date_dictionary[$date]["FD"] += $proportion;
                 }
             }
+            
+            $date_dictionary[$date]['AM'] += $date_dictionary[$date]["FD"];
+            $date_dictionary[$date]['PM'] += $date_dictionary[$date]["FD"];
+            $date_dictionary[$date]['FD'] += max($date_dictionary[$date]['AM'], $date_dictionary[$date]['PM']);
 
             return response()->json($date_dictionary);
         } else {
@@ -105,6 +109,10 @@ class RequestController extends Controller
                     }
                 }
             }
+
+            $date_dictionary[$date]['AM'] += $date_dictionary[$date]["FD"];
+            $date_dictionary[$date]['PM'] += $date_dictionary[$date]["FD"];
+            $date_dictionary[$date]['FD'] += max($date_dictionary[$date]['AM'], $date_dictionary[$date]['PM']);
 
             return response()->json($date_dictionary);
         } else {
