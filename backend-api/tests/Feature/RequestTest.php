@@ -6,13 +6,9 @@ use Database\Seeders\EmployeeSeeder;
 use Database\Seeders\RequestSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use App\Models\Requests;
-use App\Models\Employee;
 use Tests\TestCase;
+use DB;
 use Log;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Queue;
-use App\Jobs\RejectPendingRequestsOlderThanTwoMonthsJob;
-use Carbon\Carbon;
 
 class RequestTest extends TestCase
 {

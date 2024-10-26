@@ -11,8 +11,7 @@ use Error;
 use App\Jobs\RejectPendingRequestsOlderThanTwoMonthsJob;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\DB;
-
+use DB;
 use Log;
 use Mockery\Generator\StringManipulation\Pass\Pass;
 
@@ -152,18 +151,14 @@ class RequestController extends Controller
         $arrangement = $request->arrangement;
         $reason = $request->reason;
 
-        if (strlen($reason) > 255) {
-            $reason = substr($reason, 0, 255);
-        }
-
         try {
             $employee = Employee::where("Staff_ID", $staffId)->firstOrFail();
 
-            // Check if there are existing requests
-            $existingRequests = Requests::where('Requestor_ID', $staffId)
-            ->where('Date_Requested', $selectedDate)
-            ->whereIn('Status', ['Pending', 'Approved', 'Withdraw Rejected', 'Withdraw Pending'])
-            ->get();
+            $existingRequests = Requests::where([
+                ['Requestor_ID', '=', $staffId],
+                ['Date_Requested', '=', $selectedDate],
+                ['Status', 'in', ['Pending', 'Approved', 'Withdraw Rejected', 'Withdraw Pending']]
+            ])->get();
 
             if ($existingRequests->isNotEmpty()) {
                 $message = '';
@@ -180,8 +175,7 @@ class RequestController extends Controller
                 } elseif ($arrangement === 'FD' && (in_array('AM', $existingArrangements) || in_array('PM', $existingArrangements))) {
                     $message = 'Full day being requested when a half day arrangement already exists';
                 }
-                
-                // Return failure if existing request condition is met
+
                 if ($message) {
                     return response()->json([
                         'message' => $message,
@@ -192,15 +186,14 @@ class RequestController extends Controller
                         'two' => $two
                     ], 400);
                 }
-            } 
-            
-            
+            }
+
+
             $reportingManager = $employee->Reporting_Manager;
             $reportingManagerFName = "";
             $reportingManagerLName = "";
             $reportingManagerName = "";
 
-            // Check for reporting manager and return failure if not found
             if (!$reportingManager) {
                 return response()->json(['message' => 'Reporting manager not found', 'success' => false], 404);
             } else {
@@ -212,7 +205,6 @@ class RequestController extends Controller
 
             DB::beginTransaction();
 
-            // Create new row in Request if all conditions are met
             $newRequest = Requests::create([
                 'Requestor_ID' => $staffId,
                 'Approver_ID' => $reportingManager,
@@ -225,7 +217,6 @@ class RequestController extends Controller
             // Dispatch the job to check status after 2 months from the selected date (Date_Requested)
             RejectPendingRequestsOlderThanTwoMonthsJob::dispatch($newRequest)->delay(Carbon::parse($selectedDate)->addMonths(2));
 
-            // Create new row in Request Log
             RequestLog::create([
                 'Request_ID' => $newRequest->Request_ID,
                 'Previous_State' => 'Pending',
@@ -665,6 +656,8 @@ class RequestController extends Controller
             // Handle error saving RequestLog
             return response()->json(['message' => 'Failed to create Request Logs'], 500);
         }
+
+        return response()->json($requestDB);
     }
 
     // Reject Request

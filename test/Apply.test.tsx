@@ -3,7 +3,7 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { Provider } from 'react-redux';
 import configureStore from 'redux-mock-store';
 import { Apply } from '@/components/apply';
-// import axios from 'axios';
+import axios from 'axios';
 import '@testing-library/jest-dom';
 
 // Mock the imported components
@@ -107,25 +107,6 @@ describe('Apply Component', () => {
     expect(screen.getByTestId('submit-button')).toBeDisabled();
   });
 
-});
 
-describe('Apply Component - Recurring Form', () => {
-  it('enables submit button when all recurring fields are filled', async () => {
-    render(
-      <Provider store={store}>
-        <Apply />
-      </Provider>
-    );
-    fireEvent.click(screen.getByText('Recurring'));
-
-    fireEvent.change(screen.getByTestId('start-date-input'), { target: { value: '2024-10-01' } });
-    fireEvent.change(screen.getByTestId('end-date-input'), { target: { value: '2024-10-31' } });
-    fireEvent.change(screen.getByTestId('day-select'), { target: { value: '1' } });
-    fireEvent.change(screen.getByTestId('arrangement-select'), { target: { value: 'FD' } });
-    fireEvent.change(screen.getByTestId('reason-input'), { target: { value: 'Recurring test reason' } });
-
-    await waitFor(() => {
-      expect(screen.getByTestId('submit-button')).toBeEnabled();
-    });
-  });
+  
 });

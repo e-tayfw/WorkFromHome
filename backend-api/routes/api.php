@@ -32,9 +32,6 @@ Route::get(uri: '/request/proportionOfTeam/date/{approver_id}/{date}', action: [
 Route::post('/request/withdraw', [RequestController::class, 'withdrawRequest']);
 Route::post('/request/managerWithdraw', [RequestController::class, 'managerWithdrawBooking']);
 
-// Recurring Requests
-Route::post(uri: '/recurringRequest', action: [RequestController::class, 'createRecurringRequest']);
-
 // Schedule
 Route::get(uri: '/generateOwnSchedule/{staff_id}', action: [ScheduleController::class, 'generateOwnSchedule']);
 Route::get(uri: '/generateTeamSchedule/{staff_id}', action: [ScheduleController::class, 'generateTeamSchedule']);
