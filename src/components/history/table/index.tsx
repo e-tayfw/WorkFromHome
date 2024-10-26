@@ -287,6 +287,7 @@ export const RequestTable: React.FC = () => {
             </th>
             <th
               className="px-4 py-2 text-left cursor-pointer"
+              data-testid="status-column"
               onClick={() => requestSort("status")}
             >
               <BodyLarge className="text-primary">
@@ -321,6 +322,7 @@ export const RequestTable: React.FC = () => {
       <div className="flex justify-center items-center mt-4 space-x-4">
         <button
           className="bg-primary text-white py-2 px-4 rounded-md disabled:bg-gray-400 disabled:cursor-not-allowed"
+          data-testid="prev-button"
           disabled={currentPage === 1}
           onClick={() => setCurrentPage(currentPage - 1)}
         >
@@ -332,6 +334,7 @@ export const RequestTable: React.FC = () => {
         <button
           className="bg-primary text-white py-2 px-4 rounded-md disabled:bg-gray-400 disabled:cursor-not-allowed"
           disabled={currentPage === totalPages || totalPages === 0}
+          data-testid="next-button"
           onClick={() => setCurrentPage(currentPage + 1)}
         >
           Next
