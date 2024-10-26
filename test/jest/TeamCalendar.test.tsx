@@ -121,7 +121,6 @@ describe("TeamCalendar", () => {
       },
     };
     render(<TeamCalendar selectedSchedule={sampleSelectedSchedule} />);
-    const initialDate = moment().format("DD/MM/YY");
     // Click Prev Day twice
     fireEvent.click(screen.getByText("Prev Day"));
     const prevDate = moment().subtract(1, "days").format("DD/MM/YY");
@@ -150,9 +149,7 @@ describe("TeamCalendar", () => {
       .format("DD/MM/YY");
 
     // Wait for the current week's date range to appear
-    await waitFor(() =>
-      expect(screen.getByText(`${weekStart} - ${weekEnd}`)).toBeInTheDocument()
-    );
+    expect(await screen.findByText(`${weekStart} - ${weekEnd}`)).toBeInTheDocument();
 
     // Navigate to next week
     fireEvent.click(screen.getByText("Next Week"));
@@ -168,11 +165,9 @@ describe("TeamCalendar", () => {
       .format("DD/MM/YY");
     console.log(nextWeekStart, nextWeekEnd);
     // Wait for the next week's date range to appear
-    await waitFor(() =>
-      expect(
-        screen.getByText(`${nextWeekStart} - ${nextWeekEnd}`)
-      ).toBeInTheDocument()
-    );
+    expect(
+      await screen.findByText(`${nextWeekStart} - ${nextWeekEnd}`)
+    ).toBeInTheDocument();
   });
 
   test("handles previous week navigation", async () => {
@@ -197,9 +192,7 @@ describe("TeamCalendar", () => {
       .format("DD/MM/YY");
 
     // Wait for the current week's date range to appear
-    await waitFor(() =>
-      expect(screen.getByText(`${weekStart} - ${weekEnd}`)).toBeInTheDocument()
-    );
+    expect(await screen.findByText(`${weekStart} - ${weekEnd}`)).toBeInTheDocument();
 
     // Navigate to previous week
     fireEvent.click(screen.getByText("Prev Week"));
@@ -215,11 +208,9 @@ describe("TeamCalendar", () => {
       .format("DD/MM/YY");
 
     // Wait for the previous week's date range to appear
-    await waitFor(() =>
-      expect(
-        screen.getByText(`${prevWeekStart} - ${prevWeekEnd}`)
-      ).toBeInTheDocument()
-    );
+    expect(
+      await screen.findByText(`${prevWeekStart} - ${prevWeekEnd}`)
+    ).toBeInTheDocument();
   });
 
   test("disables next button appropriately", () => {
@@ -239,6 +230,7 @@ describe("TeamCalendar", () => {
 
     render(<TeamCalendar selectedSchedule={sampleSelectedSchedule} />);
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const prevDayButton = screen.getByText("Prev Day");
     const nextDayButton = screen.getByText("Next Day");
     fireEvent.click(nextDayButton);
@@ -265,6 +257,7 @@ describe("TeamCalendar", () => {
     render(<TeamCalendar selectedSchedule={sampleSelectedSchedule} />);
 
     const prevDayButton = screen.getByText("Prev Day");
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const nextDayButton = screen.getByText("Next Day");
 
     fireEvent.click(prevDayButton);
@@ -305,6 +298,7 @@ describe("TeamCalendar", () => {
   test("fetches and displays correct data in modal", async () => {
     (useSelector as unknown as jest.Mock).mockReturnValue("123");
 
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
     const { getEmployeeFullNameByStaffID } = require("@/pages/api/employeeApi");
     getEmployeeFullNameByStaffID.mockResolvedValue("John Doe");
 
@@ -330,6 +324,7 @@ describe("TeamCalendar", () => {
   test("search within modal works", async () => {
     (useSelector as unknown as jest.Mock).mockReturnValue("123");
 
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
     const { getEmployeeFullNameByStaffID } = require("@/pages/api/employeeApi");
     getEmployeeFullNameByStaffID.mockImplementation((staffId: string) => {
       const names: { [key: string]: string } = {
@@ -360,7 +355,7 @@ describe("TeamCalendar", () => {
     fireEvent.change(searchInput, { target: { value: "Jane" } });
 
     // Check that only Jane Smith is displayed
-    expect(await screen.queryByText(/John Doe/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/John Doe/i)).not.toBeInTheDocument();
     expect(await screen.findByText(/Jane Smith/i)).toBeInTheDocument();
   });
 
