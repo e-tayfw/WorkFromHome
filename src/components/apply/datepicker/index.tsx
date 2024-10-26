@@ -30,6 +30,7 @@ const Datecomponent: React.FC<DateComponentProps> = ({ selectedDate, onDateChang
               maxDate: maxDate,
               format: "yyyy-mm-dd",
               clearBtn: true,
+              autohide: true,
             });
 
             // Use the changeDate event of the datepicker
