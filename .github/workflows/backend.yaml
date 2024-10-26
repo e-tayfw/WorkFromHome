@@ -68,6 +68,10 @@ jobs:
         run: |
           ssh -o StrictHostKeyChecking=no ec2-user@54.251.20.155 << 'EOF'
           cd /var/www/html/spm-project/backend-api
+
+          sudo chown -R ec2-user:ec2-user /var/www/html/spm-project/backend-api
+          sudo chmod -R 755 /var/www/html/spm-project/backend-api
+          
           if [ -f composer.lock ]; then
             composer install --no-dev --optimize-autoloader
           fi
