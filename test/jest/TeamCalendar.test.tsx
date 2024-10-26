@@ -121,6 +121,7 @@ describe("TeamCalendar", () => {
       },
     };
     render(<TeamCalendar selectedSchedule={sampleSelectedSchedule} />);
+
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const initialDate = moment().format("DD/MM/YY");
     // Click Prev Day twice
@@ -328,6 +329,7 @@ describe("TeamCalendar", () => {
   //   (useSelector as unknown as jest.Mock).mockReturnValue("123");
 
     // eslint-disable-next-line @typescript-eslint/no-var-requires
+
     // const { getEmployeeFullNameByStaffID } = require("@/pages/api/employeeApi");
     // getEmployeeFullNameByStaffID.mockImplementation((staffId: string) => {
     //   const names: { [key: string]: string } = {
@@ -336,6 +338,7 @@ describe("TeamCalendar", () => {
     //   };
     //   return Promise.resolve(names[staffId] || "Unknown User");
     // });
+
 
   //   const today = moment().format("DDMMYY");
   //   const sampleSelectedSchedule = {
@@ -358,7 +361,7 @@ describe("TeamCalendar", () => {
   //   fireEvent.change(searchInput, { target: { value: "Jane" } });
 
     // Check that only Jane Smith is displayed
-  
+
 
   test("renders correct data for day view", () => {
     (useSelector as unknown as jest.Mock).mockReturnValue("123");

@@ -16,12 +16,14 @@ interface ScheduleData {
   [userId: string]: TeamMember;
 }
 
+
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 interface ScheduleProps {
   [userid: string]: {
     [date: string]: number | undefined;
   };
 }
+
 
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
