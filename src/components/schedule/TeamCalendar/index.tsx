@@ -6,7 +6,7 @@ import { RootState } from "@/redux/store";
 import { EyeIcon } from "@/components/Svgs/eye";
 import { CloseIcon } from "@/components/Svgs/close";
 import { getEmployeeFullNameByStaffID } from "@/pages/api/employeeApi";
-import { ScheduleTable } from "@/components/Schedule/Table";
+import { ScheduleTable } from "@/components/schedule/Table";
 
 interface TeamMember {
   [date: string]: number | undefined;
@@ -16,6 +16,7 @@ interface ScheduleData {
   [userId: string]: TeamMember;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 interface ScheduleProps {
   [userid: string]: {
     [date: string]: number | undefined;
@@ -23,6 +24,7 @@ interface ScheduleProps {
 }
 
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 type ScheduleByDateData = {
   amwfhUsers: string[];
   pmwfhUsers: string[];
@@ -326,7 +328,7 @@ export const TeamCalendar: React.FC<TeamCalendarProps> = ({
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="mb-4 p-2 border border-gray-300 rounded w-full"
                 /> */}
-                <div className="flex flex-col space-y-2">
+                <div className="flex flex-col space-y-2" data-testid='user-name'>
                   <Body className="text-lg font-bold">
                     Staff on AM WFH:
                     {filteredAMUsers.length > 0
