@@ -30,6 +30,14 @@ class RequestController extends Controller
     {
         // query database for the people with that approver
         $request = Requests::where([['Approver_ID', $approver_id], ['Status', 'Approved']])->get();
+
+        // check employee exists
+        $emp = Employee::where([['Staff_ID', $approver_id]])->get();
+
+        if ($emp->isEmpty()){
+            return response()->json(['message' => 'This employee ID does not match any on record.'], 404); 
+        }
+
         $team_size = Employee::where('Reporting_Manager', $approver_id)->count();
         if ($team_size != 0) {
             $proportion = 1 / $team_size;
@@ -78,6 +86,13 @@ class RequestController extends Controller
         }
         $formattedDate = (new DateTime($date))->format('Y-m-d');
 
+
+        // check employee exists
+        $emp = Employee::where([['Staff_ID', $approver_id]])->get();
+
+        if ($emp->isEmpty()){
+            return response()->json(['message' => 'This employee ID does not match any on record.'], 404); 
+        }
         // query database for the people with that approver
         $request = Requests::where([['Approver_ID', $approver_id], ['Status', 'Approved']])->get();
         $team_size = Employee::where('Reporting_Manager', $approver_id)->count();
@@ -112,9 +127,11 @@ class RequestController extends Controller
                 }
             }
 
-            $date_dictionary[$date]['AM'] += $date_dictionary[$date]["FD"];
-            $date_dictionary[$date]['PM'] += $date_dictionary[$date]["FD"];
-            $date_dictionary[$date]['FD'] = max($date_dictionary[$date]['AM'], $date_dictionary[$date]['PM']);
+            foreach ($date_dictionary as $date => $values) {
+                $date_dictionary[$date]['AM'] += $date_dictionary[$date]["FD"];
+                $date_dictionary[$date]['PM'] += $date_dictionary[$date]["FD"];
+                $date_dictionary[$date]['FD'] = max($date_dictionary[$date]['AM'], $date_dictionary[$date]['PM']);
+            }
 
             return response()->json($date_dictionary);
         } else {
