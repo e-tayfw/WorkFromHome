@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Employee;
 use Database\Seeders\EmployeeSeeder;
 use Database\Seeders\RequestSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -103,6 +104,7 @@ class RequestTest extends TestCase
      */
     public function test_get_proportion_of_team(): void
     {
+
         // Send a GET request
         $response = $this->getJson('/api/request/proportionOfTeam/140001');
 
@@ -118,7 +120,7 @@ class RequestTest extends TestCase
     public function test_get_proportion_of_team_invalid_id(): void
     {
         // Send a GET request to a non-existing email
-        $response = $this->getJson('/api/request/proportionOfTeam/000000');
+        $response = $this->getJson('/api/request/proportionOfTeam/138907429837');
 
         // Assert that the response status is 404 (Not Found) as person is not a manager
         $response->assertStatus(404);
@@ -148,7 +150,7 @@ class RequestTest extends TestCase
         // Send a GET request
         $response = $this->getJson('/api/request/proportionOfTeam/date/140001/2024-10-03');
 
-        // Assert that the response status is 200 (OK) as person is not a manager
+        // Assert that the response status is 200 (OK)
         $response->assertStatus(200);
     }
 
@@ -160,7 +162,7 @@ class RequestTest extends TestCase
     public function test_get_proportion_of_team_on_date_invalid_id(): void
     {
         // Send a GET request to a non-existing staff_id
-        $response = $this->getJson('/api/request/proportionOfTeam/date/000000/2024-10-03');
+        $response = $this->getJson('/api/request/proportionOfTeam/date/138907429837/2024-10-03');
 
         // Assert that the response status is 404 (Not Found) as person is not a manager
         $response->assertStatus(404);
@@ -188,7 +190,7 @@ class RequestTest extends TestCase
     public function test_create_request_with_invalid_id(): void
     {
         // Prepare data with a non-existent staff ID
-        $staffId = '000000'; // Assuming this staff ID does not exist
+        $staffId = '138907429837'; // Assuming this staff ID does not exist
         $date = '2024-10-10'; // Valid date
         $arrangement = 'FD'; // Valid arrangement
         $reason = 'Personal'; // Valid reason
