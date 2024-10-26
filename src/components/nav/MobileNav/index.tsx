@@ -41,7 +41,7 @@ export const mobileMenuLinks: NavLink[] = [
     childPaths: [
       {
         title: "Make a Request",
-        path: "/apply",
+        path: "/request",
         imgUrl:
           "https://workfromhomebucket.s3.ap-southeast-2.amazonaws.com/Nav/new-request-simu.png",
       },
