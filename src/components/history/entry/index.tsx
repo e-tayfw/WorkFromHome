@@ -7,11 +7,12 @@ interface RequestEntryProps {
   requestorId: string;
   approverId: string;
   status: string | undefined;
-  dateRequested: string; 
+  dateRequested: string;
   requestBatch: string | null;
   dateOfRequest: string;
   duration: string;
   fetchRequests: () => void; // Include fetchRequests prop
+  handleRequestClick: (requestId: number) => void;
 }
 
 const RequestEntry: React.FC<RequestEntryProps> = ({
@@ -23,47 +24,61 @@ const RequestEntry: React.FC<RequestEntryProps> = ({
   approverId,
   status,
   dateRequested,
+  handleRequestClick,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   requestBatch,
   dateOfRequest,
   duration,
   fetchRequests, // Destructure the fetchRequests prop
 }) => {
+  // Compute display status
+  const displayStatus =
+    status?.toLowerCase() === "withdraw rejected" ? "Approved" : status;
+
   const statusColor = () => {
-    switch (status?.toLowerCase()) {
-      case 'approved':
-        return 'bg-teal-100 text-teal-700';
-      case 'pending':
-        return 'bg-yellow-100 text-yellow-700';
-      case 'withdrawn':
-        return 'bg-gray-200 text-gray-700';
-      case 'rejected':
-        return 'bg-red-100 text-red-700';
-      case 'withdraw pending':
-      case 'withdraw rejected':
-        return 'bg-orange-100 text-orange-700';
+    switch (displayStatus?.toLowerCase()) {
+      case "approved":
+        return "bg-teal-100 text-teal-700";
+      case "pending":
+        return "bg-yellow-100 text-yellow-700";
+      case "withdrawn":
+        return "bg-gray-200 text-gray-700";
+      case "rejected":
+        return "bg-red-100 text-red-700";
+      case "withdraw pending":
+        return "bg-orange-100 text-orange-700";
       default:
-        return 'bg-gray-100 text-gray-600';
+        return "bg-gray-100 text-gray-600";
     }
+  };
+
+  const handleRowClick = () => {
+    handleRequestClick(Number(requestId));
   };
 
   return (
     <tr className="border-b">
-      <td className="px-4 py-2">
+      <td className="px-4 py-2" onClick={handleRowClick}>
         <Body className="text-text">{dateRequested}</Body>
       </td>
-      <td className="px-4 py-2">
+      <td className="px-4 py-2" onClick={handleRowClick}>
+        <Body className="text-text">{requestBatch || "AdHoc"}</Body>
+      </td>
+      <td className="px-4 py-2" onClick={handleRowClick}>
         <Body className="text-text">{duration}</Body>
       </td>
-      <td className="px-4 py-2">
+      <td className="px-4 py-2" onClick={handleRowClick}>
         <Body className="text-text">{dateOfRequest}</Body>
       </td>
-      <td className={`px-4 py-2 ${statusColor()} font-semibold rounded-md`}>
+      <td
+        className={`px-4 py-2 ${statusColor()} font-semibold rounded-md`}
+        onClick={handleRowClick}
+      >
         <Body>{status}</Body>
       </td>
       <td className="px-4 py-2">
         {/* Pass necessary props to ActionHandler */}
-        <ActionHandler 
+        <ActionHandler
           requestId={requestId}
           employeeId={requestorId}
           status={status}
