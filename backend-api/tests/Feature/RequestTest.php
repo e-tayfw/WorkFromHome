@@ -324,7 +324,7 @@ class RequestTest extends TestCase
      * 
      * #[Depends('test_database_is_test_db')]
      */
-    public function test_create_recurring_request_successful()
+    public function test_create_recurring_request_successful(): void
     {
         // Prepare data with a non-existent staff ID
         $staffId = '140879'; // Assuming this staff ID exist
@@ -614,6 +614,7 @@ class RequestTest extends TestCase
             'message' => 'The date range must be within 3 months apart',
         ]);
     }
+
 
     /**
      * Test end date exceeds three months forward from the current date
