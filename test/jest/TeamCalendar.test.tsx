@@ -295,6 +295,7 @@ describe("TeamCalendar", () => {
     await waitFor(() => {
       expect(screen.queryByText(/WFH Schedule/i)).not.toBeInTheDocument();
     });
+    expect(screen.queryByText(/John Doe/i)).not.toBeInTheDocument();
   });
 
   test("fetches and displays correct data in modal", async () => {
@@ -326,15 +327,15 @@ describe("TeamCalendar", () => {
   // test("search within modal works", async () => {
   //   (useSelector as unknown as jest.Mock).mockReturnValue("123");
 
-  //   // eslint-disable-next-line @typescript-eslint/no-var-requires
-  //   const { getEmployeeFullNameByStaffID } = require("@/pages/api/employeeApi");
-  //   getEmployeeFullNameByStaffID.mockImplementation((staffId: string) => {
-  //     const names: { [key: string]: string } = {
-  //       "1": "John Doe",
-  //       "2": "Jane Smith",
-  //     };
-  //     return Promise.resolve(names[staffId] || "Unknown User");
-  //   });
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    // const { getEmployeeFullNameByStaffID } = require("@/pages/api/employeeApi");
+    // getEmployeeFullNameByStaffID.mockImplementation((staffId: string) => {
+    //   const names: { [key: string]: string } = {
+    //     "1": "John Doe",
+    //     "2": "Jane Smith",
+    //   };
+    //   return Promise.resolve(names[staffId] || "Unknown User");
+    // });
 
   //   const today = moment().format("DDMMYY");
   //   const sampleSelectedSchedule = {
@@ -356,10 +357,8 @@ describe("TeamCalendar", () => {
   //   const searchInput = screen.getByPlaceholderText("Search by name");
   //   fireEvent.change(searchInput, { target: { value: "Jane" } });
 
-  //   // Check that only Jane Smith is displayed
-  //   expect(screen.queryByText(/John Doe/i)).not.toBeInTheDocument();
-  //   expect(screen.getByText(/Jane Smith/i)).toBeInTheDocument();
-  // });
+    // Check that only Jane Smith is displayed
+  
 
   test("renders correct data for day view", () => {
     (useSelector as unknown as jest.Mock).mockReturnValue("123");
