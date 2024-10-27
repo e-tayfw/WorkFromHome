@@ -107,19 +107,11 @@ const ActionHandler = {
     requestBatch,
     approverId,
     duration,
-    proportionAfterApproval,
     onRefreshRequests,
   }: ApproveBatchHandlerProps) => {
-    // Prevent approval if proportion exceeds the limit
-    if (proportionAfterApproval && proportionAfterApproval > 0.5) {
-      toast.error("Approval cannot proceed. More than half the team is already working from home.", {
-        position: 'top-right',
-      });
-      return;
-    }
-  
+    
     const approvalConfirmationText = 'Do you want to approve all requests in this batch?';
-  
+
     Swal.fire({
       title: 'Are you sure?',
       text: approvalConfirmationText,
@@ -139,7 +131,7 @@ const ActionHandler = {
           Duration: duration,
           Reason: result.value || null, // Optional reason
         };
-  
+
         axios
           .post('http://127.0.0.1:8085/api/approveRecurringRequest', payload)
           .then((response) => {

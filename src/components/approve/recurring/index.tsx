@@ -1,5 +1,5 @@
 import React from 'react';
-import ApproveEntry from '@/components/approve/entry';
+import ApproveRecurringEntry from '@/components/approve/recurringentry';
 import { BodyLarge } from '@/components/TextStyles';
 
 interface Request {
@@ -36,7 +36,7 @@ const RecurringTable: React.FC<RecurringTableProps> = ({
   getShortHeader,
   teamSize,
 }) => {
-  const batchesPerPage = 2; // Maximum number of batch requests per page
+  const batchesPerPage = 2;
 
   const paginateBatches = (batches: string[], staffId: number) => {
     const currentPage = pagination[staffId]?.recurring || 1;
@@ -50,7 +50,7 @@ const RecurringTable: React.FC<RecurringTableProps> = ({
   };
 
   const groupedRequests = employeeRequests;
-  const totalBatches = Object.keys(groupedRequests).length; // Total number of batches
+  const totalBatches = Object.keys(groupedRequests).length;
 
   return (
     <>
@@ -86,10 +86,14 @@ const RecurringTable: React.FC<RecurringTableProps> = ({
             <tbody>
               {paginateBatches(Object.keys(groupedRequests), employee.Staff_ID).paginated.map((batchNumber) => {
                 const requestsInBatch = groupedRequests[batchNumber];
-                const pendingRequestsInBatch = requestsInBatch.filter(
-                  (request: { status: string }) => request.status.toLowerCase() === 'pending'
+
+                const pendingRequests = requestsInBatch.filter(
+                  (request: Request) => request.status.toLowerCase() === 'pending'
                 );
-                const lastPendingIndex = pendingRequestsInBatch.length - 1; // Get the index of the last pending request
+
+                const nonPendingRequests = requestsInBatch.filter(
+                  (request: Request) => request.status.toLowerCase() !== 'pending'
+                );
 
                 return (
                   <React.Fragment key={`batch-${batchNumber}`}>
@@ -99,45 +103,14 @@ const RecurringTable: React.FC<RecurringTableProps> = ({
                       </td>
                     </tr>
 
-                    {requestsInBatch.map((request: Request, index: number) => {
-                      const isPending = request.status.toLowerCase() === 'pending';
-                      let isFirstPendingInBatch = false;
-                      let isLastPendingInBatch = false;
-
-                      // Set isFirstPendingInBatch to true for the first pending request in the batch
-                      if (isPending && index === 0) {
-                        isFirstPendingInBatch = true;
-                      }
-
-                      // Set isLastPendingInBatch to true for the last pending request in the batch
-                      if (isPending && index === lastPendingIndex) {
-                        isLastPendingInBatch = true;
-                      }
-
-                      const rowSpanCount = pendingRequestsInBatch.length;
-
-                      return (
-                        <ApproveEntry
-                          key={request.requestId}
-                          requestId={request.requestId}
-                          requestorName={`${employee.Staff_FName} ${employee.Staff_LName}`}
-                          requestorId={request.requestorId}
-                          approverId={request.approverId}
-                          status={request.status}
-                          dateRequested={request.dateRequested}
-                          requestBatch={request.requestBatch}
-                          dateOfRequest={request.dateOfRequest}
-                          duration={request.duration}
-                          teamSize={teamSize}
-                          onRefreshRequests={fetchRequests}
-                          onRequestClick={handleRequestClick}
-                          isFirstPendingInBatch={isFirstPendingInBatch}
-                          isLastPendingInBatch={isLastPendingInBatch}
-                          rowSpanCount={isFirstPendingInBatch ? rowSpanCount : undefined} // Set row span for first pending request
-                          isMobile={isMobile}
-                        />
-                      );
-                    })}
+                    <ApproveRecurringEntry
+                      pendingRequests={pendingRequests}
+                      nonPendingRequests={nonPendingRequests}
+                      teamSize={teamSize}
+                      onRefreshRequests={fetchRequests}
+                      onRequestClick={handleRequestClick}
+                      isMobile={isMobile}
+                    />
                   </React.Fragment>
                 );
               })}
@@ -159,9 +132,7 @@ const RecurringTable: React.FC<RecurringTableProps> = ({
             </span>
             <button
               className="bg-primary text-white py-2 px-4 rounded-md disabled:bg-gray-400 disabled:cursor-not-allowed"
-              disabled={
-                paginateBatches(Object.keys(groupedRequests), employee.Staff_ID).endIndex >= totalBatches
-              }
+              disabled={paginateBatches(Object.keys(groupedRequests), employee.Staff_ID).endIndex >= totalBatches}
               onClick={() =>
                 handlePageChange(employee.Staff_ID, (pagination[employee.Staff_ID]?.recurring || 1) + 1, 'recurring')
               }
