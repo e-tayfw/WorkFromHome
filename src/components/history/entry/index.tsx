@@ -1,6 +1,6 @@
-import React from 'react';
-import { Body } from '@/components/TextStyles'; // Use your TextStyles here
-import ActionHandler from '@/components/history/actionHandler'; // Import the ActionHandler
+import React from "react";
+import { Body } from "@/components/TextStyles"; // Use your TextStyles here
+import ActionHandler from "@/components/history/actionHandler"; // Import the ActionHandler
 
 interface RequestEntryProps {
   requestId: string;
@@ -33,7 +33,7 @@ const RequestEntry: React.FC<RequestEntryProps> = ({
 }) => {
   // Compute display status
   const displayStatus =
-    status?.toLowerCase() === "withdraw rejected" ? "Approved" : status;
+    status?.toLowerCase() == "withdraw rejected" ? "Approved" : status;
 
   const statusColor = () => {
     switch (displayStatus?.toLowerCase()) {
@@ -74,7 +74,7 @@ const RequestEntry: React.FC<RequestEntryProps> = ({
         className={`px-4 py-2 ${statusColor()} font-semibold rounded-md`}
         onClick={handleRowClick}
       >
-        <Body>{status}</Body>
+        <Body>{displayStatus}</Body>
       </td>
       <td className="px-4 py-2">
         {/* Pass necessary props to ActionHandler */}

@@ -9,7 +9,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import { ToastContainer } from "react-toastify";
 import { PersistGate } from 'redux-persist/integration/react';
 import { useRouter } from "next/router";
-import Nav from "@/components/Nav";
+import Nav from "@/components/nav";
 
 export default function App({ Component, pageProps }: AppProps) {
   const [userType, setUserType] = useState<string | null>(null);
@@ -29,7 +29,7 @@ export default function App({ Component, pageProps }: AppProps) {
         router.push("/auth");
       }
     }
-  }, [router.pathname]);
+  }, [router.pathname, router]);
 
   // Dynamically import SiteContainer (disable SSR)
   const SiteContainer = dynamic<{ children: ReactNode }>(

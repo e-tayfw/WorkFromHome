@@ -40,6 +40,28 @@ describe('RequestEntry Component', () => {
     expect(screen.getByText('Withdraw')).toBeInTheDocument();
   });
 
+  // Test case for Approved status displayed when status is Withdraw Rejected
+  it('displays approved when status is withdraw rejected', () => {
+    mockCurrentDate("2024-09-28"); // Within two weeks after dateRequested '2024-09-25'
+    render(
+      <RequestEntry
+        requestId="1"
+        requestorId="171014"
+        approverId="170166"
+        status="Withdraw Rejected"
+        dateRequested="2024-09-25"
+        requestBatch={null}
+        handleRequestClick={mockRequestClick}
+        dateOfRequest="2024-09-18"
+        duration="FD"
+        fetchRequests={mockFetchRequests}  // Added mock fetchRequests prop
+      />
+    )
+
+    const statusElement = screen.getByText("Approved");
+    expect(statusElement).toBeInTheDocument();
+  })
+
   // Test case for Approved status with Withdraw button on the boundary of the two-week range
   it('renders Withdraw button exactly two weeks before dateRequested', () => {
     mockCurrentDate('2024-09-11'); // Exactly two weeks before dateRequested '2024-09-25'

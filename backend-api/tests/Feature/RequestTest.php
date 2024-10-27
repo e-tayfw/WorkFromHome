@@ -389,7 +389,7 @@ class RequestTest extends TestCase
 
         // Assert that the response contains the correct error message
         $response->assertJson([
-            'message' => 'Duplicate request found on 2024-10-09. Cannot create recurring requests with overlapping dates.',
+            'message' => 'Duplicate request on Full Day arrangement.',
         ]);
     }
 
@@ -429,7 +429,7 @@ class RequestTest extends TestCase
 
         // Assert that the response contains the correct error message
         $response->assertJson([
-            'message' => 'Duplicate request found on 2024-10-09. Cannot create recurring requests with overlapping dates.',
+            'message' => 'Duplicate request on Full Day arrangement.',
         ]);
     }
 
@@ -469,7 +469,7 @@ class RequestTest extends TestCase
 
         // Assert that the response contains the correct error message
         $response->assertJson([
-            'message' => 'Duplicate request found on 2024-10-09. Cannot create recurring requests with overlapping dates.',
+            'message' => 'Duplicate request on Full Day arrangement.',
         ]);
     }
 
@@ -509,8 +509,75 @@ class RequestTest extends TestCase
 
         // Assert that the response contains the correct error message
         $response->assertJson([
-            'message' => 'Duplicate request found on 2024-10-09. Cannot create recurring requests with overlapping dates.',
+            'message' => 'Duplicate request on Full Day arrangement.',
         ]);
+    }
+
+    /**
+     * Test duplicate requests with different half day arrangements.
+     * 
+     * #[Depends('test_database_is_test_db')]
+     */
+    public function test_double_requests_for_seperate_half_day_arrangement(): void
+    {
+        // Assuming a request with the same dates already exists
+        $existingRequest = Requests::factory()->create([
+            'Requestor_ID'   => '140879',
+            'Approver_ID'    => '151408', // Example approver
+            'Status'         => 'Withdraw Pending',
+            'Date_Requested' => '2024-10-09', // Date that will clash
+            'Request_Batch'  => 15,
+            'Duration'       => 'AM',
+        ]);
+
+        $payload = [
+            'staffId'     => '140879',
+            'startDate'   => '2024-10-06',
+            'endDate'     => '2024-11-13',
+            'arrangement' => 'PM',
+            'reason'      => 'Personal',
+            'dayChosen'   => 3,
+        ];
+
+        $response = $this->postJson('/api/recurringRequest', $payload);
+
+        $response->assertStatus(200);
+    }
+
+    /**
+     * Test duplicate requests with same half day arrangements.
+     * 
+     * #[Depends('test_database_is_test_db')]
+     */
+    public function test_double_requests_for_same_half_day_arrangement(): void
+    {
+        // Assuming a request with the same dates already exists
+        $existingRequest = Requests::factory()->create([
+            'Requestor_ID'   => '140879',
+            'Approver_ID'    => '151408', // Example approver
+            'Status'         => 'Withdraw Pending',
+            'Date_Requested' => '2024-10-09', // Date that will clash
+            'Request_Batch'  => 15,
+            'Duration'       => 'PM',
+        ]);
+
+        $payload = [
+            'staffId'     => '140879',
+            'startDate'   => '2024-10-06',
+            'endDate'     => '2024-11-13',
+            'arrangement' => 'PM',
+            'reason'      => 'Personal',
+            'dayChosen'   => 3,
+        ];
+
+        $response = $this->postJson('/api/recurringRequest', $payload);
+
+        $response->assertStatus(409);
+
+        $response->assertJson([
+            'message' => 'Duplicate requests for same half day arrangement.',
+        ]);
+
     }
 
     /*

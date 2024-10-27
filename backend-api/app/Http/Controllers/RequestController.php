@@ -334,12 +334,25 @@ class RequestController extends Controller
                         $duplicateArrangement = $duplicate->Duration;
                         // Condition 4a: If one of the arrangement is FD, duplicate is not allowed
                         if ($recurringArrangement === 'FD' || $duplicateArrangement === 'FD') {
-                            return response()->json(['message' => 'Duplicate requests cannot be made'], 400);
+                            return response()->json(['message' => 'Duplicate request on Full Day arrangement.',
+                                                        'success' => false,
+                                                        'startDate' => $startDate,
+                                                        'endDate' => $endDate,
+                                                        'arrangement' => $arrangement,
+                                                        'reason' => $reason,
+                                                        'day' => $dayChosen,
+                                                        ], 409);
                         }
                         // Condition 4b: If one of the arrangement is AM and the other is PM vice cersa, duplicate will be allowed
                         elseif ($recurringArrangement === 'AM' && $duplicateArrangement === 'AM' || $recurringArrangement === 'PM' && $duplicateArrangement === 'PM') {
-                            return response()->json(['message' => 'Duplicate requests cannot be made'], 400);
-                        }
+                            return response()->json(['message' => 'Duplicate requests for same half day arrangement.',
+                                                            'success' => false,
+                                                            'startDate' => $startDate,
+                                                            'endDate' => $endDate,
+                                                            'arrangement' => $arrangement,
+                                                            'reason' => $reason,
+                                                            'day' => $dayChosen,], 409);
+                            }
                         else {
                             continue;
                         }

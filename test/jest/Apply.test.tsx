@@ -132,16 +132,14 @@ describe('Apply Component - Ad-Hoc Form', () => {
 });
 
 describe('Apply Component - Recurring Form', () => {
-  beforeEach(() => {
+  it('enables submit button when all recurring fields are filled', async () => {
     render(
       <Provider store={store}>
         <Apply />
       </Provider>
     );
     fireEvent.click(screen.getByText('Recurring'));
-  });
 
-  it('enables submit button when all recurring fields are filled', async () => {
     fireEvent.change(screen.getByTestId('start-date-input'), { target: { value: '2024-10-01' } });
     fireEvent.change(screen.getByTestId('end-date-input'), { target: { value: '2024-10-31' } });
     fireEvent.change(screen.getByTestId('day-select'), { target: { value: '1' } });
