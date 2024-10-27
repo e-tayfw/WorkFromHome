@@ -295,6 +295,7 @@ describe("TeamCalendar", () => {
     await waitFor(() => {
       expect(screen.queryByText(/WFH Schedule/i)).not.toBeInTheDocument();
     });
+    expect(screen.queryByText(/John Doe/i)).not.toBeInTheDocument();
   });
 
   test("fetches and displays correct data in modal", async () => {
