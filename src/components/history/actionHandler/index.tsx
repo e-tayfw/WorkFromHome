@@ -86,9 +86,6 @@ const ActionHandler: React.FC<ActionHandlerProps> = ({ status, dateRequested, re
       case 'pending':
         return (
           <>
-            <button className="bg-blue-100 hover:bg-blue-200 text-blue-700 font-semibold py-1 px-4 rounded-md transition duration-200 ease-in-out mr-2">
-              Edit
-            </button>
             <button
               onClick={handleWithdraw}
               className="bg-red-100 hover:bg-red-200 text-red-700 font-semibold py-1 px-4 rounded-md transition duration-200 ease-in-out"
