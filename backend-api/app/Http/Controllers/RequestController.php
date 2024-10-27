@@ -263,6 +263,177 @@ class RequestController extends Controller
         }
     }
 
+    public function createRecurringRequest(Request $request)
+    {
+        // Step 1: Retrieve Start Date (YYYY-MM-DD), End Date (YYYY-MM-DD), Staff ID, Arrangement (AM, PM, FD), Reason, Day chosen for Recurring (Integer format)
+        $staffId = $request->staffId;
+        $startDate = $request->startDate;
+        $endDate = $request->endDate;
+        $arrangement = $request->arrangement;
+        $reason = $request->reason;
+        $dayChosen = $request->dayChosen;
+
+        // Step 1a: Check if the reason is more than 255 characters, if more than 255 characters, return the first 255
+        if (strlen($reason) > 255) {
+            $reason = substr($reason, 0, 255);
+        }
+
+        // Step 1b: take the current date in (YYYY-MM-DD) format as well
+        $currentDate = date("Y-m-d");
+
+        // Step 1c: Get current UNIX timestamp in milliseconds
+        $requestBatch = round(microtime(true) * 1000); // Using microtime for milliseconds
+
+        // Step 1d: Condition to check if $startDate and endDate is more than 3 months apart, if more than 3 months apart, return an error message which state the reason
+        // **Condition 1**: Validate date range is within 3 months apart
+        $startDateCarbon = Carbon::createFromFormat('Y-m-d', $startDate);
+        $endDateCarbon = Carbon::createFromFormat('Y-m-d', $endDate);
+        if ($startDateCarbon->diffInMonths($endDateCarbon) > 3) {
+            return response()->json([
+                'message' => 'The date range must be within 3 months apart',
+                'success' => false,
+                'day' => $dayChosen,
+                'startDate' => $startDate,
+                'endDate' => $endDate,
+                'arrangement' => $arrangement,
+                'reason' => $reason,
+            ], 400);
+        }
+
+        // Step 2: Retrieve the Staff ID from the Employee Table 
+        try {
+            $employee = Employee::where("Staff_ID", $staffId)->firstOrFail();
+
+            // Step 3: Check if there is any pending / approved / withdraw pending / withdraw rejected requests for the staff ID within the start date and end date
+            $existingRequests = Requests::where('Requestor_ID', $staffId)
+                ->whereBetween('Date_Requested', [$startDate, $endDate])
+                ->whereIn('Status', ['Pending', 'Approved', 'Withdraw Rejected', 'Withdraw Pending'])
+                ->get();
+
+            // Step 4: Check for the following conditions
+            // **Condition 2**: Validate date range is within 2 months back and 3 months forward
+            $startDateCarbon = Carbon::createFromFormat('Y-m-d', $startDate);
+            $endDateCarbon = Carbon::createFromFormat('Y-m-d', $endDate);
+            $currentDateCarbon = Carbon::createFromFormat('Y-m-d', $currentDate);
+
+            $twoMonthAgoFromCurrent = $currentDateCarbon->copy()->subMonths(2);
+            $threeMonthForwardFromCurrent = $currentDateCarbon->copy()->addMonths(3);
+
+            if ($startDateCarbon->lt($twoMonthAgoFromCurrent) || $endDateCarbon->gte($threeMonthForwardFromCurrent)) {
+                return response()->json([
+                    'message' => 'The date range must be within 2 months back and 3 months forward from the current date',
+                    'success' => false,
+                    'day' => $dayChosen,
+                    'startDate' => $startDate,
+                    'endDate' => $endDate,
+                    'arrangement' => $arrangement,
+                    'reason' => $reason,
+                    ], 400);
+            }
+
+            // **Condition 3**: Check for duplicate requests on the same day
+            $recurringDates = [];
+            $current = $startDateCarbon->copy();
+
+            while ($current->lte($endDateCarbon)) {
+                if ($current->dayOfWeek === $dayChosen) {
+                    $recurringDates[] = $current->format('Y-m-d');
+                }
+                $current->addDay();
+            }
+
+            // Condition 2b: Check if any of the recurringDates clash with existingRequests
+            foreach ($recurringDates as $date) {
+            // Get all existing requests on that date
+                $duplicates = $existingRequests->where('Date_Requested', $date);
+                // Step 4a: If there is a duplicate for date_requested, check if the arrangement is the same
+                if ($duplicates->isNotEmpty()) {
+                    $recurringArrangement = $arrangement;
+                    foreach($duplicates as $duplicate) {
+                        $duplicateArrangement = $duplicate->Duration;
+                        // Condition 4a: If one of the arrangement is FD, duplicate is not allowed
+                        if ($recurringArrangement === 'FD' || $duplicateArrangement === 'FD') {
+                            return response()->json(['message' => 'Duplicate request on Full Day arrangement.'], 409);
+                        }
+                        // Condition 4b: If one of the arrangement is AM and the other is PM vice cersa, duplicate will be allowed
+                        elseif ($recurringArrangement === 'AM' && $duplicateArrangement === 'AM' || $recurringArrangement === 'PM' && $duplicateArrangement === 'PM') {
+                            return response()->json(['message' => 'Duplicate requests for same half day arrangement.'], 409);
+                        }
+                        else {
+                            continue;
+                        }
+                    }
+                }
+            }
+
+            // Step 5: Retrieve the Reporting Manager ID from the Employee Table
+            $reportingManager = $employee->Reporting_Manager;
+            $reportingManagerName = "";
+            if (!$reportingManager) {
+                return response()->json(['message' => 'Reporting manager not found', 
+                                               'success' => false,
+                                               'startDate' => $startDate,
+                                               'day' => $dayChosen,
+                                               'endDate' => $endDate,
+                                               'arrangement' => $arrangement,
+                                               'reason' => $reason,
+                                            ], 404);
+            } else {
+                $reportingManagerRow = Employee::where("Staff_ID", $reportingManager)->firstOrFail();
+                $reportingManagerName = $reportingManagerRow->Staff_FName . " " . $reportingManagerRow->Staff_LName;
+            }
+            DB::beginTransaction();
+            // Step 6: create recurring requests:
+            $createdRequests = [];
+            foreach ($recurringDates as $date) {
+                $newRequest = Requests::create([
+                    'Requestor_ID' => $staffId,
+                    'Approver_ID' => $reportingManager,
+                    'Status' => 'Pending',
+                    'Date_Requested' => $date,
+                    'Request_Batch' => $requestBatch,
+                    'Date_Of_Request' => now(),
+                    'Duration' => $arrangement
+                ]);
+                // Dispatch the job to check status after 2 months
+                RejectPendingRequestsOlderThanTwoMonthsJob::dispatch($newRequest)->delay(now()->addMonths(2));
+                $createdRequests[] = $newRequest;
+            }
+
+            // Step 7: Add all following requests to the request log table
+            foreach ($createdRequests as $request) {
+                RequestLog::create([
+                    'Request_ID' => $request->Request_ID,
+                    'Previous_State' => 'Pending',
+                    'New_State' => 'Pending',
+                    'Employee_ID' => $staffId,
+                    'Date' => now(),
+                    'Remarks' => $reason,
+                ]);
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'message' => 'Rows for Request and RequestLog have been successfully created',
+                'success' => true,
+                'Request_Batch' => $requestBatch,
+                'day' => $dayChosen,
+                'startDate' => $startDate,
+                'endDate' => $endDate,
+                'arrangement' => $arrangement,
+                'reason' => $reason,
+                'reportingManager' => $reportingManagerName
+            ]);
+        } catch (ModelNotFoundException $e) {
+            return response()->json(['message' => 'Employee not found', 'success' => false], 404);
+        } catch (\Exception $e) {
+            // Rollback transaction in case of any failure
+            DB::rollBack();
+            return response()->json(['message' => 'Failed to create Request or RequestLog', 'error' => $e->getMessage()], 500);
+        }
+    }
+
     public function withdrawRequest(Request $request)
     {
 
