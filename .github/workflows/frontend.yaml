@@ -6,6 +6,10 @@ on:
     branches: 
       - main
       - dev_wfh
+  push:
+    branches:
+      - dev_wfh
+      - main
 
 jobs:
   tests:
