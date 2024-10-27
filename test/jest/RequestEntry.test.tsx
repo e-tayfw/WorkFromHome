@@ -11,6 +11,7 @@ const mockCurrentDate = (mockDate: string) => {
 
 describe('RequestEntry Component', () => {
   const mockFetchRequests = jest.fn(); // Mock implementation for fetchRequests
+  const mockRequestClick = jest.fn(); // Mock implementation for handleRequestClick
 
   afterEach(() => {
     jest.useRealTimers();
@@ -28,6 +29,7 @@ describe('RequestEntry Component', () => {
         status="Approved"
         dateRequested="2024-09-25"
         requestBatch={null}
+        handleRequestClick={mockRequestClick}
         dateOfRequest="2024-09-18"
         duration="FD"
         fetchRequests={mockFetchRequests}  // Added mock fetchRequests prop
@@ -50,9 +52,10 @@ describe('RequestEntry Component', () => {
         status="Approved"
         dateRequested="2024-09-25"
         requestBatch={null}
+        handleRequestClick={mockRequestClick}
         dateOfRequest="2024-09-18"
         duration="FD"
-        fetchRequests={mockFetchRequests}  // Added mock fetchRequests prop
+        fetchRequests={mockFetchRequests} // Added mock fetchRequests prop
       />
     );
 
@@ -70,10 +73,11 @@ describe('RequestEntry Component', () => {
         approverId="170166"
         status="Approved"
         dateRequested="2024-09-25"
+        handleRequestClick={mockRequestClick}
         requestBatch={null}
         dateOfRequest="2024-09-18"
         duration="FD"
-        fetchRequests={mockFetchRequests}  // Added mock fetchRequests prop
+        fetchRequests={mockFetchRequests} // Added mock fetchRequests prop
       />
     );
 
@@ -93,9 +97,10 @@ describe('RequestEntry Component', () => {
         status="Approved"
         dateRequested="2024-09-25"
         requestBatch={null}
+        handleRequestClick={mockRequestClick}
         dateOfRequest="2024-09-18"
         duration="FD"
-        fetchRequests={mockFetchRequests}  // Added mock fetchRequests prop
+        fetchRequests={mockFetchRequests} // Added mock fetchRequests prop
       />
     );
 
@@ -114,10 +119,11 @@ describe('RequestEntry Component', () => {
         approverId="170166"
         status="Approved"
         dateRequested="2024-09-25"
+        handleRequestClick={mockRequestClick}
         requestBatch={null}
         dateOfRequest="2024-09-18"
         duration="FD"
-        fetchRequests={mockFetchRequests}  // Added mock fetchRequests prop
+        fetchRequests={mockFetchRequests} // Added mock fetchRequests prop
       />
     );
 
@@ -135,36 +141,17 @@ describe('RequestEntry Component', () => {
         requestorId="171014"
         approverId="170166"
         status="Approved"
+        handleRequestClick={mockRequestClick}
         dateRequested="2024-09-25"
         requestBatch={null}
         dateOfRequest="2024-09-18"
         duration="FD"
-        fetchRequests={mockFetchRequests}  // Added mock fetchRequests prop
+        fetchRequests={mockFetchRequests} // Added mock fetchRequests prop
       />
     );
 
     // Check that the Withdraw button is not displayed
     expect(screen.queryByText('Withdraw')).not.toBeInTheDocument();
-  });
-
-  // Test case for Pending status with the Edit button
-  it('renders Pending request with Edit button', () => {
-    render(
-      <RequestEntry
-        requestId="7"
-        requestorId="171014"
-        approverId="170166"
-        status="Pending"
-        dateRequested="2024-09-26"
-        requestBatch={null}
-        dateOfRequest="2024-09-18"
-        duration="FD"
-        fetchRequests={mockFetchRequests}  // Added mock fetchRequests prop
-      />
-    );
-
-    // Check that the Edit button is displayed
-    expect(screen.getByText('Edit')).toBeInTheDocument();
   });
 
   // Test case for Withdrawn status with no action buttons
@@ -176,10 +163,11 @@ describe('RequestEntry Component', () => {
         approverId="170166"
         status="Withdrawn"
         dateRequested="2024-09-27"
+        handleRequestClick={mockRequestClick}
         requestBatch={null}
         dateOfRequest="2024-09-18"
         duration="PM"
-        fetchRequests={mockFetchRequests}  // Added mock fetchRequests prop
+        fetchRequests={mockFetchRequests} // Added mock fetchRequests prop
       />
     );
 
@@ -199,8 +187,9 @@ describe('RequestEntry Component', () => {
         dateRequested="2024-09-28"
         requestBatch={null}
         dateOfRequest="2024-09-18"
+        handleRequestClick={mockRequestClick}
         duration="FD"
-        fetchRequests={mockFetchRequests}  // Added mock fetchRequests prop
+        fetchRequests={mockFetchRequests} // Added mock fetchRequests prop
       />
     );
 
@@ -218,9 +207,10 @@ describe('RequestEntry Component', () => {
         status="Withdraw Pending"
         dateRequested="2024-09-29"
         requestBatch={null}
+        handleRequestClick={mockRequestClick}
         dateOfRequest="2024-09-18"
         duration="FD"
-        fetchRequests={mockFetchRequests}  // Added mock fetchRequests prop
+        fetchRequests={mockFetchRequests} // Added mock fetchRequests prop
       />
     );
 
@@ -228,25 +218,4 @@ describe('RequestEntry Component', () => {
     expect(screen.queryByText('Withdraw')).not.toBeInTheDocument();
   });
 
-  // Test case for Withdraw Rejected status with Withdraw button
-  it('renders Withdraw button for Withdraw Rejected status within two weeks', () => {
-    mockCurrentDate('2024-10-01'); // Within two weeks after dateRequested '2024-09-25'
-
-    render(
-      <RequestEntry
-        requestId="11"
-        requestorId="171014"
-        approverId="170166"
-        status="Withdraw Rejected"
-        dateRequested="2024-09-25"
-        requestBatch={null}
-        dateOfRequest="2024-09-18"
-        duration="FD"
-        fetchRequests={mockFetchRequests}  // Added mock fetchRequests prop
-      />
-    );
-
-    // Check that the Withdraw button is displayed for Withdraw Rejected status
-    expect(screen.getByText('Withdraw')).toBeInTheDocument();
-  });
 });

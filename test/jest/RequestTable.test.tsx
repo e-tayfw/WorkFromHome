@@ -150,11 +150,11 @@ describe('RequestTable Component', () => {
     );
 
     // Verify that "Previous" button is disabled on page 1
-    const prevButton = screen.getByRole('button', { name: /Previous/i });
+    const prevButton = screen.getByTestId('prev-button');
     expect(prevButton).toBeDisabled();
 
     // Click the "Next" button to move to the next page
-    const nextButton = screen.getByRole('button', { name: /Next/i });
+    const nextButton = screen.getByTestId('next-button');
     fireEvent.click(nextButton);
 
     // Wait for the last request to appear in the document
@@ -256,7 +256,7 @@ describe('RequestTable Component', () => {
     );
 
     // Verify sorting by status (ascending/descending)
-    const statusColumn = screen.getByRole('columnheader', { name: /Status/i });
+    const statusColumn = screen.getByTestId('status-column')
     fireEvent.click(statusColumn); // Sort ascending
     await waitFor(() => {
       const firstStatus = screen.getAllByText(/approved/i)[0];

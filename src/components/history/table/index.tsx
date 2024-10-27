@@ -91,6 +91,40 @@ export const RequestTable: React.FC = () => {
     }
   }, [employeeId]);
 
+  const handleRequestClick = async (requestId: number) => {
+    try {
+      const response = await axios.get(`http://127.0.0.1:8085/api/requestLog/requestId/${requestId}`);
+      const logs = response.data;
+
+      const logContent = logs
+        .map((log: any) => `
+        <div>
+          <strong>Date:</strong> ${log.Date}<br />
+          <strong>Status:</strong> ${log.New_State}<br />
+          <strong>Remarks:</strong> ${log.Remarks || 'No remarks'}<br /><br />
+        </div>
+      `)
+        .join('');
+
+      Swal.fire({
+        title: `Request #${requestId} Logs`,
+        html: `<div style="text-align: left;">${logContent}</div>`,
+        icon: 'info',
+        showCloseButton: true,
+        confirmButtonText: 'Close',
+        confirmButtonColor: '#072040',
+      });
+    } catch (error) {
+      Swal.fire({
+        title: "Error",
+        text: "Failed to load request logs. Please try again later.",
+        icon: "error",
+        confirmButtonText: "Close",
+        confirmButtonColor: "#072040",
+      });
+    }
+  };
+
   // Fetch requests when the component mounts
   useEffect(() => {
     fetchRequests();
@@ -229,6 +263,14 @@ export const RequestTable: React.FC = () => {
             </th>
             <th
               className="px-4 py-2 text-left cursor-pointer"
+              onClick={() => requestSort("requestBatch")}
+            >
+              <BodyLarge className="text-primary">
+                Request Batch {getSortIcon("requestBatch")}
+              </BodyLarge>
+            </th>
+            <th
+              className="px-4 py-2 text-left cursor-pointer"
               onClick={() => requestSort("duration")}
             >
               <BodyLarge className="text-primary">
@@ -245,6 +287,7 @@ export const RequestTable: React.FC = () => {
             </th>
             <th
               className="px-4 py-2 text-left cursor-pointer"
+              data-testid="status-column"
               onClick={() => requestSort("status")}
             >
               <BodyLarge className="text-primary">
@@ -269,6 +312,7 @@ export const RequestTable: React.FC = () => {
               requestBatch={request.requestBatch}
               dateOfRequest={request.dateOfRequest}
               fetchRequests={fetchRequests}
+              handleRequestClick={handleRequestClick}
             />
           ))}
         </tbody>
@@ -278,6 +322,7 @@ export const RequestTable: React.FC = () => {
       <div className="flex justify-center items-center mt-4 space-x-4">
         <button
           className="bg-primary text-white py-2 px-4 rounded-md disabled:bg-gray-400 disabled:cursor-not-allowed"
+          data-testid="prev-button"
           disabled={currentPage === 1}
           onClick={() => setCurrentPage(currentPage - 1)}
         >
@@ -289,6 +334,7 @@ export const RequestTable: React.FC = () => {
         <button
           className="bg-primary text-white py-2 px-4 rounded-md disabled:bg-gray-400 disabled:cursor-not-allowed"
           disabled={currentPage === totalPages || totalPages === 0}
+          data-testid="next-button"
           onClick={() => setCurrentPage(currentPage + 1)}
         >
           Next
