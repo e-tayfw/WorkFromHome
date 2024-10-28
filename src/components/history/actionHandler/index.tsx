@@ -14,15 +14,17 @@ interface ActionHandlerProps {
 
 const ActionHandler: React.FC<ActionHandlerProps> = ({ status, dateRequested, requestId, employeeId, onRefreshRequests }) => {
   const isWithinTwoWeeks = () => {
-    const currentDate = new Date();
     const requestedDate = new Date(dateRequested);
-
-    const twoWeeksBefore = new Date(requestedDate);
-    twoWeeksBefore.setDate(requestedDate.getDate() - 14);
-
-    const twoWeeksAfter = new Date(requestedDate);
-    twoWeeksAfter.setDate(requestedDate.getDate() + 14);
-
+    requestedDate.setHours(0, 0, 0, 0); // Set requestDate to midnight
+  
+    const currentDate = new Date();
+    currentDate.setHours(0, 0, 0, 0); // Set currentDate to midnight
+  
+    const twoWeeksInMs = 14 * 24 * 60 * 60 * 1000; // 14 days in milliseconds
+  
+    const twoWeeksBefore = new Date(requestedDate.getTime() - twoWeeksInMs);
+    const twoWeeksAfter = new Date(requestedDate.getTime() + twoWeeksInMs);
+  
     return currentDate >= twoWeeksBefore && currentDate <= twoWeeksAfter;
   };
 

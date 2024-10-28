@@ -148,8 +148,10 @@ const AdhocApproveEntry: React.FC<AdhocApproveEntryProps> = ({
 
   const renderActionButtons = () => {
     const requestDate = new Date(dateRequested);
+    requestDate.setHours(0, 0, 0, 0); // Set requestDate to midnight
     const currentDate = new Date();
-    const isFutureRequest = requestDate > currentDate;
+    currentDate.setHours(0, 0, 0, 0); // Set currentDate to midnight
+    const isFutureRequest = requestDate >= currentDate;
   
     if (status.toLowerCase() === 'approved' && isDateInRangeForWithdraw()) {
       return (
