@@ -51,7 +51,11 @@ const ActionHandler = {
     proportionAfterApproval,
     onRefreshRequests,
   }: ApproveHandlerProps) => {
-    const isBackdated = new Date(dateRequested) < new Date();
+    const requestedDate = new Date(dateRequested);
+    requestedDate.setHours(0, 0, 0, 0); // Set to midnight to remove time
+    const currentDate = new Date();
+    currentDate.setHours(0, 0, 0, 0); // Set to midnight to remove time
+    const isBackdated = requestedDate < currentDate;
   
     // Prevent approval if proportion exceeds the limit for future requests
     if (!isBackdated && proportionAfterApproval && proportionAfterApproval > 0.5) {
