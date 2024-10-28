@@ -82,17 +82,18 @@ const ApproveTable: React.FC<ApproveTableProps> = ({ employees }) => {
     try {
       const response = await axios.get(`http://127.0.0.1:8085/api/requestLog/requestId/${requestId}`);
       const logs = response.data;
-
+  
       const logContent = logs
         .map((log: any) => `
-        <div>
-          <strong>Date:</strong> ${log.Date}<br />
-          <strong>Status:</strong> ${log.New_State}<br />
-          <strong>Remarks:</strong> ${log.Remarks || 'No remarks'}<br /><br />
-        </div>
-      `)
+          <div>
+            <strong>Date:</strong> ${log.Date}<br />
+            <strong>Status:</strong> ${log.New_State}<br />
+            <strong>Remarks:</strong> ${log.Remarks || 'No remarks'}<br />
+            ${log.Employee_ID === '000000' ? '<em>Change made by system</em><br />' : ''}<br />
+          </div>
+        `)
         .join('');
-
+  
       Swal.fire({
         title: `Request #${requestId} Logs`,
         html: `<div style="text-align: left;">${logContent}</div>`,
