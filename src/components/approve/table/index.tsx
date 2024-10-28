@@ -289,7 +289,8 @@ const ApproveTable: React.FC<ApproveTableProps> = ({ employees }) => {
                   {hasNoRecurringRequests ? (
                     <div className="mt-4 text-center">
                       <span className="text-gray-500">
-                        Staff has no Recurring requests with ' {filterStatus} ' status
+                        Staff has no requests with `&apos;`{filterStatus}
+                        `&apos;` status
                       </span>
                     </div>
                   ) : (
@@ -309,7 +310,8 @@ const ApproveTable: React.FC<ApproveTableProps> = ({ employees }) => {
                   {hasNoAdhocRequests ? (
                     <div className="mt-4 text-center">
                       <span className="text-gray-500">
-                        Staff has no Adhoc requests with ' {filterStatus} ' status
+                        Staff has no requests with `&apos;`{filterStatus}
+                        `&apos;` status
                       </span>
                     </div>
                   ) : (
