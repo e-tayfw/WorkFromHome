@@ -51,12 +51,11 @@ const ApproveRecurringEntry: React.FC<ApproveRecurringEntryProps> = ({
 
         const newExceedingRequests = new Set<number>();
         for (const request of pendingRequests) {
-          const requestDate = new Date(request.dateRequested);
-          const currentDate = new Date();
+        const requestDate = new Date(request.dateRequested);
+        requestDate.setHours(0, 0, 0, 0); // Set time to midnight
+        const currentDate = new Date();
+        currentDate.setHours(0, 0, 0, 0); // Set time to midnight
           const isFutureRequest = requestDate >= currentDate;
-          console.log(requestDate)
-          console.log(currentDate)
-          console.log(isFutureRequest)
 
           const proportionForRequest = proportions[request.dateRequested]?.[request.duration] || 0;
           setProportion(proportionForRequest);
