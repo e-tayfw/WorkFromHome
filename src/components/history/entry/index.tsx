@@ -18,6 +18,7 @@ interface RequestEntryProps {
 const RequestEntry: React.FC<RequestEntryProps> = ({
   requestId,
   requestorId,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   approverId,
   status,
   dateRequested,

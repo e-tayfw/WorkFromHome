@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Display, BodyLarge, H1 } from "@/components/TextStyles";
+import { Display, H1 } from "@/components/TextStyles";
 import ApproveTable from "@/components/approve/table";
 import axios from "axios";
 import { useSelector } from "react-redux";
