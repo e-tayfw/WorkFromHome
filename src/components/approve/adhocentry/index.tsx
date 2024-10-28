@@ -182,31 +182,44 @@ const AdhocApproveEntry: React.FC<AdhocApproveEntryProps> = ({
   };
 
   return (
-    <tr className="border-b hover:bg-gray-100 cursor-pointer">
-      <td className="px-4 py-2" onClick={handleRowClick}>
-        <Body>{dateRequested}</Body>
-      </td>
-      <td className="px-4 py-2" onClick={handleRowClick}>
-        <Body>{duration}</Body>
-      </td>
-      <td className="px-4 py-2" onClick={handleRowClick}>
-        <Body>{dateOfRequest}</Body>
-      </td>
-      <td className={`px-4 py-2 ${getStatusClass()} font-semibold rounded-md`} onClick={handleRowClick}>
-        <Body>{getStatusShortForm()}</Body>
-      </td>
-      {!excludedStatuses.includes(status.toLowerCase()) && (
-        <td className="px-4 py-2">
-          {isLoading ? (
-            <div className="flex justify-center">
-              <Oval height={30} width={30} color="#072040" visible={true} ariaLabel="oval-loading" secondaryColor="#a2b4cc" strokeWidth={6} strokeWidthSecondary={6} />
-            </div>
-          ) : (
-            renderActionButtons()
-          )}
-        </td>
+    <tr className="border-b hover:bg-gray-100 cursor-pointer" title="Click to view request log">
+  <td className="px-4 py-2" onClick={handleRowClick}>
+    <Body>{dateRequested}</Body>
+  </td>
+  <td className="px-4 py-2" onClick={handleRowClick} title="Click to view request log">
+    <Body>{duration}</Body>
+  </td>
+  <td className="px-4 py-2" onClick={handleRowClick} title="Click to view request log">
+    <Body>{dateOfRequest}</Body>
+  </td>
+  <td
+    className={`px-4 py-2 ${getStatusClass()} font-semibold rounded-md`}
+    onClick={handleRowClick}
+    title="Click to view request log"
+  >
+    <Body>{getStatusShortForm()}</Body>
+  </td>
+  {!excludedStatuses.includes(status.toLowerCase()) && (
+    <td className="px-4 py-2" title="Click to view request log">
+      {isLoading ? (
+        <div className="flex justify-center">
+          <Oval
+            height={30}
+            width={30}
+            color="#072040"
+            visible={true}
+            ariaLabel="oval-loading"
+            secondaryColor="#a2b4cc"
+            strokeWidth={6}
+            strokeWidthSecondary={6}
+          />
+        </div>
+      ) : (
+        renderActionButtons()
       )}
-    </tr>
+    </td>
+  )}
+</tr>
   );
 };
 

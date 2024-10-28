@@ -69,6 +69,9 @@ const ActionHandler = {
       text: approvalConfirmationText,
       input: 'text',
       inputPlaceholder: 'Enter your comments here (optional)...',
+      inputAttributes: {
+        maxlength: '255',
+      },
       showCancelButton: true,
       confirmButtonText: 'Approve',
       cancelButtonText: 'Cancel',
@@ -161,6 +164,9 @@ const ActionHandler = {
       title: 'Please indicate a reason',
       input: 'text',
       inputPlaceholder: 'Enter your reason here...',
+      inputAttributes: {
+        maxlength: '255',
+      },
       showCancelButton: true,
       confirmButtonText: requestBatch ? 'Reject All' : 'Confirm',
       cancelButtonText: 'Cancel',
@@ -209,6 +215,9 @@ const ActionHandler = {
       title: 'Are you sure you want to reject all requests in this batch?',
       input: 'text',
       inputPlaceholder: 'Enter your reason for rejecting...',
+      inputAttributes: {
+        maxlength: '255',
+      },
       showCancelButton: true,
       confirmButtonText: 'Reject All',
       cancelButtonText: 'Cancel',
@@ -250,6 +259,9 @@ const ActionHandler = {
       title: 'Are you sure you want to withdraw this request?',
       input: 'text',
       inputPlaceholder: 'Enter your reason for withdrawal...',
+      inputAttributes: {
+        maxlength: '255',
+      },
       showCancelButton: true,
       confirmButtonText: 'Yes, withdraw it',
       cancelButtonText: 'Cancel',

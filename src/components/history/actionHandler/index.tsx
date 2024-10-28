@@ -31,6 +31,9 @@ const ActionHandler: React.FC<ActionHandlerProps> = ({ status, dateRequested, re
       title: 'Please indicate a reason',
       input: 'text',
       inputPlaceholder: 'Enter your reason here...',
+      inputAttributes: {
+        maxlength: '255',
+      },
       showCancelButton: true,
       confirmButtonText: 'Confirm',
       cancelButtonText: 'Cancel',

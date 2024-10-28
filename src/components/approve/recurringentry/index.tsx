@@ -84,20 +84,36 @@ const ApproveRecurringEntry: React.FC<ApproveRecurringEntryProps> = ({
   const renderRequestRow = (request: any, isPending: boolean, isFirstPending: boolean) => {
     const isExceeding = exceedingRequests.has(request.requestId);
     return (
-      <tr
+        <tr
         key={request.requestId}
         className={`border-b hover:bg-gray-100 ${isExceeding ? 'bg-red-100' : ''}`}
       >
-        <td className="px-4 py-2" onClick={() => onRequestClick(request.requestId)}>
+        <td
+          className="px-4 py-2"
+          onClick={() => onRequestClick(request.requestId)}
+          title="Click to view request log" // Tooltip
+        >
           <Body>{request.dateRequested}</Body>
         </td>
-        <td className="px-4 py-2" onClick={() => onRequestClick(request.requestId)}>
+        <td
+          className="px-4 py-2"
+          onClick={() => onRequestClick(request.requestId)}
+          title="Click to view request log" // Tooltip
+        >
           <Body>{request.duration}</Body>
         </td>
-        <td className="px-4 py-2" onClick={() => onRequestClick(request.requestId)}>
+        <td
+          className="px-4 py-2"
+          onClick={() => onRequestClick(request.requestId)}
+          title="Click to view request log" // Tooltip
+        >
           <Body>{request.dateOfRequest}</Body>
         </td>
-        <td className={`px-4 py-2 ${getStatusClass(request.status)} font-semibold rounded-md`} onClick={() => onRequestClick(request.requestId)}>
+        <td
+          className={`px-4 py-2 ${getStatusClass(request.status)} font-semibold rounded-md`}
+          onClick={() => onRequestClick(request.requestId)}
+          title="Click to view request log" // Tooltip
+        >
           <Body>{isMobile ? getStatusShortForm(request.status) : request.status}</Body>
         </td>
         {isPending && isLoading && isFirstPending && (
@@ -118,7 +134,7 @@ const ApproveRecurringEntry: React.FC<ApproveRecurringEntryProps> = ({
         )}
         {isPending && !isLoading && isFirstPending && renderPendingActionButtons()}
         {!isPending && renderNonPendingActionButtons(request)}
-      </tr>
+      </tr>      
     );
   };
 

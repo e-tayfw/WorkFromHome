@@ -16,16 +16,12 @@ interface RequestEntryProps {
 }
 
 const RequestEntry: React.FC<RequestEntryProps> = ({
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   requestId,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   requestorId,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   approverId,
   status,
   dateRequested,
   handleRequestClick,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   requestBatch,
   dateOfRequest,
   duration,
@@ -57,22 +53,25 @@ const RequestEntry: React.FC<RequestEntryProps> = ({
   };
 
   return (
-    <tr className="border-b">
-      <td className="px-4 py-2" onClick={handleRowClick}>
+    <tr
+      className="border-b hover:bg-gray-100 cursor-pointer" // Background color change on hover
+      onClick={handleRowClick}
+      title="Click to view request log" // Tooltip text
+    >
+      <td className="px-4 py-2">
         <Body className="text-text">{dateRequested}</Body>
       </td>
-      <td className="px-4 py-2" onClick={handleRowClick}>
+      <td className="px-4 py-2">
         <Body className="text-text">{requestBatch || "AdHoc"}</Body>
       </td>
-      <td className="px-4 py-2" onClick={handleRowClick}>
+      <td className="px-4 py-2">
         <Body className="text-text">{duration}</Body>
       </td>
-      <td className="px-4 py-2" onClick={handleRowClick}>
+      <td className="px-4 py-2">
         <Body className="text-text">{dateOfRequest}</Body>
       </td>
       <td
         className={`px-4 py-2 ${statusColor()} font-semibold rounded-md`}
-        onClick={handleRowClick}
       >
         <Body>{status}</Body>
       </td>
