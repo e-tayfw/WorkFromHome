@@ -53,39 +53,33 @@ const RequestEntry: React.FC<RequestEntryProps> = ({
   };
 
   return (
-    <tr
-      className="border-b hover:bg-gray-100 cursor-pointer" // Background color change on hover
-      onClick={handleRowClick}
-      title="Click to view request log" // Tooltip text
-    >
-      <td className="px-4 py-2">
-        <Body className="text-text">{dateRequested}</Body>
-      </td>
-      <td className="px-4 py-2">
-        <Body className="text-text">{requestBatch || "AdHoc"}</Body>
-      </td>
-      <td className="px-4 py-2">
-        <Body className="text-text">{duration}</Body>
-      </td>
-      <td className="px-4 py-2">
-        <Body className="text-text">{dateOfRequest}</Body>
-      </td>
-      <td
-        className={`px-4 py-2 ${statusColor()} font-semibold rounded-md`}
-      >
-        <Body>{displayStatus}</Body>
-      </td>
-      <td className="px-4 py-2">
-        {/* Pass necessary props to ActionHandler */}
-        <ActionHandler
-          requestId={requestId}
-          employeeId={requestorId}
-          status={status}
-          dateRequested={dateRequested}
-          onRefreshRequests={fetchRequests} // Pass fetchRequests to ActionHandler
-        />
-      </td>
-    </tr>
+  <tr
+    className="border-b hover:bg-gray-100 cursor-pointer" title="Click to view request log">
+    <td className="px-4 py-2" onClick={handleRowClick}>
+      <Body className="text-text">{dateRequested}</Body>
+    </td>
+    <td className="px-4 py-2" onClick={handleRowClick}>
+      <Body className="text-text">{requestBatch || "AdHoc"}</Body>
+    </td>
+    <td className="px-4 py-2" onClick={handleRowClick}>
+      <Body className="text-text">{duration}</Body>
+    </td>
+    <td className="px-4 py-2" onClick={handleRowClick}>
+      <Body className="text-text">{dateOfRequest}</Body>
+    </td>
+    <td className={`px-4 py-2 ${statusColor()} font-semibold rounded-md`} onClick={handleRowClick}>
+      <Body>{displayStatus}</Body>
+    </td>
+    <td className="px-4 py-2">
+      <ActionHandler
+        requestId={requestId}
+        employeeId={requestorId}
+        status={status}
+        dateRequested={dateRequested}
+        onRefreshRequests={fetchRequests}
+      />
+    </td>
+  </tr>
   );
 };
 
