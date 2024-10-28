@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
-import RequestEntry from '@/components/history/entry';
+import RequestEntry from '@/components/History/Entry';
 import '@testing-library/jest-dom';
 
 // Mock the current date for testing boundary conditions

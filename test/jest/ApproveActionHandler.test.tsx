@@ -5,7 +5,7 @@ import axios from 'axios';
 import MockAdapter from 'axios-mock-adapter';
 import Swal from 'sweetalert2';
 import { toast } from 'react-toastify';
-import ActionHandler from '@/components/approve/actionHandler';
+import ActionHandler from '@/components/Approve/actionHandler';
 import { Provider } from 'react-redux';
 import { configureStore } from "@reduxjs/toolkit";
 

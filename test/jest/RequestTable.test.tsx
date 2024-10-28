@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import RequestTable from '@/components/history/table';
+import RequestTable from '@/components/History/Table';
 import axios from 'axios';
 import { Provider } from 'react-redux';
 import configureStore from 'redux-mock-store';

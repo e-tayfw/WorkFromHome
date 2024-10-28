@@ -2,7 +2,7 @@ import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { Provider } from 'react-redux';
 import configureStore from 'redux-mock-store';
-import { Apply } from '@/components/apply';
+import { Apply } from '@/components/Apply';
 // import axios from 'axios';
 import '@testing-library/jest-dom';
 

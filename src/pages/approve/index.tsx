@@ -1,4 +1,4 @@
-import Approve from "@/components/approve";
+import Approve from "@/components/Approve";
 
 const ApprovePage = () => {
     return <Approve />;

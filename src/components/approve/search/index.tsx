@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Employee } from '@/components/approve/table';
+import { Employee } from '@/components/Approve/table';
 
 interface StaffSearchProps {
   searchTerm: string;

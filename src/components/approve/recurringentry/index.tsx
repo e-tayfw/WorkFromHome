@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Body } from '@/components/TextStyles';
-import ActionHandler from '@/components/approve/actionHandler';
+import ActionHandler from '@/components/Approve/actionHandler';
 import { Oval } from 'react-loader-spinner';
 import axios from 'axios';
 

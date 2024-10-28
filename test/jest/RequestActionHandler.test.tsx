@@ -3,7 +3,7 @@ import { render, fireEvent, screen, waitFor } from '@testing-library/react';
 import axios from 'axios';
 import Swal from 'sweetalert2';
 import { toast } from 'react-toastify';
-import ActionHandler from '@/components/history/actionHandler';
+import ActionHandler from '@/components/History/ActionHandler';
 
 // Mock external dependencies
 jest.mock('axios');

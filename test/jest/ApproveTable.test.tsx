@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
-import ApproveTable from '@/components/approve/table'; // Adjust the import path as necessary
+import ApproveTable from '@/components/Approve/table'; // Adjust the import path as necessary
 import { Provider } from 'react-redux';
 import configureMockStore from 'redux-mock-store';
 import '@testing-library/jest-dom';

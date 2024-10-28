@@ -1,5 +1,5 @@
 import React from 'react';
-import ApproveRecurringEntry from '@/components/approve/recurringentry';
+import ApproveRecurringEntry from '@/components/Approve/recurringentry';
 import { BodyLarge } from '@/components/TextStyles';
 
 interface Request {

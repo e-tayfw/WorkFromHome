@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Display, BodyLarge, H1 } from "@/components/TextStyles";
-import ApproveTable from "@/components/approve/table";
+import ApproveTable from "@/components/Approve/table";
 import axios from "axios";
 import { useSelector } from "react-redux";
 import { ToastContainer, toast } from "react-toastify";
