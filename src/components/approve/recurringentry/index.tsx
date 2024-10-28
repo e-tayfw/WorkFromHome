@@ -51,9 +51,14 @@ const ApproveRecurringEntry: React.FC<ApproveRecurringEntryProps> = ({
 
         let newExceedingRequests = new Set<number>();
         for (const request of pendingRequests) {
+          const requestDate = new Date(request.dateRequested);
+          const currentDate = new Date();
+          const isFutureRequest = requestDate > currentDate;
+
           const proportionForRequest = proportions[request.dateRequested]?.[request.duration] || 0;
           setProportion(proportionForRequest);
-          if (proportionForRequest + 1 / teamSize > 0.5) {
+
+          if (isFutureRequest && proportionForRequest + 1 / teamSize > 0.5) {
             newExceedingRequests.add(request.requestId);
           }
         }
@@ -71,48 +76,53 @@ const ApproveRecurringEntry: React.FC<ApproveRecurringEntryProps> = ({
   const isDateInRangeForWithdraw = (dateRequested: string) => {
     const requestDate = new Date(dateRequested);
     const currentDate = new Date();
-  
+
     const oneMonthBack = new Date(requestDate);
     oneMonthBack.setMonth(requestDate.getMonth() - 1);
-  
+
     const threeMonthsForward = new Date(requestDate);
     threeMonthsForward.setMonth(requestDate.getMonth() + 3);
-  
+
     return currentDate >= oneMonthBack && currentDate <= threeMonthsForward;
   };
 
   const renderRequestRow = (request: any, isPending: boolean, isFirstPending: boolean) => {
+    const requestDate = new Date(request.dateRequested);
+    const currentDate = new Date();
+    const isFutureRequest = requestDate > currentDate;
     const isExceeding = exceedingRequests.has(request.requestId);
+    const rowClass = isExceeding ? 'bg-red-100' : '';
+
     return (
-        <tr
+      <tr
         key={request.requestId}
-        className={`border-b hover:bg-gray-100 cursor-pointer ${isExceeding ? 'bg-red-100' : ''}`}
-        >
+        className={`border-b hover:bg-gray-100 cursor-pointer ${rowClass}`}
+      >
         <td
           className="px-4 py-2"
           onClick={() => onRequestClick(request.requestId)}
-          title="Click to view request log" // Tooltip
+          title="Click to view request log"
         >
           <Body>{request.dateRequested}</Body>
         </td>
         <td
           className="px-4 py-2"
           onClick={() => onRequestClick(request.requestId)}
-          title="Click to view request log" // Tooltip
+          title="Click to view request log"
         >
           <Body>{request.duration}</Body>
         </td>
         <td
           className="px-4 py-2"
           onClick={() => onRequestClick(request.requestId)}
-          title="Click to view request log" // Tooltip
+          title="Click to view request log"
         >
           <Body>{request.dateOfRequest}</Body>
         </td>
         <td
           className={`px-4 py-2 ${getStatusClass(request.status)} font-semibold rounded-md`}
           onClick={() => onRequestClick(request.requestId)}
-          title="Click to view request log" // Tooltip
+          title="Click to view request log"
         >
           <Body>{isMobile ? getStatusShortForm(request.status) : request.status}</Body>
         </td>
@@ -132,13 +142,13 @@ const ApproveRecurringEntry: React.FC<ApproveRecurringEntryProps> = ({
             </div>
           </td>
         )}
-        {isPending && !isLoading && isFirstPending && renderPendingActionButtons()}
+        {isPending && !isLoading && isFirstPending && renderPendingActionButtons(isFutureRequest)}
         {!isPending && renderNonPendingActionButtons(request)}
-      </tr>      
+      </tr>
     );
   };
 
-  const renderPendingActionButtons = () => (
+  const renderPendingActionButtons = (isFutureRequest: boolean) => (
     <td
       className="px-4 py-2 text-center"
       rowSpan={pendingRequests.length}
@@ -146,10 +156,10 @@ const ApproveRecurringEntry: React.FC<ApproveRecurringEntryProps> = ({
     >
       <button
         className={`bg-green-100 text-green-700 font-semibold py-1 px-4 rounded-md ${
-          exceedingRequests.size ? 'opacity-50 cursor-not-allowed' : 'hover:bg-green-200'
+          exceedingRequests.size && isFutureRequest ? 'opacity-50 cursor-not-allowed' : 'hover:bg-green-200'
         }`}
         onClick={handleApproveAll}
-        disabled={exceedingRequests.size > 0}
+        disabled={exceedingRequests.size > 0 && isFutureRequest}
       >
         <Body>Approve All</Body>
       </button>
