@@ -91,7 +91,7 @@ const ApproveTable: React.FC<ApproveTableProps> = ({ employees }) => {
             <strong>Date:</strong> ${log.Date}<br />
             <strong>Status:</strong> ${log.New_State}<br />
             <strong>Remarks:</strong> ${log.Remarks || 'No remarks'}<br />
-            ${log.Employee_ID === '000000' ? '<em>Change made by system</em><br />' : ''}<br />
+            ${log.Employee_ID === 0 ? '<em>Change made by system</em><br />' : ''}<br />
           </div>
         `)
         .join('');
