@@ -1,14 +1,17 @@
-import React, { useEffect } from 'react';
+import React, { useEffect } from "react";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { Datepicker } from "flowbite";
-import 'flowbite/dist/flowbite.min.css';
+import "flowbite/dist/flowbite.min.css";
 
 interface DateComponentProps {
   selectedDate: string;
   onDateChange: (date: string) => void;
 }
 
-const Datecomponent: React.FC<DateComponentProps> = ({ selectedDate, onDateChange,}) => {
+const Datecomponent: React.FC<DateComponentProps> = ({
+  selectedDate,
+  onDateChange,
+}) => {
   useEffect(() => {
     if (typeof window !== "undefined") {
       import("flowbite-datepicker")
@@ -30,6 +33,7 @@ const Datecomponent: React.FC<DateComponentProps> = ({ selectedDate, onDateChang
               maxDate: maxDate,
               format: "yyyy-mm-dd",
               clearBtn: true,
+              autohide: true,
             });
 
             // Use the changeDate event of the datepicker
@@ -73,4 +77,4 @@ const Datecomponent: React.FC<DateComponentProps> = ({ selectedDate, onDateChang
   );
 };
 
-export { Datecomponent }
+export { Datecomponent };
