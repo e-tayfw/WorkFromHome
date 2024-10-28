@@ -86,8 +86,8 @@ const ApproveRecurringEntry: React.FC<ApproveRecurringEntryProps> = ({
     return (
         <tr
         key={request.requestId}
-        className={`border-b hover:bg-gray-100 ${isExceeding ? 'bg-red-100' : ''}`}
-      >
+        className={`border-b hover:bg-gray-100 cursor-pointer ${isExceeding ? 'bg-red-100' : ''}`}
+        >
         <td
           className="px-4 py-2"
           onClick={() => onRequestClick(request.requestId)}

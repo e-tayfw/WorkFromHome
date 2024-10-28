@@ -44,6 +44,35 @@ const ActionHandler: React.FC<ActionHandlerProps> = ({ status, dateRequested, re
           return 'You need to provide a reason!';
         }
       },
+      didOpen: () => {
+        const inputField = Swal.getInput();
+        if (inputField) { // Check if inputField is not null
+          const characterCount = document.createElement('div');
+          characterCount.style.marginTop = '10px';
+          characterCount.style.fontSize = '12px';
+          characterCount.style.color = '#555';
+          characterCount.style.textAlign = 'center';
+          characterCount.style.fontWeight = 'bold'; // Make the text bold
+          characterCount.innerText = '0 / 255 characters';
+    
+          // Append character counter below the input box and center it
+          inputField.parentNode?.appendChild(characterCount);
+    
+          inputField.addEventListener('input', () => {
+            const currentLength = inputField.value.length;
+            characterCount.innerText = `${currentLength} / 255 characters`;
+    
+            // Highlight when limit is reached
+            characterCount.style.color = currentLength === 255 ? 'red' : '#555';
+          });
+        }
+      },
+      willClose: () => {
+        const inputField = Swal.getInput();
+        if (inputField) {
+          inputField.removeEventListener('input', () => {}); // Remove the event listener on close
+        }
+      },
     }).then((result) => {
       if (result.isConfirmed) {
         const reason = result.value;
@@ -53,7 +82,7 @@ const ActionHandler: React.FC<ActionHandlerProps> = ({ status, dateRequested, re
           Employee_ID: employeeId,
           Reason: reason,
         };
-
+    
         axios
           .post('http://127.0.0.1:8085/api/request/withdraw', payload)
           .then((response) => {
@@ -68,7 +97,7 @@ const ActionHandler: React.FC<ActionHandlerProps> = ({ status, dateRequested, re
             });
           });
       }
-    });
+    });    
   };
 
   const getActionButton = () => {
