@@ -2,10 +2,10 @@ import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import axios from 'axios';
 import { useSelector } from 'react-redux';
 import Swal from 'sweetalert2';
-import StatusFilter from '@/components/Approve/filter';
-import StaffSearch from '@/components/Approve/search';
-import RecurringTable from '@/components/Approve/recurring';
-import AdhocTable from '@/components/Approve/adhoc';
+import StatusFilter from '@/components/approve/filter';
+import StaffSearch from '@/components/approve/search';
+import RecurringTable from '@/components/approve/recurring';
+import AdhocTable from '@/components/approve/adhoc';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSort, faSortUp, faSortDown } from '@fortawesome/free-solid-svg-icons';
 import { faChevronDown, faChevronRight } from '@fortawesome/free-solid-svg-icons';
@@ -35,11 +35,13 @@ const ApproveTable: React.FC<ApproveTableProps> = ({ employees }) => {
   const [requests, setRequests] = useState<Request[]>([]);
   const [expandedStaff, setExpandedStaff] = useState<number[]>([]);
   const [adhocSortConfig, setAdhocSortConfig] = useState<{ key: keyof Request; direction: string } | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [pagination, setPagination] = useState<{ [staffId: number]: { recurring: number; adhoc: number } }>({});
   const [searchTerm, setSearchTerm] = useState<string>('');
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [isClient, setIsClient] = useState(false);
 
   const staffId = useSelector((state: any) => state.auth.staffId);
@@ -270,18 +272,26 @@ const ApproveTable: React.FC<ApproveTableProps> = ({ employees }) => {
 
           return (
             <div key={employee.Staff_ID} className="mb-8">
-              <div onClick={() => toggleExpand(employee.Staff_ID)} className="flex items-center justify-between cursor-pointer bg-gray-100 px-4 py-2 rounded-md">
+              <div
+                onClick={() => toggleExpand(employee.Staff_ID)}
+                className="flex items-center justify-between cursor-pointer bg-gray-100 px-4 py-2 rounded-md"
+              >
                 <h2 className="text-xl font-semibold text-primary">
                   {employee.Staff_FName} {employee.Staff_LName}
                 </h2>
-                <FontAwesomeIcon icon={isExpanded ? faChevronDown : faChevronRight} />
+                <FontAwesomeIcon
+                  icon={isExpanded ? faChevronDown : faChevronRight}
+                />
               </div>
 
               {isExpanded && (
                 <>
                   {hasNoRecurringRequests ? (
                     <div className="mt-4 text-center">
-                      <span className="text-gray-500">Staff has no requests with '{filterStatus}' status</span>
+                      <span className="text-gray-500">
+                        Staff has no requests with `&apos;`{filterStatus}
+                        `&apos;` status
+                      </span>
                     </div>
                   ) : (
                     <RecurringTable
@@ -293,13 +303,16 @@ const ApproveTable: React.FC<ApproveTableProps> = ({ employees }) => {
                       handleRequestClick={handleRequestClick}
                       isMobile={isMobile}
                       getShortHeader={getShortHeader}
-                      teamSize = {teamSize}
+                      teamSize={teamSize}
                     />
                   )}
 
                   {hasNoAdhocRequests ? (
                     <div className="mt-4 text-center">
-                      <span className="text-gray-500">Staff has no requests with '{filterStatus}' status</span>
+                      <span className="text-gray-500">
+                        Staff has no requests with `&apos;`{filterStatus}
+                        `&apos;` status
+                      </span>
                     </div>
                   ) : (
                     <AdhocTable
@@ -314,7 +327,7 @@ const ApproveTable: React.FC<ApproveTableProps> = ({ employees }) => {
                       handleRequestClick={handleRequestClick}
                       isMobile={isMobile}
                       getShortHeader={getShortHeader}
-                      teamSize = {teamSize}
+                      teamSize={teamSize}
                     />
                   )}
                 </>

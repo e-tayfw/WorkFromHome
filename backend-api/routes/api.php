@@ -50,6 +50,7 @@ Route::get('/generateHRScheduleByTeam' , [ScheduleController::class, 'generateHR
 Route::get('/generateTeamScheduleByDirector/{director}', [ScheduleController::class, 'generateTeamScheduleByDirector']);
 
 // Recurring Requests
+Route::post('/recurringRequest', [RequestController::class, 'createRecurringRequest']);
 Route::post(uri: '/rejectRecurringRequest', action: [RequestController::class, 'rejectRecurringRequest']);
 Route::post(uri: '/approveRecurringRequest', action: [RequestController::class, 'approveRecurringRequest']);
 

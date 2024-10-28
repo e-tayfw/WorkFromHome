@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Body } from '@/components/TextStyles';
 import axios from 'axios';
-import ActionHandler from '@/components/Approve/actionHandler';
+import ActionHandler from '@/components/approve/actionHandler';
 import { Oval } from 'react-loader-spinner';
 
 interface AdhocApproveEntryProps {

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Body } from '@/components/TextStyles'; // Use your TextStyles here
-import ActionHandler from '@/components/History/ActionHandler'; // Import the ActionHandler
+import ActionHandler from '@/components/history/actionHandler'; // Import the ActionHandler
 
 interface RequestEntryProps {
   requestId: string;
@@ -18,6 +18,7 @@ interface RequestEntryProps {
 const RequestEntry: React.FC<RequestEntryProps> = ({
   requestId,
   requestorId,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   approverId,
   status,
   dateRequested,

@@ -1,3 +1,5 @@
+/// <reference types="cypress" />
+
 describe('Login Spec', () => {
   it('logs in the user', () => {
     // Visit the local development frontend

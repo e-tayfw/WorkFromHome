@@ -11,8 +11,8 @@ use Error;
 use App\Jobs\RejectPendingRequestsOlderThanTwoMonthsJob;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Carbon\Carbon;
-use DB;
 use Log;
+use Illuminate\Support\Facades\DB;
 use Mockery\Generator\StringManipulation\Pass\Pass;
 
 use function Laravel\Prompts\error;
@@ -641,7 +641,8 @@ class RequestController extends Controller
                 // Check for if the next person exceeds 50% violation
                 $curr = $date_dictionary[$formattedDate][$wfh_type];
                 $curr = $curr + $proportion;
-                if ($curr > 0.5) {
+                // Check if current proportion exceeds 50% AND the date referenced is after today
+                if ($curr > 0.5 && $formattedDate >= date("Y-m-d")) {
                     return response()->json(['message' => 'Unable to accept request as this would lead to less than 50% of the team being in office'], 400);
                 }
             }
@@ -673,8 +674,6 @@ class RequestController extends Controller
             // Handle error saving RequestLog
             return response()->json(['message' => 'Failed to create Request Logs'], 500);
         }
-
-        return response()->json($requestDB);
     }
 
     // Reject Request
@@ -849,7 +848,7 @@ class RequestController extends Controller
         try {
             // Retrieve the request by ID
             $booking = Requests::findOrFail($validated['Request_ID']);
-        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+        } catch (ModelNotFoundException $e) {
             return response()->json([
                 'message' => 'Request not found.',
             ], 404); // Not Found
@@ -988,9 +987,12 @@ class RequestController extends Controller
         }
 
         $flag = true;
+        $today = new DateTime(date("Y-m-d"));
 
-        foreach ($listOfDates as $dates) {
-            if ($dates[$wfh_type] + $proportion > 0.5) {
+        foreach ($listOfDates as $dateStr => $dates) {
+            $date = new DateTime($dateStr); // Convert $dateStr to DateTime for comparison
+            // if the proportion of people working from home exceeds 50% and the date is after today, reject the request
+            if ($dates[$wfh_type] + $proportion > 0.5 && $date >= $today) {
                 $flag = false;
             }
         }

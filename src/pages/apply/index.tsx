@@ -1,5 +1,5 @@
 import React from "react";
-import { Apply } from "@/components/Apply";
+import { Apply } from "@/components/apply";
 // import axios from 'axios'
 
 const ApplyPage: React.FC = ({}) => {

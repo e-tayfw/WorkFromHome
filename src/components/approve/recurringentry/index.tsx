@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Body } from '@/components/TextStyles';
-import ActionHandler from '@/components/Approve/actionHandler';
+import ActionHandler from '@/components/approve/actionHandler';
 import { Oval } from 'react-loader-spinner';
 import axios from 'axios';
 
@@ -49,11 +49,14 @@ const ApproveRecurringEntry: React.FC<ApproveRecurringEntryProps> = ({
         const response = await axios.get(`http://127.0.0.1:8085/api/request/proportionOfTeam/${approverId}`);
         const proportions = response.data;
 
-        let newExceedingRequests = new Set<number>();
+        const newExceedingRequests = new Set<number>();
         for (const request of pendingRequests) {
           const requestDate = new Date(request.dateRequested);
           const currentDate = new Date();
-          const isFutureRequest = requestDate > currentDate;
+          const isFutureRequest = requestDate >= currentDate;
+          console.log(requestDate)
+          console.log(currentDate)
+          console.log(isFutureRequest)
 
           const proportionForRequest = proportions[request.dateRequested]?.[request.duration] || 0;
           setProportion(proportionForRequest);
@@ -148,6 +151,7 @@ const ApproveRecurringEntry: React.FC<ApproveRecurringEntryProps> = ({
     );
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const renderPendingActionButtons = (isFutureRequest: boolean) => (
     <td
       className="px-4 py-2 text-center"
@@ -156,10 +160,10 @@ const ApproveRecurringEntry: React.FC<ApproveRecurringEntryProps> = ({
     >
       <button
         className={`bg-green-100 text-green-700 font-semibold py-1 px-4 rounded-md ${
-          exceedingRequests.size && isFutureRequest ? 'opacity-50 cursor-not-allowed' : 'hover:bg-green-200'
+          exceedingRequests.size ? 'opacity-50 cursor-not-allowed' : 'hover:bg-green-200'
         }`}
         onClick={handleApproveAll}
-        disabled={exceedingRequests.size > 0 && isFutureRequest}
+        disabled={exceedingRequests.size > 0}
       >
         <Body>Approve All</Body>
       </button>

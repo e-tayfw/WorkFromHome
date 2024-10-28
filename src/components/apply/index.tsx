@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { Datecomponent } from "@/components/Apply/DatePicker";
-import { Selection } from "@/components/Apply/Selection";
-import { Reason } from "@/components/Apply/Reason";
-import { Submit } from "@/components/Apply/Submit";
-import { H1, BodyLarge, Body, Display } from "@/components/TextStyles";
+import { Datecomponent } from "@/components/apply/datepicker";
+import { Selection } from "@/components/apply/selection";
+import { Reason } from "@/components/apply/reason";
+import { Submit } from "@/components/apply/submit";
+import { Body, Display } from "@/components/TextStyles";
 import Swal from 'sweetalert2';
 import { useSelector } from "react-redux";
 import axios from 'axios';
-import { toast } from "react-toastify";
+// import { toast } from "react-toastify";
 
 type ArrangementType = 'AM' | 'PM' | 'FD' | '';
 
@@ -44,7 +44,7 @@ const Apply: React.FC = () => {
     setReason(text);
   }, []);
 
-  const handleSubmit = useCallback(async (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+  const handleSubmit = useCallback(async () => {
     setIsLoading(true);
 
     const submitData: SubmitData = {
