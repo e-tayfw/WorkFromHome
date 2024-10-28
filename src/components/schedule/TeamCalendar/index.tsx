@@ -63,28 +63,30 @@ export const TeamCalendar: React.FC<TeamCalendarProps> = ({
   );
 
   // Define minDate and maxDate
-  const minDate = moment().subtract(2, "months").startOf("day");
-  const maxDate = moment().add(3, "months").endOf("day");
+  const minDate = moment().subtract(2, "months").add(1, "day").startOf("day");
+  const maxDate = moment().add(3, "months").subtract(1, "day").endOf("day");
 
   // isNextDisabled and isPrevDisabled functions remain the same
   const isNextDisabled = () => {
     const currentDate = moment(selectedDate);
     const nextDayDate = currentDate.clone().add(1, "day").format("DDMMYY");
     // Check if any user has schedule data for nextDayDate
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const hasScheduleForNextDay = Object.values(schedule || {}).some(
       (userSchedule) => userSchedule[nextDayDate] !== undefined
     );
-    return !hasScheduleForNextDay || currentDate.isSameOrAfter(maxDate, "day");
+    return currentDate.isSameOrAfter(maxDate, "day");
   };
 
   const isPrevDisabled = () => {
     const currentDate = moment(selectedDate);
     const prevDayDate = currentDate.clone().subtract(1, "day").format("DDMMYY");
     // Check if any user has schedule data for prevDayDate
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const hasScheduleForPrevDay = Object.values(schedule || {}).some(
       (userSchedule) => userSchedule[prevDayDate] !== undefined
     );
-    return !hasScheduleForPrevDay || currentDate.isSameOrBefore(minDate, "day");
+    return currentDate.isSameOrBefore(minDate, "day");
   };
 
   // isNextWeekDisabled and isPrevWeekDisabled functions
@@ -219,28 +221,30 @@ export const TeamCalendar: React.FC<TeamCalendarProps> = ({
     const pmwfhUsers: string[] = [];
     const fulldaywfhUsers: string[] = [];
     const scheduleByDate = schedule || {};
+
     let amCount = 0;
     let pmCount = 0;
     let fullDayCount = 0;
-    let totalStrength = 0;
+    let presentCount = 0;
+
+    const totalStrength = Object.keys(schedule || {}).length;
 
     if (schedule) {
       Object.entries(schedule).forEach(([userId, userSchedule]) => {
         const wfhStatus = userSchedule[formattedDate];
-        if (wfhStatus !== undefined) {
-          scheduleByDate[userId] = { [formattedDate]: wfhStatus };
-          if (wfhStatus === 1) {
-            amCount++;
-            amwfhUsers.push(userId);
-          } else if (wfhStatus === 2) {
-            pmCount++;
-            pmwfhUsers.push(userId);
-          } else if (wfhStatus === 3) {
-            fullDayCount++;
-            fulldaywfhUsers.push(userId);
-          } else if (wfhStatus === 0) {
-            totalStrength++;
-          }
+
+        if (wfhStatus === 1) {
+          amCount++;
+          amwfhUsers.push(userId);
+        } else if (wfhStatus === 2) {
+          pmCount++;
+          pmwfhUsers.push(userId);
+        } else if (wfhStatus === 3) {
+          fullDayCount++;
+          fulldaywfhUsers.push(userId);
+        } else {
+          // Users with wfhStatus === 0 or undefined are considered present
+          presentCount++;
         }
       });
     }
@@ -252,6 +256,7 @@ export const TeamCalendar: React.FC<TeamCalendarProps> = ({
       amCount,
       pmCount,
       fullDayCount,
+      presentCount,
       totalStrength,
       scheduleByDate,
     };
@@ -330,7 +335,10 @@ export const TeamCalendar: React.FC<TeamCalendarProps> = ({
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="mb-4 p-2 border border-gray-300 rounded w-full"
                 /> */}
-                <div className="flex flex-col space-y-2" data-testid='user-name'>
+                <div
+                  className="flex flex-col space-y-2"
+                  data-testid="user-name"
+                >
                   <Body className="text-lg font-bold">
                     Staff on AM WFH:
                     {filteredAMUsers.length > 0
@@ -352,6 +360,7 @@ export const TeamCalendar: React.FC<TeamCalendarProps> = ({
                 </div>
                 <ScheduleTable
                   scheduleByDate={scheduleByDate}
+                  selectedDate={modalDate}
                 />
               </div>
             </div>
@@ -401,6 +410,9 @@ export const TeamCalendar: React.FC<TeamCalendarProps> = ({
             </Body>
             <Body className="text-lg">
               Full Day WFH: {getTeamSchedule(selectedDate).fullDayCount}
+            </Body>
+            <Body className="text-lg">
+              Present in Office: {getTeamSchedule(selectedDate).presentCount}
             </Body>
             <Body className="text-lg">
               Total Strength: {getTeamSchedule(selectedDate).totalStrength}
