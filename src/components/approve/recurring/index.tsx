@@ -136,6 +136,7 @@ const RecurringTable: React.FC<RecurringTableProps> = ({
               onClick={() =>
                 handlePageChange(employee.Staff_ID, (pagination[employee.Staff_ID]?.recurring || 1) + 1, 'recurring')
               }
+              data-testid="next-button"
             >
               Next
             </button>

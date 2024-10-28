@@ -8,8 +8,9 @@ use Database\Seeders\RequestSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use App\Models\Requests;
 use Tests\TestCase;
-use DB;
 use Log;
+use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
 class RequestTest extends TestCase
 {

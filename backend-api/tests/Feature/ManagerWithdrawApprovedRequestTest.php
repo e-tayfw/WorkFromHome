@@ -9,7 +9,8 @@ use App\Models\Requests;
 use App\Models\Employee;
 use App\Http\Controllers\RequestController;
 use Carbon\Carbon;
-use DB;
+use Illuminate\Support\Facades\DB;
+
 
 class ManagerWithdrawApprovedRequestTest extends TestCase
 {
