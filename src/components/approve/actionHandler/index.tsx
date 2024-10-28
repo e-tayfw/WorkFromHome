@@ -51,22 +51,28 @@ const ActionHandler = {
     proportionAfterApproval,
     onRefreshRequests,
   }: ApproveHandlerProps) => {
-    // Prevent approval if proportion exceeds the limit
-    if (proportionAfterApproval && proportionAfterApproval > 0.5) {
+    const isBackdated = new Date(dateRequested) < new Date();
+  
+    // Prevent approval if proportion exceeds the limit for future requests
+    if (!isBackdated && proportionAfterApproval && proportionAfterApproval > 0.5) {
       toast.error("Approval cannot proceed. More than half the team is already working from home.", {
         position: 'top-right',
       });
       return;
     }
-
-    const approvalConfirmationText =
-      proportionAfterApproval
+  
+    const approvalConfirmationText = `
+      ${proportionAfterApproval 
         ? `The proportion of staff working from home once accepted will be ${(proportionAfterApproval * 100).toFixed(1)}%.`
-        : 'Do you want to approve this request?';
-
+        : 'Do you want to approve this request?'}
+      ${isBackdated 
+        ? '<p style="font-size: 14px; color: #ff6347; font-weight: bold; margin-top: 10px;">Note: This is a backdated request. The 50% work-from-home limit will not be checked.</p>'
+        : ''}
+    `;
+  
     Swal.fire({
       title: 'Are you sure?',
-      text: approvalConfirmationText,
+      html: approvalConfirmationText,
       input: 'text',
       inputPlaceholder: 'Enter your comments here (optional)...',
       inputAttributes: {
@@ -79,7 +85,7 @@ const ActionHandler = {
       cancelButtonColor: '#a2b4cc',
       didOpen: () => {
         const inputField = Swal.getInput();
-        if (inputField) { // Check if inputField is not null
+        if (inputField) {
           const characterCount = document.createElement('div');
           characterCount.style.marginTop = '10px';
           characterCount.style.fontSize = '12px';
@@ -87,15 +93,12 @@ const ActionHandler = {
           characterCount.style.fontWeight = 'bold';
           characterCount.style.textAlign = 'center';
           characterCount.innerText = '0 / 255 characters';
-    
-          // Append character counter below the input box and center it
+  
           inputField.parentNode?.appendChild(characterCount);
-    
+  
           inputField.addEventListener('input', () => {
             const currentLength = inputField.value.length;
             characterCount.innerText = `${currentLength} / 255 characters`;
-    
-            // Highlight when limit is reached
             characterCount.style.color = currentLength === 255 ? 'red' : '#555';
           });
         }
@@ -103,20 +106,20 @@ const ActionHandler = {
       willClose: () => {
         const inputField = Swal.getInput();
         if (inputField) {
-          inputField.removeEventListener('input', () => {}); // Remove the event listener on close
+          inputField.removeEventListener('input', () => {});
         }
       },
     }).then((result) => {
       if (result.isConfirmed) {
         const payload = {
-          Request_ID: requestId, // Use Request_ID for individual approval
+          Request_ID: requestId,
           Approver_ID: approverId,
           Status: 'Approved',
           Date_Requested: dateRequested,
           Duration: duration,
-          Reason: result.value || null, // Optional reason
+          Reason: result.value || null,
         };
-    
+  
         axios
           .post('http://127.0.0.1:8085/api/approveRequest', payload)
           .then((response) => {
@@ -143,11 +146,16 @@ const ActionHandler = {
     onRefreshRequests,
   }: ApproveBatchHandlerProps) => {
     
-    const approvalConfirmationText = 'Do you want to approve all requests in this batch?';
+    const approvalConfirmationText = `
+      <p>Do you want to approve all requests in this batch?</p>
+      <p style="font-size: 14px; color: #ff6347; font-weight: bold; margin-top: 10px;">
+        Note: Approval will proceed for backdated requests, even if they exceed the 50% work-from-home limit.
+      </p>
+    `;
 
     Swal.fire({
       title: 'Are you sure?',
-      text: approvalConfirmationText,
+      html: approvalConfirmationText,
       input: 'text',
       inputPlaceholder: 'Enter your comments here (optional)...',
       inputAttributes: {

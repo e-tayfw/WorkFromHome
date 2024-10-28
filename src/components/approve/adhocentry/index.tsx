@@ -147,6 +147,10 @@ const AdhocApproveEntry: React.FC<AdhocApproveEntryProps> = ({
   };
 
   const renderActionButtons = () => {
+    const requestDate = new Date(dateRequested);
+    const currentDate = new Date();
+    const isFutureRequest = requestDate > currentDate;
+  
     if (status.toLowerCase() === 'approved' && isDateInRangeForWithdraw()) {
       return (
         <button
@@ -161,11 +165,15 @@ const AdhocApproveEntry: React.FC<AdhocApproveEntryProps> = ({
         <>
           <button
             className={`bg-green-100 text-green-700 font-semibold py-1 px-4 rounded-md ${
-              status.toLowerCase() === 'pending' && willExceedProportion() ? 'opacity-50 cursor-not-allowed' : 'hover:bg-green-200'
+              isFutureRequest && status.toLowerCase() === 'pending' && willExceedProportion() ? 'opacity-50 cursor-not-allowed' : 'hover:bg-green-200'
             }`}
             onClick={handleApprove}
-            disabled={status.toLowerCase() === 'pending' && willExceedProportion()}
-            title={status.toLowerCase() === 'pending' && willExceedProportion() ? 'Proportion of staff working from home will exceed 50% if accepted' : ''}
+            disabled={isFutureRequest && status.toLowerCase() === 'pending' && willExceedProportion()}
+            title={
+              isFutureRequest && status.toLowerCase() === 'pending' && willExceedProportion()
+                ? 'Proportion of staff working from home will exceed 50% if accepted'
+                : ''
+            }
           >
             Approve
           </button>
@@ -178,7 +186,7 @@ const AdhocApproveEntry: React.FC<AdhocApproveEntryProps> = ({
         </>
       );
     }
-    return null;
+    return null; 
   };
 
   return (
