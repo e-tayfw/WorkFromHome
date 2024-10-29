@@ -806,23 +806,25 @@ class RequestController extends Controller
 
             // Change state of the ticket to rejected
             if ($requestDB->Status == 'Pending') {
+                // Add to request log table
+                $newRequestLog = new RequestLog();
+                $newRequestLog->Request_ID = $requestDB->Request_ID;
+                $newRequestLog->Previous_State = $requestDB->Status;
+                $newRequestLog->New_State = $status;
+                $newRequestLog->Employee_ID = $approver_id;
+                $newRequestLog->Date = date("Y-m-d");
+                $newRequestLog->Remarks = $reason;
                 $requestDB->Status = 'Rejected';
             } else if ($requestDB->Status == 'Rejected') {
                 return response()->json(['message' => "Status is already rejected for Request number: {$requestDB->Request_ID} (Request date: {$requestDB->Date_Requested})"], 400);
-            } else {
+            } else if ($requestDB->Status == "Withdrawn") {}
+            else {
                 return response()->json(['message' => "A state change from {$requestDB->Status} to {$status} is not allowed for Request number: {$requestDB->Request_ID} (Request date: {$requestDB->Date_Requested})"], 400);
             }
 
             $requestDB->save();
 
-            // Add to request log table
-            $newRequestLog = new RequestLog();
-            $newRequestLog->Request_ID = $requestDB->Request_ID;
-            $newRequestLog->Previous_State = $requestDB->Status;
-            $newRequestLog->New_State = $status;
-            $newRequestLog->Employee_ID = $approver_id;
-            $newRequestLog->Date = date("Y-m-d");
-            $newRequestLog->Remarks = $reason;
+            
 
             // Save the Request Log
             if (!$newRequestLog->save()) {
