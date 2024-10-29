@@ -171,11 +171,10 @@ class RequestController extends Controller
         try {
             $employee = Employee::where("Staff_ID", $staffId)->firstOrFail();
 
-            $existingRequests = Requests::where([
-                ['Requestor_ID', '=', $staffId],
-                ['Date_Requested', '=', $selectedDate],
-                ['Status', 'in', ['Pending', 'Approved', 'Withdraw Rejected', 'Withdraw Pending']]
-            ])->get();
+            $existingRequests = Requests::where('Requestor_ID', $staffId)
+            ->where('Date_Requested', $selectedDate)
+            ->whereIn('Status', ['Pending', 'Approved', 'Withdraw Rejected', 'Withdraw Pending'])
+            ->get();
 
             if ($existingRequests->isNotEmpty()) {
                 $message = '';
