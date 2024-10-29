@@ -237,6 +237,7 @@ const ApproveRecurringEntry: React.FC<ApproveRecurringEntryProps> = ({
       duration: request.duration,
       proportionAfterApproval: proportion,
       onRefreshRequests,
+      status: request.status,
     });
   };
 
@@ -248,6 +249,7 @@ const ApproveRecurringEntry: React.FC<ApproveRecurringEntryProps> = ({
       requestBatch: request.requestBatch,
       duration: request.duration,
       onRefreshRequests,
+      status: request.status,
     });
   };
 

@@ -10,6 +10,7 @@ interface ApproveHandlerProps {
   duration: string;
   proportionAfterApproval: number | null;
   onRefreshRequests: () => void;
+  status: string;
 }
 
 interface ApproveBatchHandlerProps {
@@ -27,6 +28,7 @@ interface RejectHandlerProps {
   requestBatch: string | null;
   duration: string;
   onRefreshRequests: () => void;
+  status: string
 }
 
 interface RejectBatchHandlerProps {
@@ -49,6 +51,7 @@ const ActionHandler = {
     dateRequested,
     duration,
     proportionAfterApproval,
+    status, // Add status parameter
     onRefreshRequests,
   }: ApproveHandlerProps) => {
     const requestedDate = new Date(dateRequested);
@@ -57,23 +60,29 @@ const ActionHandler = {
     currentDate.setHours(0, 0, 0, 0); // Set to midnight to remove time
     const isBackdated = requestedDate < currentDate;
   
-    // Prevent approval if proportion exceeds the limit for future requests
-    if (!isBackdated && proportionAfterApproval && proportionAfterApproval > 0.5) {
-      toast.error("Approval cannot proceed. More than half the team is already working from home.", {
-        position: 'top-right',
-      });
-      return;
+    // Skip checks for 'Withdraw Pending' status
+    if (status !== 'Withdraw Pending') {
+      // Prevent approval if proportion exceeds the limit for future requests
+      if (!isBackdated && proportionAfterApproval && proportionAfterApproval > 0.5) {
+        toast.error("Approval cannot proceed. More than half the team is already working from home.", {
+          position: 'top-right',
+        });
+        return;
+      }
     }
   
-    const approvalConfirmationText = `
-      ${proportionAfterApproval 
-        ? `The proportion of staff working from home once accepted will be ${(proportionAfterApproval * 100).toFixed(1)}%.`
-        : 'Do you want to approve this request?'}
-      ${isBackdated 
-        ? '<p style="font-size: 14px; color: #ff6347; font-weight: bold; margin-top: 10px;">Note: This is a backdated request. The 50% work-from-home limit will not be checked.</p>'
-        : ''}
-    `;
-  
+    // Set the approval confirmation text and payload status based on the current request status
+    const approvalConfirmationText = status === 'Withdraw Pending'
+      ? 'Are you sure you want to approve this withdraw request?'
+      : `
+        ${proportionAfterApproval 
+          ? `The proportion of staff working from home once accepted will be ${(proportionAfterApproval * 100).toFixed(1)}%.`
+          : 'Do you want to approve this request?'}
+        ${isBackdated 
+          ? '<p style="font-size: 14px; color: #ff6347; font-weight: bold; margin-top: 10px;">Note: This is a backdated request. The 50% work-from-home limit will not be checked.</p>'
+          : ''}
+      `;
+
     Swal.fire({
       title: 'Are you sure?',
       html: approvalConfirmationText,
@@ -115,10 +124,13 @@ const ActionHandler = {
       },
     }).then((result) => {
       if (result.isConfirmed) {
+        // Set payload status based on current status
+        const payloadStatus = status === 'Withdraw Pending' ? 'Withdrawn' : 'Approved';
+
         const payload = {
           Request_ID: requestId,
           Approver_ID: approverId,
-          Status: 'Approved',
+          Status: payloadStatus,
           Date_Requested: dateRequested,
           Duration: duration,
           Reason: result.value || null,
@@ -138,8 +150,7 @@ const ActionHandler = {
             });
           });
       }
-    });
-        
+    }); 
   },
 
   // Handle batch approval
@@ -232,6 +243,7 @@ const ActionHandler = {
     dateRequested,
     requestBatch,
     duration,
+    status,
     onRefreshRequests,
   }: RejectHandlerProps) => {
     Swal.fire({
@@ -253,23 +265,21 @@ const ActionHandler = {
       },
       didOpen: () => {
         const inputField = Swal.getInput();
-        if (inputField) { // Check if inputField is not null
+        if (inputField) {
           const characterCount = document.createElement('div');
           characterCount.style.marginTop = '10px';
           characterCount.style.fontSize = '12px';
           characterCount.style.color = '#555';
           characterCount.style.textAlign = 'center';
-          characterCount.style.fontWeight = 'bold'; // Make the text bold
+          characterCount.style.fontWeight = 'bold';
           characterCount.innerText = '0 / 255 characters';
     
-          // Append character counter below the input box and center it
           inputField.parentNode?.appendChild(characterCount);
     
           inputField.addEventListener('input', () => {
             const currentLength = inputField.value.length;
             characterCount.innerText = `${currentLength} / 255 characters`;
     
-            // Highlight when limit is reached
             characterCount.style.color = currentLength === 255 ? 'red' : '#555';
           });
         }
@@ -277,15 +287,18 @@ const ActionHandler = {
       willClose: () => {
         const inputField = Swal.getInput();
         if (inputField) {
-          inputField.removeEventListener('input', () => {}); // Remove the event listener on close
+          inputField.removeEventListener('input', () => {});
         }
       },
     }).then((result) => {
       if (result.isConfirmed && result.value) {
+        // Determine payload status based on current status
+        const payloadStatus = status === 'Withdraw Pending' ? 'Withdraw Rejected' : 'Rejected';
+        
         const payload = {
           Request_ID: requestId,
           Approver_ID: approverId,
-          Status: 'Rejected',
+          Status: payloadStatus,
           Date_Requested: dateRequested,
           Request_Batch: requestBatch,
           Duration: duration,
@@ -306,7 +319,7 @@ const ActionHandler = {
             });
           });
       }
-    });    
+    });
   },
 
   handleRejectBatch: ({

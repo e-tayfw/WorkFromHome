@@ -120,6 +120,7 @@ const AdhocApproveEntry: React.FC<AdhocApproveEntryProps> = ({
       duration,
       proportionAfterApproval: proportionAfterApproval(),
       onRefreshRequests,
+      status,
     });
   };
 
@@ -131,6 +132,7 @@ const AdhocApproveEntry: React.FC<AdhocApproveEntryProps> = ({
       requestBatch,
       duration,
       onRefreshRequests,
+      status,
     });
   };
 
