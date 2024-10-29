@@ -873,46 +873,28 @@ class RequestTest extends TestCase
     {
         $request1 = Requests::factory()->create([
             'Status' => 'Approved',
-            'Requestor_ID' => 151408,
-            'Approver_ID' => 130002,
+            'Requestor_ID' => 140008,
+            'Approver_ID' => 140001,
             'Request_ID' => 15,
-            'Date_Requested' => '2024-09-27',
+            'Date_Requested' => '2024-11-27',
             'Request_Batch' => null,
             'Duration'=>'FD'
         ]);
         $request2 = Requests::factory()->create([
             'Status' => 'Approved',
-            'Requestor_ID' => 130002,
-            'Approver_ID' => 130002,
+            'Requestor_ID' => 140103,
+            'Approver_ID' => 140001,
             'Request_ID' => 16,
-            'Date_Requested' => '2024-09-27',
+            'Date_Requested' => '2024-11-27',
             'Request_Batch' => null,
             'Duration'=>'FD'
         ]);
         $request3 = Requests::factory()->create([
-            'Status' => 'Approved',
-            'Requestor_ID' => 160008,
-            'Approver_ID' => 130002,
-            'Request_ID' => 17,
-            'Date_Requested' => '2024-09-27',
-            'Request_Batch' => null,
-            'Duration'=>'FD'
-        ]);
-        $request4 = Requests::factory()->create([
-            'Status' => 'Approved',
-            'Requestor_ID' => 170166,
-            'Approver_ID' => 130002,
-            'Request_ID' => 18,
-            'Date_Requested' => '2024-09-27',
-            'Request_Batch' => null,
-            'Duration'=>'FD'
-        ]);
-        $request5 = Requests::factory()->create([
             'Status' => 'Pending',
-            'Requestor_ID' => 210001,
-            'Approver_ID' => 130002,
+            'Requestor_ID' => 140944,
+            'Approver_ID' => 140001,
             'Request_ID' => 19,
-            'Date_Requested' => '2024-09-27',
+            'Date_Requested' => '2024-11-27',
             'Request_Batch' => null,
             'Duration'=>'FD'
         ]);
