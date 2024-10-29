@@ -7,6 +7,7 @@ interface ReasonProps {
 
 const Reason: React.FC<ReasonProps> = ({ onReasonChange, reasonText }) => {
   const [localReasonText, setLocalReasonText] = useState<string>(reasonText);
+  const maxLength = 255;
 
   useEffect(() => {
     setLocalReasonText(reasonText);
@@ -17,11 +18,21 @@ const Reason: React.FC<ReasonProps> = ({ onReasonChange, reasonText }) => {
   }, [localReasonText, onReasonChange]);
 
   const handleReasonChange = (event: ChangeEvent<HTMLTextAreaElement>) => {
-    setLocalReasonText(event.target.value);
+    const input = event.target.value;
+    if (input.length <= maxLength) {
+      setLocalReasonText(input);
+    }
+  };
+
+  const getCounterColor = () => {
+    if (localReasonText.length === maxLength) {
+      return "text-red-500";
+    }
+    return "text-gray-500";
   };
 
   return (
-    <div>
+    <div className="relative">
       <textarea
         id="message"
         rows={3}
@@ -29,9 +40,14 @@ const Reason: React.FC<ReasonProps> = ({ onReasonChange, reasonText }) => {
         placeholder="Give a reason for your request"
         value={localReasonText}
         onChange={handleReasonChange}
+        maxLength={maxLength}
       />
+      <div className={`absolute bottom-2 right-2 text-sm ${getCounterColor()}`}>
+        {localReasonText.length}/{maxLength}
+      </div>
     </div>
   );
 };
 
 export { Reason };
+
