@@ -29,7 +29,9 @@ class RequestController extends Controller
     public function getProportionOfTeam($approver_id)
     {
         // query database for the people with that approver
-        $request = Requests::where([['Approver_ID', $approver_id], ['Status', 'Approved']])->get();
+        $request = Requests::where('Approver_ID', $approver_id)
+            ->whereIn('Status', ['Approved', 'Withdraw Pending', 'Withdraw Rejected'])
+            ->get();
 
         // check employee exists
         $emp = Employee::where([['Staff_ID', $approver_id]])->get();
@@ -94,7 +96,9 @@ class RequestController extends Controller
             return response()->json(['message' => 'This employee ID does not match any on record.'], 404); 
         }
         // query database for the people with that approver
-        $request = Requests::where([['Approver_ID', $approver_id], ['Status', 'Approved']])->get();
+        $request = Requests::where('Approver_ID', $approver_id)
+            ->whereIn('Status', ['Approved', 'Withdraw Pending', 'Withdraw Rejected'])
+            ->get();
         $team_size = Employee::where('Reporting_Manager', $approver_id)->count();
         if ($team_size != 0) {
             $proportion = 1 / $team_size;
