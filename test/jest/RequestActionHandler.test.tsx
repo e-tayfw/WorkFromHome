@@ -63,11 +63,11 @@ describe('ActionHandler Withdrawal Functionality', () => {
     // Ensure the "Confirm" button in SweetAlert was clicked and POST request sent
     await waitFor(() => {
       expect(axios.post).toHaveBeenCalledWith(
-        'http://127.0.0.1:8085/api/request/withdraw',
+        "https://54.251.20.155.nip.io/api/request/withdraw",
         {
-          Request_ID: '12345',
-          Employee_ID: '54321',
-          Reason: 'Test reason', // Mocked reason value from SweetAlert
+          Request_ID: "12345",
+          Employee_ID: "54321",
+          Reason: "Test reason", // Mocked reason value from SweetAlert
         }
       );
     });
