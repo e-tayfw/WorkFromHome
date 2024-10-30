@@ -149,7 +149,7 @@ const Apply: React.FC = () => {
 
     try {
       const response = await axios.post(
-        "http://127.0.0.1:8085/api/recurringRequest",
+        "http://54.251.20.155.nip.io/api/recurringRequest",
         submitData,
         {
           headers: {
