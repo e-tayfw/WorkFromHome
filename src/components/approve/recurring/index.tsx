@@ -1,6 +1,6 @@
 import React from "react";
 import ApproveRecurringEntry from "@/components/approve/recurringentry";
-import { Body, BodyLarge } from "@/components/TextStyles";
+import { Body } from "@/components/TextStyles";
 
 interface Request {
   requestId: number;
@@ -25,11 +25,10 @@ interface RecurringTableProps {
   fetchRequests: () => void;
   handleRequestClick: (requestId: number) => void;
   isMobile: boolean;
-  getShortHeader: (fullHeader: string) => string;
   teamSize: number;
 }
 
-const RecurringTable: React.FC<RecurringTableProps> = ({
+export const RecurringTable: React.FC<RecurringTableProps> = ({
   employeeRequests,
   employee,
   pagination,
@@ -37,7 +36,6 @@ const RecurringTable: React.FC<RecurringTableProps> = ({
   fetchRequests,
   handleRequestClick,
   isMobile,
-  getShortHeader,
   teamSize,
 }) => {
   const batchesPerPage = 2;

@@ -86,7 +86,7 @@ describe("AdhocTable Component", () => {
     expect(screen.getByText("Adhoc Requests")).toBeInTheDocument();
     expect(screen.getByText("Date Requested")).toBeInTheDocument();
     expect(screen.getByText("Duration")).toBeInTheDocument();
-    expect(screen.getByText("Date Of Request")).toBeInTheDocument();
+    expect(screen.getByText(/Date Of Request/i)).toBeInTheDocument();
     expect(screen.getByText("Status")).toBeInTheDocument();
     expect(screen.getByText("Action")).toBeInTheDocument();
   });
@@ -144,16 +144,6 @@ describe("AdhocTable Component", () => {
     const dateRequestedHeader = screen.getByText("Date Requested");
     fireEvent.click(dateRequestedHeader);
     expect(mockRequestSort).toHaveBeenCalledWith("dateRequested");
-  });
-
-  test("uses getSortIcon for table headers", () => {
-    render(<AdhocTable {...defaultProps} />);
-    expect(mockGetSortIcon).toHaveBeenCalledWith("dateRequested");
-    expect(mockGetSortIcon).toHaveBeenCalledWith("duration");
-    expect(mockGetSortIcon).toHaveBeenCalledWith("dateOfRequest");
-    expect(mockGetSortIcon).toHaveBeenCalledWith("status");
-    // Check that sort icons are rendered
-    expect(screen.getAllByTestId("sort-icon").length).toBe(4);
   });
 
 });

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { useSelector } from "react-redux";
-import { H1, BodyLarge, H2 } from "@/components/TextStyles";
-import RequestEntry from "@/components/History/Entry";
+import { H1, BodyLarge } from "@/components/TextStyles";
+import RequestEntry from "@/components/history/entry";
 import axios from "axios";
 // import Swal from 'sweetalert2';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";

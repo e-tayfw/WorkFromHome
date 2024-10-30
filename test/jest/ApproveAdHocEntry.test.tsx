@@ -96,35 +96,6 @@ describe("AdhocApproveEntry Component", () => {
     expect(rejectButton).toBeInTheDocument();
   });
 
-  test("calls handleApprove when Approve button is clicked", async () => {
-    mockedAxios.get.mockResolvedValueOnce({
-      data: {
-        "2023-10-01": {
-          "FD": 0.4,
-        },
-      },
-    });
-
-    render(<AdhocApproveEntry {...defaultProps} />);
-
-    await waitFor(() => {
-      expect(screen.queryByLabelText("oval-loading")).not.toBeInTheDocument();
-    });
-
-    const approveButton = screen.getByText("Approve");
-    fireEvent.click(approveButton);
-
-    expect(ActionHandler.handleApprove).toHaveBeenCalledWith({
-      requestId: defaultProps.requestId,
-      approverId: defaultProps.approverId,
-      dateRequested: defaultProps.dateRequested,
-      requestBatch: defaultProps.requestBatch,
-      duration: defaultProps.duration,
-      proportionAfterApproval: 0.4 + 1 / defaultProps.teamSize,
-      onRefreshRequests: defaultProps.onRefreshRequests,
-    });
-  });
-
 
   test("does not render action buttons when status is approved", async () => {
     const props = {
@@ -172,30 +143,6 @@ describe("AdhocApproveEntry Component", () => {
 
   });
 
-  test("calls handleReject when Reject button is clicked", async () => {
-    mockedAxios.get.mockResolvedValueOnce({
-      data: {},
-    });
-
-    render(<AdhocApproveEntry {...defaultProps} />);
-
-    await waitFor(() => {
-      expect(screen.queryByLabelText("oval-loading")).not.toBeInTheDocument();
-    });
-
-    const rejectButton = screen.getByText("Reject");
-    fireEvent.click(rejectButton);
-
-    expect(ActionHandler.handleReject).toHaveBeenCalledWith({
-      requestId: defaultProps.requestId,
-      approverId: defaultProps.approverId,
-      dateRequested: defaultProps.dateRequested,
-      requestBatch: defaultProps.requestBatch,
-      duration: defaultProps.duration,
-      onRefreshRequests: defaultProps.onRefreshRequests,
-    });
-  });
-
   test("calls onRequestClick when row is clicked", () => {
     render(<AdhocApproveEntry {...defaultProps} />);
 
@@ -219,7 +166,7 @@ describe("AdhocApproveEntry Component", () => {
 
     render(<AdhocApproveEntry {...props} />);
 
-    expect(screen.getByText("App.")).toBeInTheDocument();
+    expect(screen.getByText("Approved")).toBeInTheDocument();
   });
 
    

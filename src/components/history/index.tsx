@@ -1,5 +1,5 @@
 import { Display } from "@/components/TextStyles";
-import { RequestTable } from "@/components/History/Table";
+import { RequestTable } from "@/components/history/table";
 
 const History = () => {
   return (

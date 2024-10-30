@@ -1,7 +1,7 @@
 // AdhocTable.tsx
 import React from "react";
 import ApproveEntry from "@/components/approve/adhocentry";
-import { Body, BodyLarge } from "@/components/TextStyles";
+import { Body } from "@/components/TextStyles";
 
 interface Request {
   requestId: number;

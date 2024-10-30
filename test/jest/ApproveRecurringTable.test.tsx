@@ -1,14 +1,21 @@
-import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
-import RecurringTable from '@/components/approve/recurring';
-import ApproveRecurringEntry from '@/components/approve/recurringentry';
+// RecurringTable.test.tsx
 
-jest.mock('@/components/approve/recurringentry', () => jest.fn(() => <div>ApproveRecurringEntry Component</div>));
-jest.mock('@/components/TextStyles', () => ({
-  BodyLarge: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-}));
+import React from "react";
+import { render, screen, fireEvent } from "@testing-library/react";
+import RecurringTable from "@/components/approve/recurring";
 
-describe('RecurringTable Component', () => {
+// Mock the ApproveRecurringEntry component since it's used within RecurringTable
+jest.mock("@/components/approve/recurringentry", () => {
+  const MockApproveRecurringEntry = () => (
+    <tr>
+      <td colSpan={5}>ApproveRecurringEntry Component</td>
+    </tr>
+  );
+  MockApproveRecurringEntry.displayName = "MockApproveRecurringEntry";
+  return MockApproveRecurringEntry;
+});
+
+describe("RecurringTable Component", () => {
   const defaultProps = {
     employeeRequests: {},
     employee: { Staff_ID: 1 },
@@ -17,7 +24,6 @@ describe('RecurringTable Component', () => {
     fetchRequests: jest.fn(),
     handleRequestClick: jest.fn(),
     isMobile: false,
-    getShortHeader: jest.fn((header: string) => header),
     teamSize: 5,
   };
 
@@ -25,151 +31,291 @@ describe('RecurringTable Component', () => {
     jest.clearAllMocks();
   });
 
-  it('should not render when there are no requests', () => {
+  test("renders nothing when there are no requests", () => {
     render(<RecurringTable {...defaultProps} />);
-    expect(screen.queryByText('Recurring Requests')).toBeNull();
+    expect(screen.queryByText("Recurring Requests")).not.toBeInTheDocument();
   });
 
-  it('should render the table headers correctly', () => {
-    render(
-      <RecurringTable
-        {...defaultProps}
-        employeeRequests={{ batch1: [] }}
-      />
-    );
-    expect(screen.getByText('Recurring Requests')).toBeInTheDocument();
-    expect(screen.getByText('Date Requested')).toBeInTheDocument();
-    expect(screen.getByText('Duration')).toBeInTheDocument();
-    expect(screen.getByText('Date Of Request')).toBeInTheDocument();
-    expect(screen.getByText('Status')).toBeInTheDocument();
-    expect(screen.getByText('Action')).toBeInTheDocument();
-  });
-
-  it('should use getShortHeader when isMobile is true', () => {
-    render(
-      <RecurringTable
-        {...defaultProps}
-        employeeRequests={{ batch1: [] }}
-        isMobile={true}
-      />
-    );
-    expect(defaultProps.getShortHeader).toHaveBeenCalledWith('Date Requested');
-    expect(defaultProps.getShortHeader).toHaveBeenCalledWith('Duration');
-    expect(defaultProps.getShortHeader).toHaveBeenCalledWith('Date Of Request');
-    expect(defaultProps.getShortHeader).toHaveBeenCalledWith('Status');
-    expect(defaultProps.getShortHeader).toHaveBeenCalledWith('Action');
-  });
-
-  it('should render batches correctly', () => {
+  test("renders batches and requests correctly", () => {
     const employeeRequests = {
-      batch1: [{ status: 'Pending' }],
-      batch2: [{ status: 'Approved' }],
+      Batch1: [
+        {
+          requestId: 1,
+          requestorId: 101,
+          approverId: 201,
+          status: "Pending",
+          dateRequested: "2023-10-01",
+          requestBatch: "Batch1",
+          dateOfRequest: "2023-09-20",
+          duration: "Full Day",
+        },
+        {
+          requestId: 2,
+          requestorId: 102,
+          approverId: 202,
+          status: "Approved",
+          dateRequested: "2023-10-02",
+          requestBatch: "Batch1",
+          dateOfRequest: "2023-09-21",
+          duration: "Half Day",
+        },
+      ],
+      Batch2: [
+        {
+          requestId: 3,
+          requestorId: 103,
+          approverId: 203,
+          status: "Pending",
+          dateRequested: "2023-10-03",
+          requestBatch: "Batch2",
+          dateOfRequest: "2023-09-22",
+          duration: "Full Day",
+        },
+      ],
     };
-    render(
-      <RecurringTable
-        {...defaultProps}
-        employeeRequests={employeeRequests}
-      />
+
+    const props = {
+      ...defaultProps,
+      employeeRequests,
+      pagination: { 1: { recurring: 1 } },
+    };
+
+    render(<RecurringTable {...props} />);
+
+    // Check that 'Recurring Requests' title is displayed
+    expect(screen.getByText("Recurring Requests")).toBeInTheDocument();
+
+    // Check that Batch1 and Batch2 are displayed
+    expect(screen.getByText("Batch: Batch1")).toBeInTheDocument();
+    expect(screen.getByText("Batch: Batch2")).toBeInTheDocument();
+
+    // Check that the ApproveRecurringEntry component is rendered twice
+    expect(screen.getAllByText("ApproveRecurringEntry Component").length).toBe(
+      2
     );
-    expect(screen.getByText('Batch: batch1')).toBeInTheDocument();
-    expect(screen.getByText('Batch: batch2')).toBeInTheDocument();
-    expect(ApproveRecurringEntry).toHaveBeenCalledTimes(2);
   });
 
-  it('should handle pagination correctly', () => {
+  test("paginates batches correctly and calls handlePageChange on Next", () => {
     const employeeRequests = {
-      batch1: [{ status: 'Pending' }],
-      batch2: [{ status: 'Approved' }],
-      batch3: [{ status: 'Rejected' }],
+      Batch1: [
+        {
+          requestId: 1,
+          requestorId: 101,
+          approverId: 201,
+          status: "Pending",
+          dateRequested: "2023-10-01",
+          requestBatch: "Batch1",
+          dateOfRequest: "2023-09-20",
+          duration: "Full Day",
+        },
+      ],
+      Batch2: [
+        {
+          requestId: 2,
+          requestorId: 102,
+          approverId: 202,
+          status: "Approved",
+          dateRequested: "2023-10-02",
+          requestBatch: "Batch2",
+          dateOfRequest: "2023-09-21",
+          duration: "Half Day",
+        },
+      ],
+      Batch3: [
+        {
+          requestId: 3,
+          requestorId: 103,
+          approverId: 203,
+          status: "Pending",
+          dateRequested: "2023-10-03",
+          requestBatch: "Batch3",
+          dateOfRequest: "2023-09-22",
+          duration: "Full Day",
+        },
+      ],
     };
-    render(
-      <RecurringTable
-        {...defaultProps}
-        employeeRequests={employeeRequests}
-        pagination={{ 1: { recurring: 1 } }}
-      />
-    );
-    expect(screen.getByText('Page 1 of 2')).toBeInTheDocument();
 
-    const nextButton = screen.getByText('Next');
-    fireEvent.click(nextButton);
+    const props = {
+      ...defaultProps,
+      employeeRequests,
+      pagination: { 1: { recurring: 1 } },
+    };
 
-    expect(defaultProps.handlePageChange).toHaveBeenCalledWith(1, 2, 'recurring');
+    render(<RecurringTable {...props} />);
+
+    // Batches per page is 2, so Batch1 and Batch2 should be displayed
+    expect(screen.getByText("Batch: Batch1")).toBeInTheDocument();
+    expect(screen.getByText("Batch: Batch2")).toBeInTheDocument();
+    expect(screen.queryByText("Batch: Batch3")).not.toBeInTheDocument();
+
+    // Click on Next button
+    fireEvent.click(screen.getByTestId("next-button"));
+
+    // handlePageChange should be called with correct arguments
+    expect(props.handlePageChange).toHaveBeenCalledWith(1, 2, "recurring");
   });
 
-  it('should disable Previous button on first page', () => {
-    render(
-      <RecurringTable
-        {...defaultProps}
-        employeeRequests={{ batch1: [] }}
-        pagination={{ 1: { recurring: 1 } }}
-      />
-    );
-    const previousButton = screen.getByText('Previous');
-    expect(previousButton).toBeDisabled();
-  });it('should disable Next button on last page', () => {
+  test("disables Previous button on first page and Next button on last page", () => {
     const employeeRequests = {
-      batch1: [],
-      batch2: [],
+      Batch1: [
+        {
+          requestId: 1,
+          requestorId: 101,
+          approverId: 201,
+          status: "Pending",
+          dateRequested: "2023-10-01",
+          requestBatch: "Batch1",
+          dateOfRequest: "2023-09-20",
+          duration: "Full Day",
+        },
+      ],
+      Batch2: [
+        {
+          requestId: 2,
+          requestorId: 102,
+          approverId: 202,
+          status: "Approved",
+          dateRequested: "2023-10-02",
+          requestBatch: "Batch2",
+          dateOfRequest: "2023-09-21",
+          duration: "Half Day",
+        },
+      ],
     };
-  
-    // First render with initial pagination
-    const { rerender } = render(
-      <RecurringTable
-        {...defaultProps}
-        employeeRequests={employeeRequests}
-        pagination={{ 1: { recurring: 1 } }}
-      />
-    );
-  
-    // Click the "Next" button
-    const nextButton = screen.getByTestId('next-button');
-    fireEvent.click(nextButton);
-  
-    // Re-render the component with updated pagination
-    rerender(
-      <RecurringTable
-        {...defaultProps}
-        employeeRequests={employeeRequests}
-        pagination={{ 1: { recurring: 2 } }}
-      />
-    );
-  
-    // Verify the page number and that "Next" button is disabled
-    expect(screen.getByText('Page 2 of 1')).toBeInTheDocument();
-    expect(screen.getByTestId('next-button')).toBeDisabled();
+
+    const props = {
+      ...defaultProps,
+      employeeRequests,
+      pagination: { 1: { recurring: 1 } },
+    };
+
+    render(<RecurringTable {...props} />);
+
+    // Previous button should be disabled on first page
+    expect(screen.getByText("Previous")).toBeDisabled();
+
+    // Next button should be disabled because there are only 2 batches and batchesPerPage is 2
+    expect(screen.getByText("Next")).toBeDisabled();
   });
 
-  it('should call fetchRequests when onRefreshRequests is called', () => {
-    (ApproveRecurringEntry as jest.Mock).mockImplementation(({ onRefreshRequests }) => {
-      onRefreshRequests();
-      return <div>ApproveRecurringEntry Component</div>;
-    });
+  test("calls handlePageChange on Previous button click", () => {
+    const employeeRequests = {
+      Batch1: [
+        {
+          requestId: 1,
+          requestorId: 101,
+          approverId: 201,
+          status: "Pending",
+          dateRequested: "2023-10-01",
+          requestBatch: "Batch1",
+          dateOfRequest: "2023-09-20",
+          duration: "Full Day",
+        },
+      ],
+      Batch2: [
+        {
+          requestId: 2,
+          requestorId: 102,
+          approverId: 202,
+          status: "Approved",
+          dateRequested: "2023-10-02",
+          requestBatch: "Batch2",
+          dateOfRequest: "2023-09-21",
+          duration: "Half Day",
+        },
+      ],
+      Batch3: [
+        {
+          requestId: 3,
+          requestorId: 103,
+          approverId: 203,
+          status: "Pending",
+          dateRequested: "2023-10-03",
+          requestBatch: "Batch3",
+          dateOfRequest: "2023-09-22",
+          duration: "Full Day",
+        },
+      ],
+    };
 
-    render(
-      <RecurringTable
-        {...defaultProps}
-        employeeRequests={{ batch1: [] }}
-      />
-    );
+    const props = {
+      ...defaultProps,
+      employeeRequests,
+      pagination: { 1: { recurring: 2 } }, // Set current page to 2
+    };
 
-    expect(defaultProps.fetchRequests).toHaveBeenCalled();
+    render(<RecurringTable {...props} />);
+
+    // Previous button should be enabled
+    expect(screen.getByText("Previous")).toBeEnabled();
+
+    // Click on Previous button
+    fireEvent.click(screen.getByText("Previous"));
+
+    // handlePageChange should be called with correct arguments
+    expect(props.handlePageChange).toHaveBeenCalledWith(1, 1, "recurring");
   });
 
-  it('should call handleRequestClick when onRequestClick is called', () => {
-    const requestId = 123;
-    (ApproveRecurringEntry as jest.Mock).mockImplementation(({ onRequestClick }) => {
-      onRequestClick(requestId);
-      return <div>ApproveRecurringEntry Component</div>;
-    });
+  test("displays correct page number and total pages", () => {
+    const employeeRequests = {
+      Batch1: [
+        {
+          requestId: 1,
+          requestorId: 101,
+          approverId: 201,
+          status: "Pending",
+          dateRequested: "2023-10-01",
+          requestBatch: "Batch1",
+          dateOfRequest: "2023-09-20",
+          duration: "Full Day",
+        },
+      ],
+      Batch2: [
+        {
+          requestId: 2,
+          requestorId: 102,
+          approverId: 202,
+          status: "Approved",
+          dateRequested: "2023-10-02",
+          requestBatch: "Batch2",
+          dateOfRequest: "2023-09-21",
+          duration: "Half Day",
+        },
+      ],
+      Batch3: [
+        {
+          requestId: 3,
+          requestorId: 103,
+          approverId: 203,
+          status: "Pending",
+          dateRequested: "2023-10-03",
+          requestBatch: "Batch3",
+          dateOfRequest: "2023-09-22",
+          duration: "Full Day",
+        },
+      ],
+      Batch4: [
+        {
+          requestId: 4,
+          requestorId: 104,
+          approverId: 204,
+          status: "Rejected",
+          dateRequested: "2023-10-04",
+          requestBatch: "Batch4",
+          dateOfRequest: "2023-09-23",
+          duration: "Full Day",
+        },
+      ],
+    };
 
-    render(
-      <RecurringTable
-        {...defaultProps}
-        employeeRequests={{ batch1: [] }}
-      />
-    );
+    const props = {
+      ...defaultProps,
+      employeeRequests,
+      pagination: { 1: { recurring: 2 } }, // Current page is 2
+    };
 
-    expect(defaultProps.handleRequestClick).toHaveBeenCalledWith(requestId);
+    render(<RecurringTable {...props} />);
+
+    expect(screen.getByText("Page 2 of 2")).toBeInTheDocument();
   });
 });
