@@ -302,7 +302,6 @@ const ApproveTable: React.FC<ApproveTableProps> = ({ employees }) => {
                       fetchRequests={fetchRequests}
                       handleRequestClick={handleRequestClick}
                       isMobile={isMobile}
-                      getShortHeader={getShortHeader}
                       teamSize={teamSize}
                     />
                   )}

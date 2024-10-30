@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Body, H2, H1, BodyLarge, BodySmall } from "@/components/TextStyles";
+import { Body, H2, H1, BodyLarge } from "@/components/TextStyles";
 import { generateOwnSchedule } from "@/pages/api/scheduleApi";
 import moment from "moment";
 import { useSelector } from "react-redux";
