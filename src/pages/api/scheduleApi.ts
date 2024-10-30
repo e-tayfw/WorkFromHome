@@ -4,6 +4,9 @@ export const generateOwnSchedule = async (staffId: number) => {
       `https://54.251.20.155.nip.io/api/generateOwnSchedule/${staffId}`,
       {
         method: "GET", // Fetch defaults to GET, so this is optional
+        headers: {
+          "Content-Type": "application/json"
+        },
       }
     );
 
@@ -30,6 +33,9 @@ export const generateTeamSchedule = async (staffId: number) => {
       `https://54.251.20.155.nip.io/api/generateTeamSchedule/${staffId}`,
       {
         method: "GET", // Fetch defaults to GET, so this is optional
+        headers: {
+          "Content-Type": "application/json",
+        },
       }
     );
 
@@ -56,6 +62,9 @@ export const generateManagerTeamSchedule = async (staffId: number) => {
       `https://54.251.20.155.nip.io/api/generateTeamScheduleByManager/${staffId}`,
       {
         method: "GET", // Fetch defaults to GET, so this is optional
+        headers: {
+          "Content-Type": "application/json",
+        },
       }
     );
 
@@ -82,6 +91,9 @@ export const generateDirectorTeamSchedule = async (staffId: number) => {
       `https://54.251.20.155.nip.io/api/generateTeamScheduleByDirector/${staffId}`,
       {
         method: "GET", // Fetch defaults to GET, so this is optional
+        headers: {
+          "Content-Type": "application/json",
+        },
       }
     );
 

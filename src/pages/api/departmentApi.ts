@@ -1,8 +1,14 @@
 export const getDepartmentList = async () => {
     try {
-        const response = await fetch(`https://54.251.20.155.nip.io/api/generateHRScheduleByDepartment`, {
-      method: 'GET', // Fetch defaults to GET, so this is optional
-    }); 
+        const response = await fetch(
+          `https://54.251.20.155.nip.io/api/generateHRScheduleByDepartment`,
+          {
+            method: "GET", // Fetch defaults to GET, so this is optional
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        ); 
 
     if (!response.ok) {
       throw new Error(`Failed to retrieve employee data. Status: ${response.status}`);
