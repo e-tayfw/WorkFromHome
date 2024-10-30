@@ -82,7 +82,7 @@ const AdhocTable: React.FC<AdhocTableProps> = ({
                       className="w-1/5 px-4 py-2 text-left cursor-pointer"
                       onClick={() => requestSort("dateRequested")}
                     >
-                      <Body className="text-primary">Date Requested</Body>
+                      <Body className="text-primary">Date Requested{getSortIcon('dateRequested')}</Body>
                     </th>
                     <th
                       className="w-1/5 px-4 py-2 text-left cursor-pointer"
