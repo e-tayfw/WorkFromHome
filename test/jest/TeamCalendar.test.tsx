@@ -121,7 +121,6 @@ describe("TeamCalendar", () => {
       },
     };
     render(<TeamCalendar selectedSchedule={sampleSelectedSchedule} />);
-
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const initialDate = moment().format("DD/MM/YY");
     // Click Prev Day twice
@@ -132,7 +131,7 @@ describe("TeamCalendar", () => {
 
   test("handles next week navigation", async () => {
     (useSelector as unknown as jest.Mock).mockReturnValue("123");
-    const sampleSelectedSchedule = {
+    const sampleSelectedSchedule: Record<string, Record<string, number>> = {
       "1": { "010123": 1, "080123": 1, "150123": 1 }, // Include valid dates for navigation
     };
 
@@ -166,7 +165,6 @@ describe("TeamCalendar", () => {
       .week(nextWeekNumber)
       .endOf("week")
       .format("DD/MM/YY");
-    console.log(nextWeekStart, nextWeekEnd);
     // Wait for the next week's date range to appear
     expect(
       await screen.findByText(`${nextWeekStart} - ${nextWeekEnd}`)
@@ -175,7 +173,7 @@ describe("TeamCalendar", () => {
 
   test("handles previous week navigation", async () => {
     (useSelector as unknown as jest.Mock).mockReturnValue("123");
-    const sampleSelectedSchedule = {
+    const sampleSelectedSchedule: Record<string, Record<string, number>> = {
       "1": { "251222": 1, "010123": 1, "080123": 1, "150123": 1 }, // Include valid dates for navigation
     };
 
@@ -217,55 +215,109 @@ describe("TeamCalendar", () => {
   });
 
   test("disables next button appropriately", () => {
+    // Mock the useSelector hook to return a specific staffId
     (useSelector as unknown as jest.Mock).mockReturnValue("123");
 
-    const today = moment().format("DDMMYY");
-    const tomorrow = moment().add(1, "days").format("DDMMYY");
-    const yesterday = moment().subtract(1, "days").format("DDMMYY");
+    // Use a fixed start date for testing
+    const startDate = moment("2023-01-01", "YYYY-MM-DD");
+    const maxDate = startDate
+      .clone()
+      .add(3, "months")
+      .subtract(1, "day")
+      .endOf("day");
 
-    const sampleSelectedSchedule = {
-      "1": {
-        [yesterday]: 0,
-        [today]: 1,
-        [tomorrow]: 2,
-      },
+    // Initialize sampleSelectedSchedule with user "123"
+    const sampleSelectedSchedule: Record<string, Record<string, number>> = {
+      "123": {}, // Initialize empty schedule for user "123"
     };
 
+    // Populate sampleSelectedSchedule with dates from startDate up to maxDate
+    const currentDate = startDate.clone();
+    while (currentDate.isBefore(maxDate, "day")) {
+      const dateKey = currentDate.format("DDMMYY");
+      sampleSelectedSchedule["123"][dateKey] = 1; // Arbitrary status
+      currentDate.add(1, "day");
+    }
+
+    // Mock moment() to return startDate when called without arguments
+    const momentSpy = jest
+      .spyOn(moment, "now")
+      .mockReturnValue(startDate.valueOf());
+
+    // Render the component
     render(<TeamCalendar selectedSchedule={sampleSelectedSchedule} />);
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const prevDayButton = screen.getByText("Prev Day");
     const nextDayButton = screen.getByText("Next Day");
-    fireEvent.click(nextDayButton);
 
-    // Next Day should be enabled
+    // Compute the number of days to maxDate
+    const daysToMaxDate = maxDate.diff(startDate, "days");
+
+    // Simulate clicking "Next Day" until reaching maxDate
+    for (let i = 0; i < daysToMaxDate; i++) {
+      expect(nextDayButton).toBeEnabled();
+      fireEvent.click(nextDayButton);
+    }
+
+    // After reaching maxDate, the button should be disabled
     expect(nextDayButton).toBeDisabled();
+
+    // Clean up the spy
+    momentSpy.mockRestore();
   });
 
   test("disables prev button appropriately", () => {
+    // Mock the useSelector hook to return a specific staffId
     (useSelector as unknown as jest.Mock).mockReturnValue("123");
 
-    const today = moment().format("DDMMYY");
-    const tomorrow = moment().add(1, "days").format("DDMMYY");
-    const yesterday = moment().subtract(1, "days").format("DDMMYY");
+    // Use a fixed start date for testing
+    const startDate = moment("2023-03-01", "YYYY-MM-DD");
+    const minDate = startDate
+      .clone()
+      .subtract(2, "months")
+      .add(1, "day")
+      .startOf("day");
 
-    const sampleSelectedSchedule = {
-      "1": {
-        [yesterday]: 0,
-        [today]: 1,
-        [tomorrow]: 2,
-      },
+    // Initialize sampleSelectedSchedule with user "123"
+    const sampleSelectedSchedule: Record<string, Record<string, number>> = {
+      "123": {}, // Initialize empty schedule for user "123"
     };
 
-    render(<TeamCalendar selectedSchedule={sampleSelectedSchedule} />);
+    // Populate sampleSelectedSchedule with dates from minDate up to startDate
+    const currentDate = minDate.clone();
+    while (currentDate.isSameOrBefore(startDate, "day")) {
+      const dateKey = currentDate.format("DDMMYY");
+      sampleSelectedSchedule["123"][dateKey] = 1; // Arbitrary status
+      currentDate.add(1, "day");
+    }
+
+    // Mock moment() to return startDate when called without arguments
+    const momentSpy = jest
+      .spyOn(moment, "now")
+      .mockReturnValue(startDate.valueOf());
+
+    // Render the component with minDate passed as a prop
+    render(
+      <TeamCalendar
+        selectedSchedule={sampleSelectedSchedule}
+      />
+    );
 
     const prevDayButton = screen.getByText("Prev Day");
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const nextDayButton = screen.getByText("Next Day");
 
-    fireEvent.click(prevDayButton);
+    // Compute the number of days from startDate back to minDate
+    const daysToMinDate = startDate.diff(minDate, "days");
 
+    // Simulate clicking "Prev Day" until reaching minDate
+    for (let i = 0; i < daysToMinDate; i++) {
+      expect(prevDayButton).toBeEnabled();
+      fireEvent.click(prevDayButton);
+    }
+
+    // After reaching minDate, the button should be disabled
     expect(prevDayButton).toBeDisabled();
+
+    // Clean up the spy
+    momentSpy.mockRestore();
   });
 
   test("opens and closes the modal correctly", async () => {
@@ -328,17 +380,15 @@ describe("TeamCalendar", () => {
   // test("search within modal works", async () => {
   //   (useSelector as unknown as jest.Mock).mockReturnValue("123");
 
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-
-    // const { getEmployeeFullNameByStaffID } = require("@/pages/api/employeeApi");
-    // getEmployeeFullNameByStaffID.mockImplementation((staffId: string) => {
-    //   const names: { [key: string]: string } = {
-    //     "1": "John Doe",
-    //     "2": "Jane Smith",
-    //   };
-    //   return Promise.resolve(names[staffId] || "Unknown User");
-    // });
-
+  //   // eslint-disable-next-line @typescript-eslint/no-var-requires
+  //   const { getEmployeeFullNameByStaffID } = require("@/pages/api/employeeApi");
+  //   getEmployeeFullNameByStaffID.mockImplementation((staffId: string) => {
+  //     const names: { [key: string]: string } = {
+  //       "1": "John Doe",
+  //       "2": "Jane Smith",
+  //     };
+  //     return Promise.resolve(names[staffId] || "Unknown User");
+  //   });
 
   //   const today = moment().format("DDMMYY");
   //   const sampleSelectedSchedule = {
@@ -360,8 +410,10 @@ describe("TeamCalendar", () => {
   //   const searchInput = screen.getByPlaceholderText("Search by name");
   //   fireEvent.change(searchInput, { target: { value: "Jane" } });
 
-    // Check that only Jane Smith is displayed
-
+  //   // Check that only Jane Smith is displayed
+  //   expect(screen.queryByText(/John Doe/i)).not.toBeInTheDocument();
+  //   expect(screen.getByText(/Jane Smith/i)).toBeInTheDocument();
+  // });
 
   test("renders correct data for day view", () => {
     (useSelector as unknown as jest.Mock).mockReturnValue("123");
@@ -379,7 +431,8 @@ describe("TeamCalendar", () => {
     expect(screen.getByText(`AM WFH: 1`)).toBeInTheDocument();
     expect(screen.getByText(`PM WFH: 1`)).toBeInTheDocument();
     expect(screen.getByText(`Full Day WFH: 1`)).toBeInTheDocument();
-    expect(screen.getByText(`Total Strength: 1`)).toBeInTheDocument();
+    expect(screen.getByText(`Present in Office: 1`)).toBeInTheDocument();
+    expect(screen.getByText(`Total Strength: 4`)).toBeInTheDocument();
   });
 
   test("renders correct data for week view", () => {

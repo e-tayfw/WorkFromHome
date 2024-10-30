@@ -87,4 +87,7 @@ jobs:
           sudo chown -R apache:apache /var/www/html/spm-project/backend-api
           export APP_ENV=production
           sudo systemctl restart httpd
+
+          nohup php artisan queue:work --sleep=3 --tries=3 --timeout=90 > /dev/null 2>&1 &
+          
           EOF

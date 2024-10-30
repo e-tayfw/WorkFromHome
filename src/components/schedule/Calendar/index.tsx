@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Body, H2, H1 } from "@/components/TextStyles";
+import { Body, H2, H1, BodyLarge } from "@/components/TextStyles";
 import { generateOwnSchedule } from "@/pages/api/scheduleApi";
 import moment from "moment";
 import { useSelector } from "react-redux";
@@ -91,7 +91,7 @@ export const WFHCalendar: React.FC = () => {
   const getWeekDates = () => {
     const weekStart = selectedDate.clone().startOf("week");
     const weekEnd = selectedDate.clone().endOf("week");
-    return `${weekStart.format("DD-MM-YY")} - ${weekEnd.format("DD-MM-YY")}`;
+    return `${weekStart.format("DD-MM-YY")} to ${weekEnd.format("DD-MM-YY")}`;
   };
 
   const handleNextWeek = () => {
@@ -152,7 +152,7 @@ export const WFHCalendar: React.FC = () => {
               {selectedDate.format("DD-MM-YY")}
             </H2>
             <button
-              className={`bg-primary hover:bg-secondary text-white font-bold py-2 px-4 rounded-xl ${
+              className={`bg-primary hover:bg-secondary text-white font-bold py-2 px-4 my-4 rounded-xl ${
                 isNextDisabled() ? "opacity-50 cursor-not-allowed" : ""
               }`}
               onClick={handleNextDay}
@@ -198,7 +198,15 @@ export const WFHCalendar: React.FC = () => {
             >
               Prev Week
             </button>
-            <H2 className="text-lg font-bold">{getWeekDates()}</H2>
+            <BodyLarge className="text-center px-2 font-bold">
+              {getWeekDates()
+                .split(" ")
+                .map((date, index) => (
+                  <span key={index} className="block lg:inline-block">
+                    {date}
+                  </span>
+                ))}
+            </BodyLarge>
             <button
               className={`bg-primary hover:bg-secondary text-white font-bold py-2 px-4 rounded-xl ${
                 isNextWeekDisabled() ? "opacity-50 cursor-not-allowed" : ""

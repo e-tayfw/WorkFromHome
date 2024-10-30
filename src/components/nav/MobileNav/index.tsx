@@ -47,13 +47,13 @@ export const mobileMenuLinks: NavLink[] = [
       },
       {
         title: "Past Requests",
-        path: "/request",
+        path: "/history",
         imgUrl:
           "https://workfromhomebucket.s3.ap-southeast-2.amazonaws.com/Nav/view-request-simu.png",
       },
       {
         title: "Approve Requests",
-        path: "/request",
+        path: "/approve",
         imgUrl:
           "https://workfromhomebucket.s3.ap-southeast-2.amazonaws.com/Nav/approve-request-simu.png",
       },

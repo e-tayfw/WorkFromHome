@@ -92,7 +92,6 @@ const Nav = () => {
           const fetchedName = await getEmployeeFullNameByStaffID(
             staffId.toString()
           );
-          console.log(fetchedName);
           setFullName(fetchedName);
         } catch (error) {
           console.error("Error fetching Name:", error);

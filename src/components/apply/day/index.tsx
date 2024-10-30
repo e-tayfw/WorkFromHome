@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 
-type DayValue = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 0; 
+type DayValue = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 0;
 
 interface DayProps {
   onDayChange: (value: DayValue) => void;
@@ -29,7 +29,7 @@ const Daypicker: React.FC<DayProps> = ({ selectedDay, onDayChange }) => {
     { value: 4, label: "Thursday" },
     { value: 5, label: "Friday" },
     { value: 6, label: "Saturday" },
-    { value: 7, label: "Sunday" }
+    { value: 7, label: "Sunday" },
   ];
 
   return (

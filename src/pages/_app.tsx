@@ -29,7 +29,7 @@ export default function App({ Component, pageProps }: AppProps) {
         router.push("/auth");
       }
     }
-  }, [router, router.pathname]);
+  }, [router.pathname, router]);
 
   // Dynamically import SiteContainer (disable SSR)
   const SiteContainer = dynamic<{ children: ReactNode }>(

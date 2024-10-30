@@ -14,15 +14,17 @@ interface ActionHandlerProps {
 
 const ActionHandler: React.FC<ActionHandlerProps> = ({ status, dateRequested, requestId, employeeId, onRefreshRequests }) => {
   const isWithinTwoWeeks = () => {
-    const currentDate = new Date();
     const requestedDate = new Date(dateRequested);
-
-    const twoWeeksBefore = new Date(requestedDate);
-    twoWeeksBefore.setDate(requestedDate.getDate() - 14);
-
-    const twoWeeksAfter = new Date(requestedDate);
-    twoWeeksAfter.setDate(requestedDate.getDate() + 14);
-
+    requestedDate.setHours(0, 0, 0, 0); // Set requestDate to midnight
+  
+    const currentDate = new Date();
+    currentDate.setHours(0, 0, 0, 0); // Set currentDate to midnight
+  
+    const twoWeeksInMs = 14 * 24 * 60 * 60 * 1000; // 14 days in milliseconds
+  
+    const twoWeeksBefore = new Date(requestedDate.getTime() - twoWeeksInMs);
+    const twoWeeksAfter = new Date(requestedDate.getTime() + twoWeeksInMs);
+  
     return currentDate >= twoWeeksBefore && currentDate <= twoWeeksAfter;
   };
 
@@ -31,6 +33,9 @@ const ActionHandler: React.FC<ActionHandlerProps> = ({ status, dateRequested, re
       title: 'Please indicate a reason',
       input: 'text',
       inputPlaceholder: 'Enter your reason here...',
+      inputAttributes: {
+        maxlength: '255',
+      },
       showCancelButton: true,
       confirmButtonText: 'Confirm',
       cancelButtonText: 'Cancel',
@@ -39,6 +44,35 @@ const ActionHandler: React.FC<ActionHandlerProps> = ({ status, dateRequested, re
       inputValidator: (value) => {
         if (!value) {
           return 'You need to provide a reason!';
+        }
+      },
+      didOpen: () => {
+        const inputField = Swal.getInput();
+        if (inputField) { // Check if inputField is not null
+          const characterCount = document.createElement('div');
+          characterCount.style.marginTop = '10px';
+          characterCount.style.fontSize = '12px';
+          characterCount.style.color = '#555';
+          characterCount.style.textAlign = 'center';
+          characterCount.style.fontWeight = 'bold'; // Make the text bold
+          characterCount.innerText = '0 / 255 characters';
+    
+          // Append character counter below the input box and center it
+          inputField.parentNode?.appendChild(characterCount);
+    
+          inputField.addEventListener('input', () => {
+            const currentLength = inputField.value.length;
+            characterCount.innerText = `${currentLength} / 255 characters`;
+    
+            // Highlight when limit is reached
+            characterCount.style.color = currentLength === 255 ? 'red' : '#555';
+          });
+        }
+      },
+      willClose: () => {
+        const inputField = Swal.getInput();
+        if (inputField) {
+          inputField.removeEventListener('input', () => {}); // Remove the event listener on close
         }
       },
     }).then((result) => {
@@ -50,9 +84,9 @@ const ActionHandler: React.FC<ActionHandlerProps> = ({ status, dateRequested, re
           Employee_ID: employeeId,
           Reason: reason,
         };
-
+    
         axios
-          .post('http://127.0.0.1:8085/api/request/withdraw', payload)
+          .post('https://54.251.20.155.nip.io/api/request/withdraw', payload)
           .then((response) => {
             toast.success(response.data.message || 'The request has been withdrawn successfully!', {
               position: 'top-right',
@@ -65,7 +99,7 @@ const ActionHandler: React.FC<ActionHandlerProps> = ({ status, dateRequested, re
             });
           });
       }
-    });
+    });    
   };
 
   const getActionButton = () => {

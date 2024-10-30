@@ -4,9 +4,9 @@ namespace Tests\Feature;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
+use DB;
 use Log;
 use Database\Seeders\EmployeeSeeder;
-use Illuminate\Support\Facades\DB;
 
 class EmployeeTest extends TestCase
 {

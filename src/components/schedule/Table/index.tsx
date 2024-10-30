@@ -4,6 +4,7 @@ import DT from "datatables.net-bs5";
 import "datatables.net-responsive-bs5";
 import { getEmployeeFullNameByStaffID } from "@/pages/api/employeeApi";
 import { SpinnerIcon } from "@/components/Svgs/spinner";
+import moment from "moment"; // Import moment
 DataTable.use(DT);
 
 interface ScheduleProps {
@@ -14,13 +15,16 @@ interface ScheduleProps {
 
 interface ScheduleTableProps {
   scheduleByDate: ScheduleProps;
+  selectedDate: string;
 }
 
 export const ScheduleTable: React.FC<ScheduleTableProps> = ({
   scheduleByDate,
+  selectedDate,
 }) => {
   const [tableData, setTableData] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
+
   const getEmployeeName = async (userid: string) => {
     const name = await getEmployeeFullNameByStaffID(userid.toString());
     return name;
@@ -45,13 +49,16 @@ export const ScheduleTable: React.FC<ScheduleTableProps> = ({
     const fetchData = async () => {
       setLoading(true);
       const tempData: any[] = [];
+      const formattedDate = moment(selectedDate, "YYYY-MM-DD").format("DDMMYY");
       for (const userid in scheduleByDate) {
-        const name = await getEmployeeName(userid);
-        for (const date in scheduleByDate[userid]) {
+        const userSchedule = scheduleByDate[userid];
+        const wfhStatus = userSchedule[formattedDate];
+        if (wfhStatus !== undefined) {
+          const name = await getEmployeeName(userid);
           tempData.push({
             userid,
             name,
-            sched: scheduleMapping(scheduleByDate[userid][date] ?? 0),
+            sched: scheduleMapping(wfhStatus),
           });
         }
       }
@@ -60,7 +67,7 @@ export const ScheduleTable: React.FC<ScheduleTableProps> = ({
     };
 
     fetchData();
-  }, [scheduleByDate]);
+  }, [scheduleByDate, selectedDate]);
 
   return (
     <div>

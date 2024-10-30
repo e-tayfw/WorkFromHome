@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 interface SubmitProps {
   onSubmit: (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void;
@@ -6,11 +6,15 @@ interface SubmitProps {
 }
 
 const Submit: React.FC<SubmitProps> = ({ onSubmit, isDisabled }) => {
-    return( 
-        <button 
-            type="submit" 
-            className={`text-white
-                       ${isDisabled ? 'bg-gray-400 cursor-not-allowed' : '!bg-primary hover:ring-2 hover:ring-primary hover:text-primary hover:!bg-background'}
+  return (
+    <button
+      type="submit"
+      className={`text-white
+                       ${
+                         isDisabled
+                           ? "bg-gray-400 cursor-not-allowed"
+                           : "!bg-primary hover:ring-2 hover:ring-primary hover:text-primary hover:!bg-background"
+                       }
                        font-medium 
                        rounded-full 
                        text-sm 
@@ -21,12 +25,12 @@ const Submit: React.FC<SubmitProps> = ({ onSubmit, isDisabled }) => {
                        sm:w-auto
                        me-2 
                        mb-2`}
-            onClick={onSubmit}
-            disabled={isDisabled}
-        >
-            Submit
-        </button>
-    );
+      onClick={onSubmit}
+      disabled={isDisabled}
+    >
+      Submit
+    </button>
+  );
 };
 
 export { Submit };

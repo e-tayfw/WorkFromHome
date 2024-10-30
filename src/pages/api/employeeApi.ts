@@ -1,6 +1,6 @@
 export const getEmployeeDataByEmail = async (username: string) => {
     try {
-        const response = await fetch(`http://127.0.0.1:8085/api/employee/email/${username}`, {
+        const response = await fetch(`https://54.251.20.155.nip.io/api/employee/email/${username}`, {
       method: 'GET', // Fetch defaults to GET, so this is optional
     }); 
 
@@ -20,7 +20,7 @@ export const getEmployeeDataByEmail = async (username: string) => {
 
 export const getEmployeeFullNameByStaffID = async (staffID: string) => {
   try {
-    const response = await fetch(`http://127.0.0.1:8085/api/employee/name/${staffID}`, {
+    const response = await fetch(`https://54.251.20.155.nip.io/api/employee/name/${staffID}`, {
       method: 'GET', // Fetch defaults to GET, so this is optional
     });
 

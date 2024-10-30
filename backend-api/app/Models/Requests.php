@@ -13,8 +13,6 @@ class Requests extends Model
 
     protected $primaryKey = 'Request_ID';
 
-    public $incrementing = true; // Indicates that the primary key is auto-incrementing
-
     protected $guarded = [];
 
 }
