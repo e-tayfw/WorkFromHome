@@ -63,7 +63,6 @@ const Schedule: React.FC = () => {
   // Fetch the initial schedule for the user's team on mount
   useEffect(() => {
     fetchSchedule();
-    // console.log(team)
   }, [fetchSchedule]);
 
   const handleTeamSelect = (teamSchedule: any) => {

@@ -291,7 +291,6 @@ export const TeamCalendar: React.FC<TeamCalendarProps> = ({
         (() => {
           const { amwfhUsers, pmwfhUsers, fulldaywfhUsers, scheduleByDate } =
             getTeamSchedule(modalDate);
-          console.log("scheduleByDate", scheduleByDate);
           const amwfhUserNames = amwfhUsers.map(
             (userId) => employeeNames[userId] || "Loading..."
           );

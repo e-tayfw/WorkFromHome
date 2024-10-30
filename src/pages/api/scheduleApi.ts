@@ -1,7 +1,7 @@
 export const generateOwnSchedule = async (staffId: number) => {
   try {
     const response = await fetch(
-      `http://127.0.0.1:8085/api/generateOwnSchedule/${staffId}`,
+      `https://54.251.20.155.nip.io/api/generateOwnSchedule/${staffId}`,
       {
         method: "GET", // Fetch defaults to GET, so this is optional
       }
@@ -27,7 +27,7 @@ export const generateOwnSchedule = async (staffId: number) => {
 export const generateTeamSchedule = async (staffId: number) => {
   try {
     const response = await fetch(
-      `http://127.0.0.1:8085/api/generateTeamSchedule/${staffId}`,
+      `https://54.251.20.155.nip.io/api/generateTeamSchedule/${staffId}`,
       {
         method: "GET", // Fetch defaults to GET, so this is optional
       }
@@ -53,7 +53,7 @@ export const generateTeamSchedule = async (staffId: number) => {
 export const generateManagerTeamSchedule = async (staffId: number) => {
   try {
     const response = await fetch(
-      `http://127.0.0.1:8085/api/generateTeamScheduleByManager/${staffId}`,
+      `https://54.251.20.155.nip.io/api/generateTeamScheduleByManager/${staffId}`,
       {
         method: "GET", // Fetch defaults to GET, so this is optional
       }
@@ -79,7 +79,7 @@ export const generateManagerTeamSchedule = async (staffId: number) => {
 export const generateDirectorTeamSchedule = async (staffId: number) => {
   try {
     const response = await fetch(
-      `http://127.0.0.1:8085/api/generateTeamScheduleByDirector/${staffId}`,
+      `https://54.251.20.155.nip.io/api/generateTeamScheduleByDirector/${staffId}`,
       {
         method: "GET", // Fetch defaults to GET, so this is optional
       }

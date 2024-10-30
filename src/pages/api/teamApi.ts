@@ -1,6 +1,6 @@
 export const getTeamList = async () => {
     try {
-        const response = await fetch(`http://127.0.0.1:8085/api/generateHRScheduleByTeam`, {
+        const response = await fetch(`https://54.251.20.155.nip.io/api/generateHRScheduleByTeam`, {
       method: 'GET', // Fetch defaults to GET, so this is optional
     }); 
 

@@ -165,7 +165,6 @@ describe("TeamCalendar", () => {
       .week(nextWeekNumber)
       .endOf("week")
       .format("DD/MM/YY");
-    console.log(nextWeekStart, nextWeekEnd);
     // Wait for the next week's date range to appear
     expect(
       await screen.findByText(`${nextWeekStart} - ${nextWeekEnd}`)
