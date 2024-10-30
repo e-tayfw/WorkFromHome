@@ -1,10 +1,9 @@
 export const generateOwnSchedule = async (staffId: number) => {
   try {
     const response = await fetch(
-      `https://54.251.20.155.nip.io/api/generateOwnSchedule/${staffId}/`,
+      `https://54.251.20.155.nip.io/api/generateOwnSchedule/${staffId}`,
       {
         method: "GET", // Fetch defaults to GET, so this is optional
-        mode: "no-cors",
       }
     );
 
@@ -31,7 +30,6 @@ export const generateTeamSchedule = async (staffId: number) => {
       `https://54.251.20.155.nip.io/api/generateTeamSchedule/${staffId}`,
       {
         method: "GET", // Fetch defaults to GET, so this is optional
-        mode: "no-cors",
       }
     );
 
