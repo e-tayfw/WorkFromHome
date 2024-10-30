@@ -42,7 +42,7 @@ const AdhocApproveEntry: React.FC<AdhocApproveEntryProps> = ({
     if (status.toLowerCase() === 'pending' || status.toLowerCase() === 'withdraw pending') {
       const fetchProportion = async () => {
         try {
-          const response = await axios.get(`http://127.0.0.1:8085/api/request/proportionOfTeam/${approverId}`);
+          const response = await axios.get(`https://54.251.20.155.nip.io/api/request/proportionOfTeam/${approverId}`);
           const proportions = response.data;
           setProportion(proportions[dateRequested]?.[duration] || 0);
         } catch (err) {

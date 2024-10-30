@@ -46,7 +46,7 @@ const ApproveRecurringEntry: React.FC<ApproveRecurringEntryProps> = ({
       try {
         setIsLoading(true);
         const approverId = pendingRequests[0].approverId;
-        const response = await axios.get(`http://127.0.0.1:8085/api/request/proportionOfTeam/${approverId}`);
+        const response = await axios.get(`https://54.251.20.155.nip.io/api/request/proportionOfTeam/${approverId}`);
         const proportions = response.data;
 
         const newExceedingRequests = new Set<number>();

@@ -60,7 +60,7 @@ export const RequestTable: React.FC = () => {
       }
 
       const response = await axios.get(
-        `http://127.0.0.1:8085/api/request/requestorId/${employeeId}`
+        `https://54.251.20.155.nip.io/api/request/requestorId/${employeeId}`
       );
 
       const mappedRequests = response.data.map((item: any) => ({
@@ -98,7 +98,7 @@ export const RequestTable: React.FC = () => {
   const handleRequestClick = async (requestId: number) => {
     try {
       const response = await axios.get(
-        `http://127.0.0.1:8085/api/requestLog/requestId/${requestId}`
+        `https://54.251.20.155.nip.io/api/requestLog/requestId/${requestId}`
       );
       const logs = response.data;
 

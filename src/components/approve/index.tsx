@@ -19,7 +19,7 @@ const Approve = () => {
     // Fetch the message from the API based on staffId
     const fetchReportData = async () => {
       try {
-        const response = await axios.get(`http://127.0.0.1:8085/api/employee/team/manager/${staffId}`);
+        const response = await axios.get(`https://54.251.20.155.nip.io/api/employee/team/manager/${staffId}`);
 
         const message = response.data.message;
 

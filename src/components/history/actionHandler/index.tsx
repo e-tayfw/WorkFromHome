@@ -86,7 +86,7 @@ const ActionHandler: React.FC<ActionHandlerProps> = ({ status, dateRequested, re
         };
     
         axios
-          .post('http://127.0.0.1:8085/api/request/withdraw', payload)
+          .post('https://54.251.20.155.nip.io/api/request/withdraw', payload)
           .then((response) => {
             toast.success(response.data.message || 'The request has been withdrawn successfully!', {
               position: 'top-right',

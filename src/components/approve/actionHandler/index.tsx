@@ -137,7 +137,7 @@ const ActionHandler = {
         };
   
         axios
-          .post('http://127.0.0.1:8085/api/approveRequest', payload)
+          .post('https://54.251.20.155.nip.io/api/approveRequest', payload)
           .then((response) => {
             toast.success(response.data.message || 'The request has been approved successfully!', {
               position: 'top-right',
@@ -221,7 +221,7 @@ const ActionHandler = {
         };
     
         axios
-          .post('http://127.0.0.1:8085/api/approveRecurringRequest', payload)
+          .post('https://54.251.20.155.nip.io/api/approveRecurringRequest', payload)
           .then((response) => {
             toast.success(response.data.message || 'The batch has been approved successfully!', {
               position: 'top-right',
@@ -306,7 +306,7 @@ const ActionHandler = {
         };
     
         axios
-          .post('http://127.0.0.1:8085/api/rejectRequest', payload)
+          .post('https://54.251.20.155.nip.io/api/rejectRequest', payload)
           .then((response) => {
             toast.success(response.data.message || 'The request has been rejected successfully!', {
               position: 'top-right',
@@ -383,7 +383,7 @@ const ActionHandler = {
         };
     
         axios
-          .post('http://127.0.0.1:8085/api/rejectRecurringRequest', payload)
+          .post('https://54.251.20.155.nip.io/api/rejectRecurringRequest', payload)
           .then((response) => {
             toast.success(response.data.message || 'The batch request has been rejected successfully!', {
               position: 'top-right',
@@ -455,7 +455,7 @@ const ActionHandler = {
         };
     
         axios
-          .post('http://127.0.0.1:8085/api/request/managerWithdraw', payload)
+          .post('https://54.251.20.155.nip.io/api/request/managerWithdraw', payload)
           .then((response) => {
             toast.success(response.data.message || 'The request has been withdrawn successfully!', {
               position: 'top-right',

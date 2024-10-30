@@ -49,7 +49,7 @@ const ApproveTable: React.FC<ApproveTableProps> = ({ employees }) => {
 
   const fetchRequests = useCallback(async () => {
     try {
-      const requestRes = await axios.get(`http://127.0.0.1:8085/api/request/approverID/${staffId}`);
+      const requestRes = await axios.get(`https://54.251.20.155.nip.io/api/request/approverID/${staffId}`);
 
       const mappedRequests: Request[] = requestRes.data.map((item: any) => ({
         requestId: item.Request_ID,
@@ -82,7 +82,7 @@ const ApproveTable: React.FC<ApproveTableProps> = ({ employees }) => {
   // Fetch and display logs in a modal using SweetAlert
   const handleRequestClick = async (requestId: number) => {
     try {
-      const response = await axios.get(`http://127.0.0.1:8085/api/requestLog/requestId/${requestId}`);
+      const response = await axios.get(`https://54.251.20.155.nip.io/api/requestLog/requestId/${requestId}`);
       const logs = response.data;
   
       const logContent = logs

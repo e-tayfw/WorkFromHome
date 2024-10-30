@@ -63,7 +63,7 @@ describe("AdhocApproveEntry Component", () => {
 
     await waitFor(() => {
       expect(mockedAxios.get).toHaveBeenCalledWith(
-        "http://127.0.0.1:8085/api/request/proportionOfTeam/2"
+        "https://54.251.20.155.nip.io/api/request/proportionOfTeam/2"
       );
     });
 

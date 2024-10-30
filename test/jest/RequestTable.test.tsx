@@ -34,7 +34,7 @@ describe('RequestTable Component', () => {
     );
 
     // Wait for the axios call to be made
-    await waitFor(() => expect(mockedAxios.get).toHaveBeenCalledWith('http://127.0.0.1:8085/api/request/requestorId/1001'));
+    await waitFor(() => expect(mockedAxios.get).toHaveBeenCalledWith('https://54.251.20.155.nip.io/api/request/requestorId/1001'));
 
     // Check that the "You have no requests!" message is displayed
     expect(screen.getByText('You have no requests!')).toBeInTheDocument();
@@ -65,7 +65,7 @@ describe('RequestTable Component', () => {
     );
 
     // Wait for the axios call to be made
-    await waitFor(() => expect(mockedAxios.get).toHaveBeenCalledWith('http://127.0.0.1:8085/api/request/requestorId/1001'));
+    await waitFor(() => expect(mockedAxios.get).toHaveBeenCalledWith('https://54.251.20.155.nip.io/api/request/requestorId/1001'));
 
     // Ensure the "You have no requests!" message is NOT present
     expect(screen.queryByText('You have no requests!')).not.toBeInTheDocument();
@@ -197,7 +197,7 @@ describe('RequestTable Component', () => {
     );
 
     // Wait for the axios call to be made
-    await waitFor(() => expect(mockedAxios.get).toHaveBeenCalledWith('http://127.0.0.1:8085/api/request/requestorId/1001'));
+    await waitFor(() => expect(mockedAxios.get).toHaveBeenCalledWith('https://54.251.20.155.nip.io/api/request/requestorId/1001'));
 
     // Verify that filter by status works (select "pending" status)
     const statusFilter = screen.getByLabelText(/Filter by Status/i);
