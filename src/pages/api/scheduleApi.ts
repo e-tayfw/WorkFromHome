@@ -1,113 +1,82 @@
+import axios from "axios";
+
 export const generateOwnSchedule = async (staffId: number) => {
   try {
-    const response = await fetch(
-      `https://54.251.20.155.nip.io/api/generateOwnSchedule/${staffId}`,
-      {
-        method: "GET", // Fetch defaults to GET, so this is optional
-        headers: {
-          "Content-Type": "application/json"
-        },
-      }
+    const response = await axios.get(
+      `https://54.251.20.155.nip.io/api/generateOwnSchedule/${staffId}`
     );
-
-    if (!response.ok) {
+    return response.data;
+  } catch (error) {
+    console.error(error);
+    if (axios.isAxiosError(error) && error.response) {
       throw new Error(
-        `Failed to retrieve employee schedule. Status: ${response.status}`
+        `Failed to retrieve employee schedule. Status: ${error.response.status}`
+      );
+    } else {
+      throw new Error(
+        "An error occurred while fetching employee schedule data."
       );
     }
-
-    const data = await response.json(); // Parse the JSON response
-    return data; // Return the employee data
-
-    } 
-  catch(error) {
-        console.log(error);
-        console.error(error);
-        throw new Error("An error occurred while fetching employee schedule data.");
-    }
-}
+  }
+};
 
 export const generateTeamSchedule = async (staffId: number) => {
   try {
-    const response = await fetch(
-      `https://54.251.20.155.nip.io/api/generateTeamSchedule/${staffId}`,
-      {
-        method: "GET", // Fetch defaults to GET, so this is optional
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
+    const response = await axios.get(
+      `https://54.251.20.155.nip.io/api/generateTeamSchedule/${staffId}`
     );
-
-
-    if (!response.ok) {
+    return response.data;
+  } catch (error) {
+    console.error(error);
+    if (axios.isAxiosError(error) && error.response) {
       throw new Error(
-        `Failed to retrieve employee schedule. Status: ${response.status}`
+        `Failed to retrieve employee schedule. Status: ${error.response.status}`
+      );
+    } else {
+      throw new Error(
+        "An error occurred while fetching employee schedule data."
       );
     }
-
-    const data = await response.json(); // Parse the JSON response
-    return data; // Return the employee data
-
-  } catch (error) {
-    console.log(error);
-    console.error(error);
-    throw new Error("An error occurred while fetching employee schedule data.");
   }
-}
+};
 
 export const generateManagerTeamSchedule = async (staffId: number) => {
   try {
-    const response = await fetch(
-      `https://54.251.20.155.nip.io/api/generateTeamScheduleByManager/${staffId}`,
-      {
-        method: "GET", // Fetch defaults to GET, so this is optional
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
+    const response = await axios.get(
+      `https://54.251.20.155.nip.io/api/generateTeamScheduleByManager/${staffId}`
     );
-
-    if (!response.ok) {
+    return response.data;
+  } catch (error) {
+    console.error(error);
+    if (axios.isAxiosError(error) && error.response) {
       throw new Error(
-        `Failed to retrieve director schedule. Status: ${response.status}`
+        `Failed to retrieve director schedule. Status: ${error.response.status}`
+      );
+    } else {
+      throw new Error(
+        "An error occurred while fetching employee schedule data."
       );
     }
-
-    const data = await response.json(); // Parse the JSON response
-    return data; // Return the employee data
-  } catch (error) {
-    console.log(error);
-    console.error(error);
-    throw new Error("An error occurred while fetching employee schedule data.");
   }
-}
-
+};
 
 
 export const generateDirectorTeamSchedule = async (staffId: number) => {
   try {
-    const response = await fetch(
-      `https://54.251.20.155.nip.io/api/generateTeamScheduleByDirector/${staffId}`,
-      {
-        method: "GET", // Fetch defaults to GET, so this is optional
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
+    const response = await axios.get(
+      `https://54.251.20.155.nip.io/api/generateTeamScheduleByDirector/${staffId}`
     );
-
-    if (!response.ok) {
+    return response.data;
+  } catch (error) {
+    console.error(error);
+    if (axios.isAxiosError(error) && error.response) {
       throw new Error(
-        `Failed to retrieve director schedule. Status: ${response.status}`
+        `Failed to retrieve director schedule. Status: ${error.response.status}`
+      );
+    } else {
+      throw new Error(
+        "An error occurred while fetching employee schedule data."
       );
     }
-
-    const data = await response.json(); // Parse the JSON response
-    return data; // Return the employee data
-  } catch (error) {
-    console.log(error);
-    console.error(error);
-    throw new Error("An error occurred while fetching employee schedule data.");
   }
 };
