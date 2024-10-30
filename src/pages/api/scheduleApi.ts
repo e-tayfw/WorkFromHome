@@ -1,7 +1,7 @@
 export const generateOwnSchedule = async (staffId: number) => {
   try {
     const response = await fetch(
-      `https://54.251.20.155.nip.io/api/generateOwnSchedule/${staffId}`,
+      `https://54.251.20.155.nip.io/api/generateOwnSchedule/${staffId}/`,
       {
         method: "GET", // Fetch defaults to GET, so this is optional
       }
