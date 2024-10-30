@@ -152,7 +152,7 @@ export const WFHCalendar: React.FC = () => {
               {selectedDate.format("DD-MM-YY")}
             </H2>
             <button
-              className={`bg-primary hover:bg-secondary text-white font-bold py-2 px-4 rounded-xl ${
+              className={`bg-primary hover:bg-secondary text-white font-bold py-2 px-4 my-4 rounded-xl ${
                 isNextDisabled() ? "opacity-50 cursor-not-allowed" : ""
               }`}
               onClick={handleNextDay}

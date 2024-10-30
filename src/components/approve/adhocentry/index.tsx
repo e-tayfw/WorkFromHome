@@ -100,13 +100,13 @@ const AdhocApproveEntry: React.FC<AdhocApproveEntryProps> = ({
 
   const getStatusShortForm = () => {
     const statusMap: { [key in 'approved' | 'pending' | 'rejected' | 'withdrawn' | 'withdraw pending' | 'withdraw rejected' | 'withdrawn by manager']: string } = {
-      approved: 'App.',
-      pending: 'Pen.',
-      rejected: 'Rej.',
-      withdrawn: 'Wdn.',
-      'withdraw pending': 'W Pen',
-      'withdraw rejected': 'W Rej',
-      'withdrawn by manager': 'WbM',
+      approved: 'Approved',
+      pending: 'Pending',
+      rejected: 'Rejected',
+      withdrawn: 'Withdrawn',
+      'withdraw pending': 'Withdraw Pening',
+      'withdraw rejected': 'Withdraw Rejected',
+      'withdrawn by manager': 'Withdrawn by Manager',
     };
     return isMobile ? statusMap[status.toLowerCase() as keyof typeof statusMap] || status : status;
   };

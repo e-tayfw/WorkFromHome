@@ -5,7 +5,7 @@ import { FiMenu, FiX } from "react-icons/fi";
 import { logout } from "@/redux/slices/authSlice"; // Import the logout action from the authSlice
 import { useDispatch } from "react-redux";
 import NextLink from "next/link";
-import { NavLink } from "@/components/nav";
+import { NavLink } from "@/components/Nav";
 import { BodyLarge } from "@/components/TextStyles";
 
 
