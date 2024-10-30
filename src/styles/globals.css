@@ -1,27 +1,66 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+@import url("https://fonts.googleapis.com/css2?family=Inria+Sans:ital,wght@0,300;0,400;0,700;1,300;1,400;1,700&display=swap");
+
 
 :root {
   --background: #ffffff;
   --foreground: #171717;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
 body {
   color: var(--foreground);
   background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: "Inria Sans", sans-serif;
 }
 
 @layer utilities {
   .text-balance {
     text-wrap: balance;
   }
+}
+
+.dt-layout-start {
+  margin-bottom: 20px; /* adjust the value as needed */
+  margin-right: 20px; /* adjust the value as needed */
+}
+
+[id^="dt-length-"] {
+  margin-top: 20px; /* adjust the value as needed */
+}
+
+/* Alternatively, target the search and length elements directly */
+.dt-search {
+  margin-bottom: 20px; /* adjust the value as needed */
+  gap: 10px; /* adjust the value as needed */
+}
+
+[id^="dt-search-"] {
+  margin-left: 20px; /* adjust the value as needed */
+  border-radius: 5%;
+}
+
+.dt-paging {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.dt-paging .pagination {
+  display: flex;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.dt-paging .page-item {
+  margin: 0 5px; /* Adjust the spacing between buttons as needed */
+}
+
+.dt-paging .page-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 5px 10px; /* Adjust the padding as needed */
 }

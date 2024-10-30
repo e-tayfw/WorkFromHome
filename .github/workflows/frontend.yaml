@@ -1,8 +1,16 @@
-name: Unit Tests
+name: Frontend Vercel
+
+
 
 on: 
   pull_request:
-    branches: [main]
+    branches: 
+      - main
+      - dev_wfh
+  push:
+    branches:
+      - dev_wfh
+      - main
 
 jobs:
   tests:
