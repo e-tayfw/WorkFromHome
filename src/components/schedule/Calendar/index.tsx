@@ -30,6 +30,7 @@ export const WFHCalendar: React.FC = () => {
     if (staffId) {
       try {
         const fetchedSchedule = await generateOwnSchedule(Number(staffId));
+        console.log(fetchedSchedule);
         setSchedule(fetchedSchedule);
       } catch (error) {
         console.error("Error fetching schedule:", error);

@@ -3,7 +3,12 @@ import axios from "axios";
 export const getTeamList = async () => {
   try {
     const response = await axios.get(
-      "https://54.251.20.155.nip.io/api/generateHRScheduleByTeam"
+      "https://54.251.20.155.nip.io/api/generateHRScheduleByTeam",
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
     );
     return response.data;
   } catch (error) {

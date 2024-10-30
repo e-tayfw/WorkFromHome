@@ -3,7 +3,12 @@ import axios from "axios";
 export const generateOwnSchedule = async (staffId: number) => {
   try {
     const response = await axios.get(
-      `https://54.251.20.155.nip.io/api/generateOwnSchedule/${staffId}`
+      `https://54.251.20.155.nip.io/api/generateOwnSchedule/${staffId}`,
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
     );
     return response.data;
   } catch (error) {
@@ -23,7 +28,12 @@ export const generateOwnSchedule = async (staffId: number) => {
 export const generateTeamSchedule = async (staffId: number) => {
   try {
     const response = await axios.get(
-      `https://54.251.20.155.nip.io/api/generateTeamSchedule/${staffId}`
+      `https://54.251.20.155.nip.io/api/generateTeamSchedule/${staffId}`,
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
     );
     return response.data;
   } catch (error) {
@@ -43,7 +53,12 @@ export const generateTeamSchedule = async (staffId: number) => {
 export const generateManagerTeamSchedule = async (staffId: number) => {
   try {
     const response = await axios.get(
-      `https://54.251.20.155.nip.io/api/generateTeamScheduleByManager/${staffId}`
+      `https://54.251.20.155.nip.io/api/generateTeamScheduleByManager/${staffId}`,
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
     );
     return response.data;
   } catch (error) {
@@ -64,7 +79,12 @@ export const generateManagerTeamSchedule = async (staffId: number) => {
 export const generateDirectorTeamSchedule = async (staffId: number) => {
   try {
     const response = await axios.get(
-      `https://54.251.20.155.nip.io/api/generateTeamScheduleByDirector/${staffId}`
+      `https://54.251.20.155.nip.io/api/generateTeamScheduleByDirector/${staffId}`,
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
     );
     return response.data;
   } catch (error) {
