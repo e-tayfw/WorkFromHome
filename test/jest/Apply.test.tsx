@@ -8,11 +8,53 @@ import { Apply } from '@/components/apply';
 
 
 // Mock the imported components
+jest.mock('@/components/apply/day', () => ({
+  Daypicker: ({ onDayChange, selectedDay }: { onDayChange: (value: 0|1|2|3|4|5|6|7) => void, selectedDay: 0|1|2|3|4|5|6|7 }) => (
+    <select 
+      data-testid="day-select" 
+      value={selectedDay}
+      onChange={(e) => onDayChange(Number(e.target.value) as 0|1|2|3|4|5|6|7)}
+    >
+      <option value={0}>Select a day</option>
+      <option value={1}>Monday</option>
+      <option value={2}>Tuesday</option>
+      <option value={3}>Wednesday</option>
+      <option value={4}>Thursday</option>
+      <option value={5}>Friday</option>
+      <option value={6}>Saturday</option>
+      <option value={7}>Sunday</option>
+    </select>
+  ),
+}));
+
+jest.mock('@/components/apply/range_datepicker', () => ({
+  DateRangePickerComponent: ({ selectedDateRange, onDateRangeChange }: any) => (
+    <div>
+      <input
+        data-testid="start-date-input"
+        value={selectedDateRange.start}
+        onChange={(e) => onDateRangeChange({ ...selectedDateRange, start: e.target.value })}
+      />
+      <input
+        data-testid="end-date-input"
+        value={selectedDateRange.end}
+        onChange={(e) => onDateRangeChange({ ...selectedDateRange, end: e.target.value })}
+      />
+    </div>
+  ),
+}));
+
 jest.mock('@/components/apply/datepicker', () => ({
     Datecomponent: ({ onDateChange }: { onDateChange: (date: string) => void }) => (
       <input data-testid="date-input" onChange={(e) => onDateChange(e.target.value)} />
     ),
   }));
+
+jest.mock('@/components/apply/datepicker', () => ({
+    Datecomponent: ({ onDateChange }: { onDateChange: (date: string) => void }) => (
+      <input data-testid="date-input" onChange={(e) => onDateChange(e.target.value)} />
+    ),
+  }));  
 
 jest.mock('@/components/apply/selection', () => ({
   Selection: ({ onSelectionChange }: { onSelectionChange: (value: string) => void }) => (
