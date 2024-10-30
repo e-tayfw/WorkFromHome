@@ -19,7 +19,7 @@ return [
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => ['https://work-from-home-mu.vercel.app', env('FRONTEND_URL', 'http://localhost:3000')],
+    'allowed_origins' => ['https://work-from-home-mu.vercel.app'],
 
     'allowed_origins_patterns' => [],
 
